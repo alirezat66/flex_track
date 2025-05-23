@@ -25,11 +25,11 @@ class ConfigurationException extends FlexTrackException {
 
     buffer.write(': $message');
 
-    if (configType != null) {
+    if (configType != null && configType!.isNotEmpty) {
       buffer.write('\nConfiguration Type: $configType');
     }
 
-    if (fieldName != null) {
+    if (fieldName != null && fieldName!.isNotEmpty) {
       buffer.write('\nField: $fieldName');
     }
 

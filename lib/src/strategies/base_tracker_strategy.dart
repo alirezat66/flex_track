@@ -54,14 +54,13 @@ abstract class BaseTrackerStrategy implements TrackerStrategy {
 
   @override
   Future<void> track(BaseEvent event) async {
-    if (!isEnabled) return;
-
     if (!_initialized) {
       throw TrackerException(
         'Tracker $_id is not initialized. Call initialize() first.',
         trackerId: _id,
       );
     }
+    if (!isEnabled) return;
 
     try {
       await doTrack(event);
@@ -77,14 +76,13 @@ abstract class BaseTrackerStrategy implements TrackerStrategy {
 
   @override
   Future<void> trackBatch(List<BaseEvent> events) async {
-    if (!isEnabled || events.isEmpty) return;
-
     if (!_initialized) {
       throw TrackerException(
         'Tracker $_id is not initialized. Call initialize() first.',
         trackerId: _id,
       );
     }
+    if (!isEnabled || events.isEmpty) return;
 
     try {
       // Check if tracker supports custom batch implementation

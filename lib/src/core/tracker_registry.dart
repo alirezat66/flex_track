@@ -1,6 +1,7 @@
 import '../strategies/tracker_strategy.dart';
 import '../exceptions/tracker_exception.dart';
 import '../exceptions/configuration_exception.dart';
+import '../models/event/base_event.dart';
 
 /// Registry that manages all registered tracker strategies
 class TrackerRegistry {
@@ -125,7 +126,6 @@ class TrackerRegistry {
         failures[trackerId] = e is Exception ? e : Exception(e.toString());
       }
     }
-
     _isInitialized = true;
 
     // Report any failures
@@ -227,6 +227,32 @@ class TrackerRegistry {
     for (final tracker in _trackers.values) {
       if (tracker.isEnabled) {
         futures.add(tracker.flush());
+      }
+    }
+
+    await Future.wait(futures);
+  }
+
+  /// Track a single event on all enabled trackers
+  Future<void> track(BaseEvent event) async {
+    final futures = <Future>[];
+
+    for (final tracker in _trackers.values) {
+      if (tracker.isEnabled) {
+        futures.add(tracker.track(event));
+      }
+    }
+
+    await Future.wait(futures);
+  }
+
+  /// Track a batch of events on all enabled trackers
+  Future<void> trackBatch(List<BaseEvent> events) async {
+    final futures = <Future>[];
+
+    for (final tracker in _trackers.values) {
+      if (tracker.isEnabled) {
+        futures.add(tracker.trackBatch(events));
       }
     }
 

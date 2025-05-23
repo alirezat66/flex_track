@@ -165,6 +165,7 @@ class RoutingBuilder {
 
   /// Default fallback routing
   RouteConfigBuilder routeDefault() {
+    _defaultGroup = TrackerGroup.all; // Ensure default group is set when a default rule is added
     return RouteConfigBuilder(this, isDefault: true);
   }
 
@@ -188,6 +189,7 @@ class RoutingBuilder {
 
     return this;
   }
+
 
   // ========== BULK OPERATIONS ==========
 

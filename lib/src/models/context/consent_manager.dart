@@ -222,7 +222,7 @@ class ConsentManager {
       'marketing': _hasMarketingConsent,
       'analytics': _hasAnalyticsConsent,
       'performance': _hasPerformanceConsent,
-      'custom': Map.from(_customConsents),
+      'custom': Map<String, bool>.from(_customConsents),
       'timestamp': _consentTimestamp?.toIso8601String(),
       'version': _consentVersion,
     };
@@ -267,7 +267,7 @@ class ConsentManager {
     if (_hasAnalyticsConsent) consents.add('analytics');
     if (_hasPerformanceConsent) consents.add('performance');
 
-    return 'ConsentManager(${consents.join(', ')}${_customConsents.isNotEmpty ? ', custom: ${_customConsents.length}' : ''})';
+    return 'ConsentManager(${consents.join(', ')}${consents.isNotEmpty ? ', ' : ''}custom: ${_customConsents.length})';
   }
 }
 
