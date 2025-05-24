@@ -161,27 +161,26 @@ Future<void> setupFlexTrackWithDefaults(List<TrackerStrategy> trackers) async {
 /// await setupFlexTrackForDevelopment();
 /// ```
 Future<void> setupFlexTrackForDevelopment() async {
-  await FlexTrack.setupWithRouting(
-      [
-        ConsoleTracker(
-          showProperties: true,
-          showTimestamps: true,
-          colorOutput: true,
-        ),
-      ],
-      (builder) { // Use block body for explicit return
-        builder
-            .setDebugMode(true)
-            .setSampling(false)
-            .routeMatching(RegExp(r'debug_.*'))
-            .toDevelopment()
-            .noSampling()
-            .and()
-            .routeDefault()
-            .toAll(); // This adds the rule to the builder
+  await FlexTrack.setupWithRouting([
+    ConsoleTracker(
+      showProperties: true,
+      showTimestamps: true,
+      colorOutput: true,
+    ),
+  ], (builder) {
+    // Use block body for explicit return
+    builder
+        .setDebugMode(true)
+        .setSampling(false)
+        .routeMatching(RegExp(r'debug_.*'))
+        .toDevelopment()
+        .noSampling()
+        .and()
+        .routeDefault()
+        .toAll(); // This adds the rule to the builder
 
-        return builder; // Explicitly return the builder
-      });
+    return builder; // Explicitly return the builder
+  });
 }
 
 /// Quick setup for testing
@@ -201,17 +200,15 @@ Future<void> setupFlexTrackForDevelopment() async {
 Future<MockTracker> setupFlexTrackForTesting() async {
   final mockTracker = MockTracker();
 
-  await FlexTrack.setupWithRouting(
-      [mockTracker],
-      (builder) {
-        builder
-            .setDebugMode(true)
-            .setSampling(false)
-            .setConsentChecking(false)
-            .routeDefault()
-            .toAll();
-        return builder;
-      });
+  await FlexTrack.setupWithRouting([mockTracker], (builder) {
+    builder
+        .setDebugMode(true)
+        .setSampling(false)
+        .setConsentChecking(false)
+        .routeDefault()
+        .toAll();
+    return builder;
+  });
 
   return mockTracker;
 }

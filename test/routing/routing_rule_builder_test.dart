@@ -290,7 +290,8 @@ void main() {
         regexRuleBuilder.and();
 
         final config = parentBuilder.build();
-        expect(config.rules.first.description, contains('BaseEvent events to all'));
+        expect(config.rules.first.description,
+            contains('BaseEvent events to all'));
       });
 
       test('should generate description for category rule', () {
@@ -302,7 +303,8 @@ void main() {
         categoryRuleBuilder.and();
 
         final config = parentBuilder.build();
-        expect(config.rules.first.description, contains('BaseEvent events to all'));
+        expect(config.rules.first.description,
+            contains('BaseEvent events to all'));
       });
 
       test('should generate description for default rule', () {
@@ -314,7 +316,8 @@ void main() {
         defaultRuleBuilder.and();
 
         final config = parentBuilder.build();
-        expect(config.rules.first.description, contains('BaseEvent events to all'));
+        expect(config.rules.first.description,
+            contains('BaseEvent events to all'));
       });
 
       test('should include sampling information in description', () {

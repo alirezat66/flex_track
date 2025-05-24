@@ -8,16 +8,19 @@ void main() {
       FlexTrack.reset();
     });
 
-    test('setupFlexTrack initializes FlexTrack with provided trackers', () async {
+    test('setupFlexTrack initializes FlexTrack with provided trackers',
+        () async {
       final mockTracker = MockTracker();
       await setupFlexTrack([mockTracker]);
 
       // Verify that FlexTrack is initialized and the tracker is registered
       expect(FlexTrack.instance.isInitialized, isTrue);
-      expect(FlexTrack.instance.trackerRegistry.get(mockTracker.id), mockTracker);
+      expect(
+          FlexTrack.instance.trackerRegistry.get(mockTracker.id), mockTracker);
     });
 
-    test('setupFlexTrackWithDefaults initializes FlexTrack with smart defaults', () async {
+    test('setupFlexTrackWithDefaults initializes FlexTrack with smart defaults',
+        () async {
       final mockTracker = MockTracker();
       await setupFlexTrackWithDefaults([mockTracker]);
 
@@ -29,27 +32,47 @@ void main() {
       // For now, just checking initialization is sufficient.
     });
 
-    test('setupFlexTrackForDevelopment initializes FlexTrack for development', () async {
+    test('setupFlexTrackForDevelopment initializes FlexTrack for development',
+        () async {
       await setupFlexTrackForDevelopment();
 
       // Verify that FlexTrack is initialized and configured for development
       expect(FlexTrack.instance.isInitialized, isTrue);
-      expect(FlexTrack.instance.eventProcessor.routingEngine.configuration.isDebugMode, isTrue);
-      expect(FlexTrack.instance.eventProcessor.routingEngine.configuration.enableSampling, isFalse);
+      expect(
+          FlexTrack
+              .instance.eventProcessor.routingEngine.configuration.isDebugMode,
+          isTrue);
+      expect(
+          FlexTrack.instance.eventProcessor.routingEngine.configuration
+              .enableSampling,
+          isFalse);
       // Check if ConsoleTracker is registered
-      expect(FlexTrack.instance.trackerRegistry.get(ConsoleTracker().id), isA<ConsoleTracker>());
+      expect(FlexTrack.instance.trackerRegistry.get(ConsoleTracker().id),
+          isA<ConsoleTracker>());
     });
 
-    test('setupFlexTrackForTesting initializes FlexTrack for testing and returns MockTracker', () async {
+    test(
+        'setupFlexTrackForTesting initializes FlexTrack for testing and returns MockTracker',
+        () async {
       final mockTracker = await setupFlexTrackForTesting();
 
       // Verify that FlexTrack is initialized and configured for testing
       expect(FlexTrack.instance.isInitialized, isTrue);
-      expect(FlexTrack.instance.eventProcessor.routingEngine.configuration.isDebugMode, isTrue);
-      expect(FlexTrack.instance.eventProcessor.routingEngine.configuration.enableSampling, isFalse);
-      expect(FlexTrack.instance.eventProcessor.routingEngine.configuration.enableConsentChecking, isFalse);
+      expect(
+          FlexTrack
+              .instance.eventProcessor.routingEngine.configuration.isDebugMode,
+          isTrue);
+      expect(
+          FlexTrack.instance.eventProcessor.routingEngine.configuration
+              .enableSampling,
+          isFalse);
+      expect(
+          FlexTrack.instance.eventProcessor.routingEngine.configuration
+              .enableConsentChecking,
+          isFalse);
       // Verify that the returned mockTracker is the one registered
-      expect(FlexTrack.instance.trackerRegistry.get(mockTracker.id), mockTracker);
+      expect(
+          FlexTrack.instance.trackerRegistry.get(mockTracker.id), mockTracker);
     });
   });
 }

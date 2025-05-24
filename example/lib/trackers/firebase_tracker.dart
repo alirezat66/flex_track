@@ -1,5 +1,6 @@
 import 'package:flex_track/flex_track.dart';
 import 'package:flex_track_example/events/business_events.dart';
+import 'package:flutter/foundation.dart';
 
 /// Mock Firebase Analytics Tracker (replace with real Firebase integration)
 /// This is a placeholder since we don't want to add Firebase dependencies
@@ -35,7 +36,7 @@ class FirebaseTracker extends BaseTrackerStrategy {
   Future<void> doInitialize() async {
     // In real implementation:
     // await _analytics.setAnalyticsCollectionEnabled(true);
-    print('🔥 Firebase Analytics initialized (mock)');
+    debugPrint('🔥 Firebase Analytics initialized (mock)');
   }
 
   @override
@@ -46,7 +47,8 @@ class FirebaseTracker extends BaseTrackerStrategy {
     //   parameters: _convertProperties(event.getProperties()),
     // );
 
-    print('🔥 Firebase tracking: ${event.getName()} ${event.getProperties()}');
+    debugPrint(
+        '🔥 Firebase tracking: ${event.getName()} ${event.getProperties()}');
 
     // Handle special business events
     if (event is PurchaseEvent) {
@@ -69,7 +71,8 @@ class FirebaseTracker extends BaseTrackerStrategy {
     //   ],
     // );
 
-    print('🔥 Firebase purchase: ${event.productName} - \$${event.amount}');
+    debugPrint(
+        '🔥 Firebase purchase: ${event.productName} - \$${event.amount}');
   }
 
   @override
@@ -84,7 +87,7 @@ class FirebaseTracker extends BaseTrackerStrategy {
     //   );
     // }
 
-    print('🔥 Firebase user properties: $properties');
+    debugPrint('🔥 Firebase user properties: $properties');
   }
 
   @override
@@ -95,7 +98,7 @@ class FirebaseTracker extends BaseTrackerStrategy {
     // In real implementation:
     // await _analytics.setUserId(id: userId);
 
-    print('🔥 Firebase identify user: $userId');
+    debugPrint('🔥 Firebase identify user: $userId');
 
     if (properties != null) {
       await doSetUserProperties(properties);
@@ -110,15 +113,14 @@ class FirebaseTracker extends BaseTrackerStrategy {
     // In real implementation:
     // await _analytics.resetAnalyticsData();
 
-    print('🔥 Firebase reset analytics data');
+    debugPrint('🔥 Firebase reset analytics data');
   }
 
   @override
   Future<void> doFlush() async {
     // Firebase automatically sends events, but you could force it here
-    print('🔥 Firebase flush (automatic in real implementation)');
+    debugPrint('🔥 Firebase flush (automatic in real implementation)');
   }
-
 
   @override
   Map<String, dynamic> getDebugInfo() {

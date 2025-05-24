@@ -7,10 +7,10 @@ class ECommerceScreen extends StatefulWidget {
   const ECommerceScreen({super.key});
 
   @override
-  _ECommerceScreenState createState() => _ECommerceScreenState();
+  ECommerceScreenState createState() => ECommerceScreenState();
 }
 
-class _ECommerceScreenState extends State<ECommerceScreen> {
+class ECommerceScreenState extends State<ECommerceScreen> {
   final List<Product> _cart = [];
   final List<Product> _products = [
     Product(id: 'p1', name: 'Premium Analytics', price: 99.99, currency: 'USD'),

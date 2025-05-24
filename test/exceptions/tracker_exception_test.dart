@@ -41,12 +41,14 @@ void main() {
 
     test('toString should include code if present', () {
       const exception = TrackerException('Message with code', code: 'CODE_123');
-      expect(exception.toString(), 'TrackerException(CODE_123): Message with code');
+      expect(exception.toString(),
+          'TrackerException(CODE_123): Message with code');
     });
 
     test('toString should include trackerId if present', () {
       const exception = TrackerException('Message', trackerId: 'myTracker');
-      expect(exception.toString(), 'TrackerException: Message\nTracker ID: myTracker');
+      expect(exception.toString(),
+          'TrackerException: Message\nTracker ID: myTracker');
     });
 
     test('toString should include eventName if present', () {
@@ -56,8 +58,10 @@ void main() {
 
     test('toString should include originalError if present', () {
       final originalError = ArgumentError('Invalid arg');
-      final exception = TrackerException('Message', originalError: originalError);
-      expect(exception.toString(), 'TrackerException: Message\nCaused by: $originalError');
+      final exception =
+          TrackerException('Message', originalError: originalError);
+      expect(exception.toString(),
+          'TrackerException: Message\nCaused by: $originalError');
     });
 
     test('toString should include all optional fields if present', () {

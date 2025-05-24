@@ -39,6 +39,7 @@ class AppStartEvent extends BaseEvent {
 class PageViewEvent extends BaseEvent {
   final String pageName;
   final Map<String, String>? parameters;
+  @override
   final DateTime timestamp;
 
   PageViewEvent({

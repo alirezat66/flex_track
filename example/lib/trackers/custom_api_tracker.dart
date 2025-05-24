@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flex_track/flex_track.dart';
+import 'package:flutter/foundation.dart';
 
 /// Custom API tracker for internal analytics using dart:io HttpClient
 class CustomAPITracker extends BaseTrackerStrategy {
@@ -210,7 +211,7 @@ class CustomAPITracker extends BaseTrackerStrategy {
       await response.drain();
     } catch (e) {
       // Reset errors are not critical
-      print('Warning: Failed to reset user on custom API: $e');
+      debugPrint('Warning: Failed to reset user on custom API: $e');
     }
   }
 

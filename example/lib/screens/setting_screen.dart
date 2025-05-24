@@ -4,8 +4,10 @@ import '../utils/gdpr_manager.dart';
 import '../events/app_events.dart';
 
 class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
@@ -74,10 +76,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text('Current Consent Status:',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
-              _ConsentStatusRow(
+              _consentStatusRow(
                   'Analytics & Performance', consent.hasGeneralConsent),
-              _ConsentStatusRow('Personalization', consent.hasPIIConsent),
-              _ConsentStatusRow('Marketing', consent.hasMarketingConsent),
+              _consentStatusRow('Personalization', consent.hasPIIConsent),
+              _consentStatusRow('Marketing', consent.hasMarketingConsent),
               SizedBox(height: 8),
               Text(
                 'Last updated: ${_formatDate(consent.timestamp)}',
@@ -137,8 +139,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text('FlexTrack Status:',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            _StatusRow('Setup', FlexTrack.isSetUp),
-            _StatusRow('Enabled', FlexTrack.isEnabled),
+            _statusRow('Setup', FlexTrack.isSetUp),
+            _statusRow('Enabled', FlexTrack.isEnabled),
 
             SizedBox(height: 16),
 
@@ -147,7 +149,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
             ...FlexTrack.getTrackerIds()
-                .map((id) => _StatusRow(id, FlexTrack.isTrackerEnabled(id))),
+                .map((id) => _statusRow(id, FlexTrack.isTrackerEnabled(id))),
 
             SizedBox(height: 16),
 
@@ -242,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _ConsentStatusRow(String label, bool granted) {
+  Widget _consentStatusRow(String label, bool granted) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -259,7 +261,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _StatusRow(String label, bool status) {
+  Widget _statusRow(String label, bool status) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 2),
       child: Row(

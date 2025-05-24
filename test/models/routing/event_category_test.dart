@@ -46,15 +46,18 @@ void main() {
       final map = category.toMap();
       expect(map['name'], 'test_category');
       expect(map['description'], 'A test');
-      expect(map['isSubcategory'], isTrue); // 'test_category' is not a subcategory by the new logic
-      expect(map['parentCategory'], 'test'); // 'test_category' has no parent by the new logic
+      expect(map['isSubcategory'],
+          isTrue); // 'test_category' is not a subcategory by the new logic
+      expect(map['parentCategory'],
+          'test'); // 'test_category' has no parent by the new logic
 
       final subcategory = category.createSubcategory('sub');
       final subMap = subcategory.toMap();
       expect(subMap['name'], 'test_category_sub');
       expect(subMap['description'], 'Subcategory of test_category: sub');
       expect(subMap['isSubcategory'], isTrue);
-      expect(subMap['parentCategory'], 'test_category'); // Parent should be 'test_category'
+      expect(subMap['parentCategory'],
+          'test_category'); // Parent should be 'test_category'
     });
 
     test('toString should return a correct string representation', () {

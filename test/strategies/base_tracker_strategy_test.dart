@@ -7,7 +7,6 @@ import 'package:mockito/mockito.dart';
 
 import 'base_tracker_strategy_test.mocks.dart';
 
-
 @GenerateMocks([BaseEvent])
 // Concrete implementation of BaseTrackerStrategy for testing
 class TestTrackerStrategy extends BaseTrackerStrategy {

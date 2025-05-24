@@ -364,7 +364,6 @@ void main() {
         expect(config.validate(), contains('Duplicate rule IDs found: rule1'));
       });
 
-
       test('should detect missing default rule or default group', () {
         final config = RoutingConfiguration(rules: [
           RoutingRule(id: 'rule1', targetGroup: TrackerGroup.all),

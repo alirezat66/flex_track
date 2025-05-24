@@ -342,7 +342,8 @@ void main() {
           (rule) => rule.containsPII == true,
         );
 
-        expect(piiRule.targetGroup.name, equals(compliantTrackers.isNotEmpty ? 'gdpr_compliant' : 'all'));
+        expect(piiRule.targetGroup.name,
+            equals(compliantTrackers.isNotEmpty ? 'gdpr_compliant' : 'all'));
         expect(piiRule.requirePIIConsent, isTrue);
         expect(piiRule.priority, equals(16));
         expect(piiRule.description,
@@ -494,7 +495,8 @@ void main() {
           (rule) => rule.containsPII == true,
         );
 
-        expect(piiRule.targetGroup.name, equals(compliantTrackers.isNotEmpty ? 'gdpr_compliant' : 'all'));
+        expect(piiRule.targetGroup.name,
+            equals(compliantTrackers.isNotEmpty ? 'gdpr_compliant' : 'all'));
         expect(piiRule.requireConsent, isTrue);
         expect(piiRule.requirePIIConsent, isFalse); // CCPA is less strict
         expect(piiRule.priority, equals(15));

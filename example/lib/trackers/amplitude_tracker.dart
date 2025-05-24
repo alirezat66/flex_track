@@ -53,7 +53,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
     //   eventProperties: enhancedProperties,
     // );
 
-    print('📊 Amplitude tracking: ${event.getName()} $enhancedProperties');
+    debugPrint('📊 Amplitude tracking: ${event.getName()} $enhancedProperties');
 
     // Handle revenue events
     if (event is PurchaseEvent) {
@@ -71,7 +71,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
     //
     // await Amplitude.getInstance().logRevenue(revenue);
 
-    print('📊 Amplitude revenue: ${event.productId} - \$${event.amount}');
+    debugPrint('📊 Amplitude revenue: ${event.productId} - \$${event.amount}');
   }
 
   @override
@@ -89,7 +89,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
     // }
     // await Amplitude.getInstance().identify(identify);
 
-    print('📊 Amplitude user properties: $properties');
+    debugPrint('📊 Amplitude user properties: $properties');
   }
 
   @override
@@ -100,7 +100,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
     // In real implementation:
     // await Amplitude.getInstance().setUserId(userId);
 
-    print('📊 Amplitude identify: $userId');
+    debugPrint('📊 Amplitude identify: $userId');
 
     if (properties != null) {
       await doSetUserProperties(properties);
@@ -116,7 +116,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
     // await Amplitude.getInstance().setUserId(null);
     // await Amplitude.getInstance().clearUserProperties();
 
-    print('📊 Amplitude reset');
+    debugPrint('📊 Amplitude reset');
   }
 
   @override
@@ -124,7 +124,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
     // In real implementation:
     // await Amplitude.getInstance().uploadEvents();
 
-    print('📊 Amplitude flush');
+    debugPrint('📊 Amplitude flush');
   }
 
   @override

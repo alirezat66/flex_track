@@ -9,19 +9,21 @@ class CustomEvent extends BaseEvent {
   final bool _isHighVolume;
   final bool _isEssential;
 
-  CustomEvent(this._name, {
+  CustomEvent(
+    this._name, {
     Map<String, dynamic>? properties,
     EventCategory? category,
     bool containsPII = false,
     bool isHighVolume = false,
     bool isEssential = false,
-  }) : _properties = properties,
-       _category = category,
-       _containsPII = containsPII,
-       _isHighVolume = isHighVolume,
-       _isEssential = isEssential;
+  })  : _properties = properties,
+        _category = category,
+        _containsPII = containsPII,
+        _isHighVolume = isHighVolume,
+        _isEssential = isEssential;
 
-  factory CustomEvent.named(String name, {
+  factory CustomEvent.named(
+    String name, {
     Map<String, dynamic>? properties,
     EventCategory? category,
     bool containsPII = false,
@@ -65,14 +67,14 @@ class PurchaseEvent extends CustomEvent {
     required String currency,
     Map<String, dynamic>? properties,
   }) : super(
-    'purchase',
-    properties: {
-      ...?properties,
-      'amount': amount,
-      'currency': currency,
-    },
-    category: EventCategory.business,
-    isEssential: true,
-    containsPII: true,
-  );
+          'purchase',
+          properties: {
+            ...?properties,
+            'amount': amount,
+            'currency': currency,
+          },
+          category: EventCategory.business,
+          isEssential: true,
+          containsPII: true,
+        );
 }

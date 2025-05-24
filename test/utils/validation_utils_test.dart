@@ -348,7 +348,8 @@ void main() {
       test('should handle special "*" tracker ID', () {
         // The "*" is a special case that should be valid in tracker groups
         // even though it's not a valid individual tracker ID
-        final result = ValidationUtils.validateTrackerGroup('all_groups', ['*']);
+        final result =
+            ValidationUtils.validateTrackerGroup('all_groups', ['*']);
         expect(result.isValid, isTrue);
       });
     });
@@ -512,7 +513,10 @@ void main() {
 
         final results = ValidationUtils.validateSetup(setupData);
         expect(results, isNotEmpty); // Expect validation issues
-        expect(results.first.error, contains('Tracker ID "all" is reserved')); // Check for specific error message using .error
+        expect(
+            results.first.error,
+            contains(
+                'Tracker ID "all" is reserved')); // Check for specific error message using .error
       });
 
       test('should detect multiple setup issues', () {

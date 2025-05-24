@@ -1,4 +1,3 @@
-
 import 'package:flex_track/src/models/event/base_event.dart';
 
 import 'routing_rule.dart';

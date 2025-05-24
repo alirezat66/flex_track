@@ -1,5 +1,6 @@
 import 'package:flex_track/flex_track.dart';
 import 'package:flex_track_example/events/business_events.dart';
+import 'package:flutter/foundation.dart';
 
 /// Mock Mixpanel Tracker (replace with real Mixpanel integration)
 /// This is a placeholder since we don't want to add Mixpanel dependencies
@@ -40,7 +41,8 @@ class MixpanelTracker extends BaseTrackerStrategy {
   @override
   Future<void> doInitialize() async {
     // In real implementation, Mixpanel is initialized in the factory
-    print('🎯 Mixpanel initialized with token: ${token.substring(0, 8)}...');
+    debugPrint(
+        '🎯 Mixpanel initialized with token: ${token.substring(0, 8)}...');
   }
 
   @override
@@ -59,7 +61,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
     // In real implementation:
     // _mixpanel.track(event.getName(), properties: enhancedProperties);
 
-    print('🎯 Mixpanel tracking: ${event.getName()} $enhancedProperties');
+    debugPrint('🎯 Mixpanel tracking: ${event.getName()} $enhancedProperties');
 
     // Handle special events
     if (event is PurchaseEvent) {
@@ -76,7 +78,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
     //   'payment_method': event.paymentMethod,
     // });
 
-    print('🎯 Mixpanel revenue: \$${event.amount} ${event.currency}');
+    debugPrint('🎯 Mixpanel revenue: \$${event.amount} ${event.currency}');
   }
 
   @override
@@ -89,7 +91,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
       await doTrack(event);
     }
 
-    print('🎯 Mixpanel batch: ${events.length} events');
+    debugPrint('🎯 Mixpanel batch: ${events.length} events');
   }
 
   @override
@@ -99,7 +101,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
     // In real implementation:
     // _mixpanel.getPeople().set(properties);
 
-    print('🎯 Mixpanel user properties: $properties');
+    debugPrint('🎯 Mixpanel user properties: $properties');
   }
 
   @override
@@ -110,7 +112,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
     // In real implementation:
     // _mixpanel.identify(userId);
 
-    print('🎯 Mixpanel identify: $userId');
+    debugPrint('🎯 Mixpanel identify: $userId');
 
     if (properties != null) {
       await doSetUserProperties(properties);
@@ -125,7 +127,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
     // In real implementation:
     // _mixpanel.reset();
 
-    print('🎯 Mixpanel reset');
+    debugPrint('🎯 Mixpanel reset');
   }
 
   @override
@@ -133,7 +135,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
     // In real implementation:
     // _mixpanel.flush();
 
-    print('🎯 Mixpanel flush');
+    debugPrint('🎯 Mixpanel flush');
   }
 
   @override

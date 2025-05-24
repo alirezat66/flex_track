@@ -426,8 +426,7 @@ void main() {
               .and()
               .routeDefault()
               .toAll()
-              .withPriority(0)
-              ;
+              .withPriority(0);
 
           return builder;
         });

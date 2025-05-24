@@ -208,7 +208,10 @@ void main() {
         final result = exception.toString();
 
         expect(result, contains('Routing configuration error'));
-        expect(result, contains('Caused by: Invalid argument(s): Invalid routing configuration'));
+        expect(
+            result,
+            contains(
+                'Caused by: Invalid argument(s): Invalid routing configuration'));
       });
 
       test('should format complete routing exception with all fields', () {
