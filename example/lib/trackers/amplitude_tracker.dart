@@ -1,5 +1,6 @@
 import 'package:flex_track/flex_track.dart';
 import 'package:flex_track_example/events/business_events.dart';
+import 'package:flutter/material.dart';
 
 /// Mock Amplitude Tracker (replace with real Amplitude integration)
 /// This is a placeholder since we don't want to add Amplitude dependencies
@@ -29,7 +30,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
     // In real implementation:
     // await Amplitude.getInstance(instanceName: 'main').init(apiKey);
 
-    print(
+    debugPrint(
         '📊 Amplitude initialized with API key: ${apiKey.substring(0, 8)}...');
   }
 

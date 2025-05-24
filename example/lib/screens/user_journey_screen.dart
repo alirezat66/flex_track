@@ -4,11 +4,13 @@ import '../events/user_events.dart';
 import '../events/app_events.dart';
 
 class UserJourneyScreen extends StatefulWidget {
+  const UserJourneyScreen({super.key});
   @override
-  _UserJourneyScreenState createState() => _UserJourneyScreenState();
+  @override
+  UserJourneyScreenState createState() => UserJourneyScreenState();
 }
 
-class _UserJourneyScreenState extends State<UserJourneyScreen> {
+class UserJourneyScreenState extends State<UserJourneyScreen> {
   bool _isLoggedIn = false;
   String? _userName;
   int _currentStep = 0;
