@@ -1,0 +1,180 @@
+PODS:
+  - amplitude_flutter (0.0.1):
+    - AmplitudeSwift (~> 1.11)
+    - Flutter
+    - FlutterMacOS
+  - AmplitudeCore (1.0.12)
+  - AmplitudeSwift (1.13.2):
+    - AmplitudeCore (< 2.0.0, >= 1.0.12)
+    - AnalyticsConnector (~> 1.3.0)
+  - AnalyticsConnector (1.3.1)
+  - Firebase/Analytics (10.25.0):
+    - Firebase/Core
+  - Firebase/Core (10.25.0):
+    - Firebase/CoreOnly
+    - FirebaseAnalytics (~> 10.25.0)
+  - Firebase/CoreOnly (10.25.0):
+    - FirebaseCore (= 10.25.0)
+  - firebase_analytics (10.10.7):
+    - Firebase/Analytics (= 10.25.0)
+    - firebase_core
+    - Flutter
+  - firebase_core (2.32.0):
+    - Firebase/CoreOnly (= 10.25.0)
+    - Flutter
+  - FirebaseAnalytics (10.25.0):
+    - FirebaseAnalytics/AdIdSupport (= 10.25.0)
+    - FirebaseCore (~> 10.0)
+    - FirebaseInstallations (~> 10.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - FirebaseAnalytics/AdIdSupport (10.25.0):
+    - FirebaseCore (~> 10.0)
+    - FirebaseInstallations (~> 10.0)
+    - GoogleAppMeasurement (= 10.25.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - FirebaseCore (10.25.0):
+    - FirebaseCoreInternal (~> 10.0)
+    - GoogleUtilities/Environment (~> 7.12)
+    - GoogleUtilities/Logger (~> 7.12)
+  - FirebaseCoreInternal (10.29.0):
+    - "GoogleUtilities/NSData+zlib (~> 7.8)"
+  - FirebaseInstallations (10.29.0):
+    - FirebaseCore (~> 10.0)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GoogleUtilities/UserDefaults (~> 7.8)
+    - PromisesObjC (~> 2.1)
+  - Flutter (1.0.0)
+  - GoogleAppMeasurement (10.25.0):
+    - GoogleAppMeasurement/AdIdSupport (= 10.25.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - GoogleAppMeasurement/AdIdSupport (10.25.0):
+    - GoogleAppMeasurement/WithoutAdIdSupport (= 10.25.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - GoogleAppMeasurement/WithoutAdIdSupport (10.25.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+  - GoogleUtilities/AppDelegateSwizzler (7.13.3):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Environment (7.13.3):
+    - GoogleUtilities/Privacy
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/Logger (7.13.3):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/MethodSwizzler (7.13.3):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Network (7.13.3):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (7.13.3)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (7.13.3)
+  - GoogleUtilities/Reachability (7.13.3):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (7.13.3):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - Mixpanel-swift (4.3.0):
+    - Mixpanel-swift/Complete (= 4.3.0)
+  - Mixpanel-swift/Complete (4.3.0)
+  - mixpanel_flutter (2.3.4):
+    - Flutter
+    - Mixpanel-swift (= 4.3.0)
+  - nanopb (2.30910.0):
+    - nanopb/decode (= 2.30910.0)
+    - nanopb/encode (= 2.30910.0)
+  - nanopb/decode (2.30910.0)
+  - nanopb/encode (2.30910.0)
+  - PromisesObjC (2.4.0)
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - amplitude_flutter (from `.symlinks/plugins/amplitude_flutter/darwin`)
+  - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
+  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
+  - Flutter (from `Flutter`)
+  - mixpanel_flutter (from `.symlinks/plugins/mixpanel_flutter/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+
+SPEC REPOS:
+  trunk:
+    - AmplitudeCore
+    - AmplitudeSwift
+    - AnalyticsConnector
+    - Firebase
+    - FirebaseAnalytics
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - GoogleAppMeasurement
+    - GoogleUtilities
+    - Mixpanel-swift
+    - nanopb
+    - PromisesObjC
+
+EXTERNAL SOURCES:
+  amplitude_flutter:
+    :path: ".symlinks/plugins/amplitude_flutter/darwin"
+  firebase_analytics:
+    :path: ".symlinks/plugins/firebase_analytics/ios"
+  firebase_core:
+    :path: ".symlinks/plugins/firebase_core/ios"
+  Flutter:
+    :path: Flutter
+  mixpanel_flutter:
+    :path: ".symlinks/plugins/mixpanel_flutter/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+
+SPEC CHECKSUMS:
+  amplitude_flutter: fd9bf76a1885fe760055877777da18ca4d087088
+  AmplitudeCore: e645a4fb67cc4bf368acde368af690d6a08cd831
+  AmplitudeSwift: ceeb2a27f1814c3e7ecc0f109bb9e2ff508cde42
+  AnalyticsConnector: 3def11199b4ddcad7202c778bde982ec5da0ebb3
+  Firebase: 0312a2352584f782ea56f66d91606891d4607f06
+  firebase_analytics: cc06e24d6a2343c44f845b3112143db72d10ef78
+  firebase_core: a626d00494efa398e7c54f25f1454a64c8abf197
+  FirebaseAnalytics: ec00fe8b93b41dc6fe4a28784b8e51da0647a248
+  FirebaseCore: 7ec4d0484817f12c3373955bc87762d96842d483
+  FirebaseCoreInternal: df84dd300b561c27d5571684f389bf60b0a5c934
+  FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  GoogleAppMeasurement: 9abf64b682732fed36da827aa2a68f0221fd2356
+  GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
+  Mixpanel-swift: 2192b9a24cf41b870749e4e0e10fbc9822bb2b4a
+  mixpanel_flutter: 950da37cf4deb5e346c3f568de41e6d06a4067ad
+  nanopb: 438bc412db1928dac798aa6fd75726007be04262
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
+
+PODFILE CHECKSUM: 251cb053df7158f337c0712f2ab29f4e0fa474ce
+
+COCOAPODS: 1.15.2
