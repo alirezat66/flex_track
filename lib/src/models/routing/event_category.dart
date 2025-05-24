@@ -60,9 +60,13 @@ class EventCategory {
 
   /// Returns the parent category if this is a subcategory
   EventCategory? get parentCategory {
-    final parts = name.split('_');
-    if (parts.length > 1) {
-      return EventCategory(parts.first);
+    final lastUnderscoreIndex = name.lastIndexOf('_');
+    if (lastUnderscoreIndex != -1) {
+      final parentName = name.substring(0, lastUnderscoreIndex);
+      // Ensure that the part before the last underscore is not empty
+      if (parentName.isNotEmpty) {
+        return EventCategory(parentName);
+      }
     }
     return null;
   }

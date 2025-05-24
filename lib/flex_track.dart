@@ -67,7 +67,7 @@ export 'src/routing/routing_engine.dart'
 
 // Routing presets
 export 'src/routing/presets/smart_defaults.dart';
-export 'src/routing/presets/gdpr_defaults.dart' hide SmartDefaults;
+export 'src/routing/presets/gdpr_defaults.dart';
 export 'src/routing/presets/performance_defaults.dart';
 
 // ============= TRACKER STRATEGIES =============
