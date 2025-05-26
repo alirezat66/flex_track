@@ -1,6 +1,6 @@
 name: flex_track
 description: A flexible analytics tracking system for Flutter with intelligent routing, GDPR compliance, and multi-platform support
-version: 0.1.0  # Use semantic versioning
+version: 0.1.1  # Use semantic versioning
 homepage: https://github.com/alirezat66/flex_track
 repository: https://github.com/alirezat66/flex_track
 issue_tracker: https://github.com/alirezat66/flex_track/issues
