@@ -41,12 +41,12 @@ class CustomEvent extends BaseEvent {
   }
 
   @override
-  String getName() => _name;
+  String get name => _name;
 
   @override
   @override
   @override
-  Map<String, Object>? getProperties() => _properties?.cast<String, Object>();
+  Map<String, Object>? get properties => _properties?.cast<String, Object>();
 
   @override
   EventCategory? get category => _category;

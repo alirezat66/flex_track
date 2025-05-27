@@ -21,10 +21,10 @@ class PurchaseEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'purchase';
+  String get name => 'purchase';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'product_id': productId,
         'product_name': productName,
         'amount': amount,
@@ -62,10 +62,10 @@ class CartAbandonmentEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'cart_abandonment';
+  String get name => 'cart_abandonment';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'product_ids': productIds,
         'total_value': totalValue,
         'currency': currency,
@@ -98,10 +98,10 @@ class AddToCartEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'add_to_cart';
+  String get name => 'add_to_cart';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'product_id': productId,
         'product_name': productName,
         'price': price,
@@ -133,10 +133,10 @@ class SubscriptionEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'subscription_$action';
+  String get name => 'subscription_$action';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'plan_id': planId,
         'plan_name': planName,
         'price': price,

@@ -223,7 +223,7 @@ void main() {
 
         final stringResult = result.toString();
         expect(stringResult, contains('EventProcessingResult'));
-        expect(stringResult, contains(event.getName()));
+        expect(stringResult, contains(event.name));
         expect(stringResult, contains('routed: true'));
         expect(stringResult, contains('tracked: true'));
         expect(stringResult, contains('successful: 1/1'));
@@ -302,10 +302,10 @@ class _TestEvent extends BaseEvent {
   _TestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => {'test': 'value'};
+  Map<String, Object>? get properties => {'test': 'value'};
 }
 
 class _NonTrackerExceptionTracker extends BaseTrackerStrategy {
@@ -339,7 +339,7 @@ class _TrackerExceptionTracker extends BaseTrackerStrategy {
     throw TrackerException(
       'Custom tracker error',
       trackerId: id,
-      eventName: event.getName(),
+      eventName: event.name,
     );
   }
 }

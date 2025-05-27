@@ -59,7 +59,7 @@ class ConsoleTracker extends BaseTrackerStrategy {
     buffer.write('$_prefix: ');
 
     // Add event name
-    buffer.write(event.getName());
+    buffer.write(event.name);
 
     // Add category if available
     if (event.category != null) {
@@ -78,8 +78,8 @@ class ConsoleTracker extends BaseTrackerStrategy {
     _log(buffer.toString());
 
     // Show properties if enabled
-    if (_showProperties && event.getProperties() != null) {
-      final properties = event.getProperties()!;
+    if (_showProperties && event.properties != null) {
+      final properties = event.properties!;
       if (properties.isNotEmpty) {
         _log('  Properties: ${_formatProperties(properties)}', indent: 2);
       }
@@ -109,7 +109,7 @@ class ConsoleTracker extends BaseTrackerStrategy {
       _eventHistory.add(event);
 
       final buffer = StringBuffer();
-      buffer.write('  ${i + 1}. ${event.getName()}');
+      buffer.write('  ${i + 1}. ${event.name}');
 
       if (event.category != null) {
         buffer.write(' (${event.category!.name})');
@@ -121,8 +121,8 @@ class ConsoleTracker extends BaseTrackerStrategy {
 
       _log(buffer.toString());
 
-      if (_showProperties && event.getProperties() != null) {
-        final properties = event.getProperties()!;
+      if (_showProperties && event.properties != null) {
+        final properties = event.properties!;
         if (properties.isNotEmpty) {
           _log('     Props: ${_formatProperties(properties, compact: true)}',
               indent: 6);

@@ -242,10 +242,10 @@ class ConsentChangeEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'consent_change';
+  String get name => 'consent_change';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'general_consent': hasGeneralConsent,
         'pii_consent': hasPIIConsent,
         'marketing_consent': hasMarketingConsent,

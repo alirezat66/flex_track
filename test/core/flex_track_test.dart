@@ -8,10 +8,10 @@ class TestEvent extends BaseEvent {
   TestEvent({required this.testProperty});
 
   @override
-  String getName() => 'test_event';
+  String get name => 'test_event';
 
   @override
-  Map<String, Object> getProperties() => {'test_property': testProperty};
+  Map<String, Object> get properties => {'test_property': testProperty};
 }
 
 class PurchaseTestEvent extends BaseEvent {
@@ -20,10 +20,10 @@ class PurchaseTestEvent extends BaseEvent {
   PurchaseTestEvent({required this.amount});
 
   @override
-  String getName() => 'purchase';
+  String get name => 'purchase';
 
   @override
-  Map<String, Object> getProperties() => {'amount': amount};
+  Map<String, Object> get properties => {'amount': amount};
 
   @override
   EventCategory get category => EventCategory.business;
@@ -34,10 +34,10 @@ class PurchaseTestEvent extends BaseEvent {
 
 class DebugTestEvent extends BaseEvent {
   @override
-  String getName() => 'debug_test';
+  String get name => 'debug_test';
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   EventCategory get category => EventCategory.technical;
@@ -49,10 +49,10 @@ class PIITestEvent extends BaseEvent {
   PIITestEvent({required this.email});
 
   @override
-  String getName() => 'user_data';
+  String get name => 'user_data';
 
   @override
-  Map<String, Object> getProperties() => {'email': email};
+  Map<String, Object> get properties => {'email': email};
 
   @override
   bool get containsPII => true;
@@ -63,10 +63,10 @@ class PIITestEvent extends BaseEvent {
 
 class EssentialTestEvent extends BaseEvent {
   @override
-  String getName() => 'system_essential';
+  String get name => 'system_essential';
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   bool get isEssential => true;
@@ -124,7 +124,7 @@ void main() {
         expect(mockTracker1.capturedEvents, hasLength(1));
         expect(mockTracker2.capturedEvents, hasLength(1));
         expect(
-            mockTracker1.capturedEvents.first.getName(), equals('test_event'));
+            mockTracker1.capturedEvents.first.name, equals('test_event'));
       });
 
       test('should track multiple events', () async {

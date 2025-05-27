@@ -43,12 +43,12 @@ class FirebaseTracker extends BaseTrackerStrategy {
   Future<void> doTrack(BaseEvent event) async {
     // In real implementation:
     // await _analytics.logEvent(
-    //   name: event.getName(),
-    //   parameters: _convertProperties(event.getProperties()),
+    //   name: event.name,
+    //   parameters: _convertProperties(event.properties),
     // );
 
     debugPrint(
-        '🔥 Firebase tracking: ${event.getName()} ${event.getProperties()}');
+        '🔥 Firebase tracking: ${event.name} ${event.properties}');
 
     // Handle special business events
     if (event is PurchaseEvent) {
