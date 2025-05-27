@@ -392,8 +392,8 @@ void main() {
 
 class FakeBaseEvent extends Fake implements BaseEvent {
   @override
-  String getName() => 'FakeEvent';
+  String get name => 'FakeEvent';
 
   @override
-  Map<String, Object>? getProperties() => {};
+  Map<String, Object>? get properties => {};
 }

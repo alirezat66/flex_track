@@ -60,13 +60,12 @@ class RoutingRule {
     }
 
     // Check event name pattern (contains check)
-    if (eventNamePattern != null &&
-        !event.getName().contains(eventNamePattern!)) {
+    if (eventNamePattern != null && !event.name.contains(eventNamePattern!)) {
       return false;
     }
 
     // Check regex pattern
-    if (eventNameRegex != null && !eventNameRegex!.hasMatch(event.getName())) {
+    if (eventNameRegex != null && !eventNameRegex!.hasMatch(event.name)) {
       return false;
     }
 
@@ -77,7 +76,7 @@ class RoutingRule {
 
     // Check property existence and value
     if (hasProperty != null) {
-      final props = event.getProperties();
+      final props = event.properties;
       if (props == null || !props.containsKey(hasProperty)) {
         return false;
       }

@@ -36,7 +36,7 @@ class AmplitudeTracker extends BaseTrackerStrategy {
 
   @override
   Future<void> doTrack(BaseEvent event) async {
-    final properties = event.getProperties() ?? {};
+    final properties = event.properties ?? {};
 
     // Add event metadata for Amplitude
     final enhancedProperties = {
@@ -49,11 +49,11 @@ class AmplitudeTracker extends BaseTrackerStrategy {
 
     // In real implementation:
     // await Amplitude.getInstance().logEvent(
-    //   event.getName(),
+    //   event.name,
     //   eventProperties: enhancedProperties,
     // );
 
-    debugPrint('📊 Amplitude tracking: ${event.getName()} $enhancedProperties');
+    debugPrint('📊 Amplitude tracking: ${event.name} $enhancedProperties');
 
     // Handle revenue events
     if (event is PurchaseEvent) {

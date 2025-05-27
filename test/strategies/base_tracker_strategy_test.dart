@@ -106,7 +106,7 @@ void main() {
     setUp(() {
       tracker = TestTrackerStrategy(id: 'testId', name: 'Test Tracker');
       mockEvent = MockBaseEvent();
-      when(mockEvent.getName()).thenReturn('testEvent');
+      when(mockEvent.name).thenReturn('testEvent');
     });
 
     test('constructor sets id, name, and enabled status correctly', () {
@@ -216,8 +216,8 @@ void main() {
 
       setUp(() async {
         mockEvents = [MockBaseEvent(), MockBaseEvent()];
-        when(mockEvents[0].getName()).thenReturn('event1');
-        when(mockEvents[1].getName()).thenReturn('event2');
+        when(mockEvents[0].name).thenReturn('event1');
+        when(mockEvents[1].name).thenReturn('event2');
         await tracker.initialize();
       });
 

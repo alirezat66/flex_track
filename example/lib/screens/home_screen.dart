@@ -524,7 +524,7 @@ class _AdditionalDemoSection extends StatelessWidget {
     final routingResults = testEvents.map((event) {
       final debug = FlexTrack.debugEvent(event);
       return {
-        'event': event.getName(),
+        'event': event.name,
         'category': event.category?.name ?? 'none',
         'trackers': debug.routingResult.targetTrackers,
         'rules': debug.routingResult.appliedRules.length,
@@ -581,10 +581,10 @@ class HighVolumeTestEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'high_volume_test';
+  String get name => 'high_volume_test';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'sequence_number': sequenceNumber,
         'batch_id': batchId,
         'timestamp': timestamp.millisecondsSinceEpoch,
@@ -661,10 +661,10 @@ class DebugEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'debug_event';
+  String get name => 'debug_event';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'debug_info': debugInfo,
         'level': level,
         'timestamp': timestamp.millisecondsSinceEpoch,

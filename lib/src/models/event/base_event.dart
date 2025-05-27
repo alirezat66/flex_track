@@ -3,10 +3,10 @@ import 'package:flex_track/src/models/routing/tracker_group.dart';
 
 abstract class BaseEvent {
   /// Returns the name of the event
-  String getName();
+  String get name;
 
   /// Returns the properties associated with the event
-  Map<String, Object>? getProperties();
+  Map<String, Object>? get properties;
 
   /// Optional category for automatic routing
   /// Override this in subclasses to enable category-based routing
@@ -47,8 +47,8 @@ abstract class BaseEvent {
   /// Useful for debugging and serialization
   Map<String, dynamic> toMap() {
     return {
-      'name': getName(),
-      'properties': getProperties(),
+      'name': name,
+      'properties': properties,
       'category': category?.name,
       'preferredGroup': preferredGroup?.name,
       'containsPII': containsPII,
@@ -63,6 +63,6 @@ abstract class BaseEvent {
 
   @override
   String toString() {
-    return 'Event(${getName()}${category != null ? ', category: ${category!.name}' : ''})';
+    return 'Event($name${category != null ? ', category: ${category!.name}' : ''})';
   }
 }

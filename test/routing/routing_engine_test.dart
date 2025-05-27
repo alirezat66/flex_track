@@ -1268,15 +1268,15 @@ void main() {
 // Test Event Classes
 class TestEvent extends BaseEvent {
   final String eventName;
-  final Map<String, Object>? properties;
+  final Map<String, Object>? _properties;
 
-  TestEvent(this.eventName, [this.properties]);
-
-  @override
-  String getName() => eventName;
+  TestEvent(this.eventName, [this._properties]);
 
   @override
-  Map<String, Object>? getProperties() => properties;
+  String get name => eventName;
+
+  @override
+  Map<String, Object>? get properties => _properties;
 }
 
 class BusinessTestEvent extends BaseEvent {
@@ -1286,10 +1286,10 @@ class BusinessTestEvent extends BaseEvent {
   BusinessTestEvent(this.eventName, this.amount);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object> getProperties() => {'amount': amount};
+  Map<String, Object> get properties => {'amount': amount};
 
   @override
   EventCategory get category => EventCategory.business;
@@ -1304,10 +1304,10 @@ class DebugTestEvent extends BaseEvent {
   DebugTestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   EventCategory get category => EventCategory.technical;
@@ -1320,10 +1320,10 @@ class PIITestEvent extends BaseEvent {
   PIITestEvent(this.eventName, this.email);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object> getProperties() => {'email': email};
+  Map<String, Object> get properties => {'email': email};
 
   @override
   bool get containsPII => true;
@@ -1338,10 +1338,10 @@ class EssentialTestEvent extends BaseEvent {
   EssentialTestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   bool get isEssential => true;
@@ -1356,10 +1356,10 @@ class HighVolumeTestEvent extends BaseEvent {
   HighVolumeTestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   bool get isHighVolume => true;
@@ -1372,10 +1372,10 @@ class MarketingTestEvent extends BaseEvent {
   MarketingTestEvent(this.eventName, this.campaign);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object> getProperties() => {'campaign': campaign};
+  Map<String, Object> get properties => {'campaign': campaign};
 
   @override
   EventCategory get category => EventCategory.marketing;
@@ -1387,10 +1387,10 @@ class SystemTestEvent extends BaseEvent {
   SystemTestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   EventCategory get category => EventCategory.system;
@@ -1405,10 +1405,10 @@ class SecurityTestEvent extends BaseEvent {
   SecurityTestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   EventCategory get category => EventCategory.security;
@@ -1428,10 +1428,10 @@ class PropertyTestEvent extends BaseEvent {
   PropertyTestEvent(this.eventName, this.eventProperties);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object> getProperties() => eventProperties;
+  Map<String, Object> get properties => eventProperties;
 
   @override
   bool get containsPII => mockContainsPII;

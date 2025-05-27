@@ -216,10 +216,10 @@ class UserSignupEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'user_signup';
+  String get name => 'user_signup';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'signup_method': method,
     'accepted_marketing': acceptedMarketing,
     'timestamp': DateTime.now().millisecondsSinceEpoch,
@@ -245,10 +245,10 @@ class PurchaseEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'purchase';
+  String get name => 'purchase';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'product_id': productId,
     'amount': amount,
     'currency': currency,
@@ -272,10 +272,10 @@ class ButtonClickEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'button_click';
+  String get name => 'button_click';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'button_id': buttonId,
     'screen_name': screenName,
   };
@@ -412,8 +412,8 @@ class FirebaseTracker extends BaseTrackerStrategy {
   @override
   Future<void> doTrack(BaseEvent event) async {
     await _analytics.logEvent(
-      name: event.getName(),
-      parameters: _convertProperties(event.getProperties()),
+      name: event.name,
+      parameters: _convertProperties(event.properties),
     );
   }
   
@@ -489,7 +489,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
   
   @override
   Future<void> doTrack(BaseEvent event) async {
-    _mixpanel.track(event.getName(), properties: event.getProperties());
+    _mixpanel.track(event.name, properties: event.properties);
   }
   
   @override
@@ -559,8 +559,8 @@ class CustomAPITracker extends BaseTrackerStrategy {
   @override
   Future<void> doTrack(BaseEvent event) async {
     final payload = {
-      'event_name': event.getName(),
-      'properties': event.getProperties(),
+      'event_name': event.name,
+      'properties': event.properties,
       'timestamp': DateTime.now().toIso8601String(),
       'category': event.category?.name,
     };
@@ -1166,7 +1166,7 @@ See exactly how your events are being routed:
 final event = PurchaseEvent(productId: 'abc', amount: 99.99);
 final debugInfo = FlexTrack.debugEvent(event);
 
-print('Event: ${debugInfo.event.getName()}');
+print('Event: ${debugInfo.event.name}');
 print('Target trackers: ${debugInfo.routingResult.targetTrackers}');
 print('Applied rules: ${debugInfo.routingResult.appliedRules.length}');
 print('Skipped rules: ${debugInfo.routingResult.skippedRules.length}');
@@ -1301,9 +1301,9 @@ void main() {
       expect(mockTracker.capturedEvents, hasLength(1));
       
       final event = mockTracker.capturedEvents.first;
-      expect(event.getName(), equals('user_signup'));
+      expect(event.name, equals('user_signup'));
       
-      final properties = event.getProperties();
+      final properties = event.properties;
       expect(properties?['signup_method'], equals('email'));
     });
     
@@ -1318,9 +1318,9 @@ void main() {
       expect(mockTracker.capturedEvents, hasLength(1));
       
       final event = mockTracker.capturedEvents.first;
-      expect(event.getName(), equals('purchase'));
-      expect(event.getProperties()?['amount'], equals(99.99));
-      expect(event.getProperties()?['product_id'], equals('test_product'));
+      expect(event.name, equals('purchase'));
+      expect(event.properties?['amount'], equals(99.99));
+      expect(event.properties?['product_id'], equals('test_product'));
     });
     
     testWidgets('should not track when disabled', (tester) async {
@@ -1418,7 +1418,7 @@ testWidgets('complete user signup flow', (tester) async {
   expect(mockTracker.capturedEvents.length, greaterThan(0));
   
   final signupEvent = mockTracker.capturedEvents.firstWhere(
-    (event) => event.getName() == 'user_signup',
+    (event) => event.name == 'user_signup',
   );
   
   expect(signupEvent, isNotNull);
@@ -1602,17 +1602,17 @@ class MyTracker extends BaseTrackerStrategy {
 // ❌ WRONG: Not handling errors
 @override
 Future<void> doTrack(BaseEvent event) async {
-  await myAPI.send(event.getName()); // What if this fails?
+  await myAPI.send(event.name); // What if this fails?
 }
 
 // ✅ CORRECT: Handle errors gracefully
 @override
 Future<void> doTrack(BaseEvent event) async {
   try {
-    await myAPI.send(event.getName());
+    await myAPI.send(event.name);
   } catch (e) {
     // Log error but don't crash the app
-    print('Failed to track ${event.getName()}: $e');
+    print('Failed to track ${event.name}: $e');
     // FlexTrack will handle the TrackerException
   }
 }
@@ -1732,10 +1732,10 @@ class ProductViewEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'product_view';
+  String get name => 'product_view';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'product_id': productId,
     'product_name': productName,
     'price': price,
@@ -1762,10 +1762,10 @@ class PurchaseCompleteEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'purchase_complete';
+  String get name => 'purchase_complete';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'order_id': orderId,
     'total_amount': totalAmount,
     'currency': currency,
@@ -1891,10 +1891,10 @@ class FeatureUsageEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'feature_usage';
+  String get name => 'feature_usage';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'feature_name': featureName,
     'time_spent_seconds': timeSpentSeconds,
     'is_first_time': isFirstTime,
@@ -1921,10 +1921,10 @@ class SubscriptionChangeEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'subscription_change';
+  String get name => 'subscription_change';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'plan_from': planFrom,
     'plan_to': planTo,
     'price_change': priceChange,
@@ -2064,10 +2064,10 @@ await FlexTrack.track(PurchaseEvent(
 ```dart
 class MyEvent extends BaseEvent {
   @override
-  String getName() => 'my_event'; // Required
+  String get name => 'my_event'; // Required
   
   @override
-  Map<String, Object> getProperties() => {}; // Required
+  Map<String, Object> get properties => {}; // Required
   
   @override
   EventCategory? get category => EventCategory.user; // Recommended
@@ -2197,7 +2197,7 @@ class TenantAwareTracker extends BaseTrackerStrategy {
   
   @override
   Future<void> doTrack(BaseEvent event) async {
-    final tenantId = event.getProperties()?['tenant_id'] as String?;
+    final tenantId = event.properties?['tenant_id'] as String?;
     if (tenantId == null) return;
     
     final config = _tenantConfigs[tenantId];
@@ -2247,10 +2247,10 @@ class ExperimentEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'experiment_outcome';
+  String get name => 'experiment_outcome';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'experiment_id': experimentId,
     'variant': variant,
     'outcome': outcome,
@@ -2301,8 +2301,8 @@ class WebSocketTracker extends BaseTrackerStrategy {
     
     final payload = {
       'type': 'analytics_event',
-      'event': event.getName(),
-      'properties': event.getProperties(),
+      'event': event.name,
+      'properties': event.properties,
       'timestamp': DateTime.now().toIso8601String(),
     };
     
@@ -2364,8 +2364,8 @@ class RESTAPITracker extends BaseTrackerStrategy {
   @override
   Future<void> doTrack(BaseEvent event) async {
     final eventData = {
-      'name': event.getName(),
-      'properties': event.getProperties(),
+      'name': event.name,
+      'properties': event.properties,
       'timestamp': event.timestamp.toIso8601String(),
       'category': event.category?.name,
     };
@@ -2488,8 +2488,8 @@ class DatabaseTracker extends BaseTrackerStrategy {
   @override
   Future<void> doTrack(BaseEvent event) async {
     await _database.insert('events', {
-      'name': event.getName(),
-      'properties': jsonEncode(event.getProperties()),
+      'name': event.name,
+      'properties': jsonEncode(event.properties),
       'category': event.category?.name,
       'timestamp': event.timestamp.toIso8601String(),
     });
@@ -2669,9 +2669,9 @@ void main() {
       ];
       
       for (final event in testEvents) {
-        expect(event.getName(), isNotEmpty);
-        expect(event.getName(), matches(RegExp(r'^[a-z_]+)));
-        expect(event.getName().length, lessThan(50));
+        expect(event.name, isNotEmpty);
+        expect(event.name, matches(RegExp(r'^[a-z_]+)));
+        expect(event.name.length, lessThan(50));
       }
     });
     
@@ -2682,7 +2682,7 @@ void main() {
       ];
       
       for (final event in testEvents) {
-        final properties = event.getProperties();
+        final properties = event.properties;
         if (properties != null) {
           // Should be JSON serializable
           expect(() => jsonEncode(properties), returnsNormally);
@@ -2776,7 +2776,7 @@ class SanitizingTracker extends BaseTrackerStrategy {
   
   @override
   Future<void> doTrack(BaseEvent event) async {
-    final sanitizedProperties = _sanitizeProperties(event.getProperties());
+    final sanitizedProperties = _sanitizeProperties(event.properties);
     
     // Create sanitized event
     final sanitizedEvent = SanitizedEvent(
@@ -2836,10 +2836,10 @@ class RevenueAttributionEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'revenue_attribution';
+  String get name => 'revenue_attribution';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'revenue': revenue,
     'currency': currency,
     'source': source,
@@ -2897,10 +2897,10 @@ class CLVUpdateEvent extends BaseEvent {
   });
   
   @override
-  String getName() => 'clv_update';
+  String get name => 'clv_update';
   
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
     'user_id': userId,
     'current_clv': currentCLV,
     'previous_clv': previousCLV,
@@ -2967,13 +2967,13 @@ void main() async {
 // ✅ GOOD: Clear, descriptive names
 class UserCompletedPurchaseEvent extends BaseEvent {
   @override
-  String getName() => 'user_completed_purchase';
+  String get name => 'user_completed_purchase';
 }
 
 // ❌ BAD: Vague or abbreviated names
 class UCPEvent extends BaseEvent {
   @override
-  String getName() => 'ucp';
+  String get name => 'ucp';
 }
 ```
 
@@ -2983,17 +2983,17 @@ class UCPEvent extends BaseEvent {
 // ✅ GOOD: Consistent naming patterns
 class UserRegistrationStartedEvent extends BaseEvent {
   @override
-  String getName() => 'user_registration_started';
+  String get name => 'user_registration_started';
 }
 
 class UserRegistrationCompletedEvent extends BaseEvent {
   @override
-  String getName() => 'user_registration_completed';
+  String get name => 'user_registration_completed';
 }
 
 class UserRegistrationAbandonedEvent extends BaseEvent {
   @override
-  String getName() => 'user_registration_abandoned';
+  String get name => 'user_registration_abandoned';
 }
 ```
 

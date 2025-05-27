@@ -99,8 +99,8 @@ class RoutingEngine {
       );
     } catch (e, stackTrace) {
       throw RoutingException(
-        'Failed to route event ${event.getName()}: $e',
-        eventName: event.getName(),
+        'Failed to route event ${event.name}: $e',
+        eventName: event.name,
         originalError: e,
         stackTrace: stackTrace,
       );
@@ -183,15 +183,15 @@ class RoutingEngine {
     }
 
     if (rule.eventNamePattern != null &&
-        !event.getName().contains(rule.eventNamePattern!)) {
+        !event.name.contains(rule.eventNamePattern!)) {
       reasons.add(
-          'Event name pattern mismatch: "${event.getName()}" does not contain "${rule.eventNamePattern}"');
+          'Event name pattern mismatch: "${event.name}" does not contain "${rule.eventNamePattern}"');
     }
 
     if (rule.eventNameRegex != null &&
-        !rule.eventNameRegex!.hasMatch(event.getName())) {
+        !rule.eventNameRegex!.hasMatch(event.name)) {
       reasons.add(
-          'Event name regex mismatch: "${event.getName()}" does not match /${rule.eventNameRegex!.pattern}/');
+          'Event name regex mismatch: "${event.name}" does not match /${rule.eventNameRegex!.pattern}/');
     }
 
     if (rule.category != null && event.category != rule.category) {

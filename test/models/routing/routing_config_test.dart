@@ -60,7 +60,7 @@ void main() {
             id: 'rule3', priority: 15, targetGroup: TrackerGroup.all);
         final config = RoutingConfiguration(rules: [rule1, rule2, rule3]);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
 
         final matchingRules = config.getMatchingRules(event);
         expect(matchingRules,
@@ -74,7 +74,7 @@ void main() {
             id: 'default', isDefault: true, targetGroup: TrackerGroup.all);
         final config = RoutingConfiguration(rules: [defaultRule]);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('non_matching_event');
+        when(event.name).thenReturn('non_matching_event');
 
         final matchingRules = config.getMatchingRules(event);
         expect(matchingRules, [defaultRule]);
@@ -86,7 +86,7 @@ void main() {
         final config =
             RoutingConfiguration(rules: [], defaultGroup: TrackerGroup.all);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('non_matching_event');
+        when(event.name).thenReturn('non_matching_event');
 
         final matchingRules = config.getMatchingRules(event);
         expect(matchingRules.length, 1);
@@ -100,7 +100,7 @@ void main() {
           () {
         final config = RoutingConfiguration.empty();
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('non_matching_event');
+        when(event.name).thenReturn('non_matching_event');
         expect(config.getMatchingRules(event), isEmpty);
       });
 
@@ -112,7 +112,7 @@ void main() {
         final config = RoutingConfiguration(
             rules: [debugRule, normalRule], isDebugMode: false);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
 
         final matchingRules = config.getMatchingRules(event);
         expect(matchingRules, contains(normalRule));
@@ -127,7 +127,7 @@ void main() {
         final config = RoutingConfiguration(
             rules: [debugRule, normalRule], isDebugMode: true);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
 
         final matchingRules = config.getMatchingRules(event);
         expect(matchingRules, contains(normalRule));
@@ -143,7 +143,7 @@ void main() {
             id: 'rule2', priority: 5, targetGroup: TrackerGroup.all);
         final config = RoutingConfiguration(rules: [rule1, rule2]);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
 
         expect(config.getPrimaryRule(event), rule1);
       });
@@ -151,7 +151,7 @@ void main() {
       test('should return null if no rules match', () {
         final config = RoutingConfiguration.empty();
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
         expect(config.getPrimaryRule(event), isNull);
       });
     });
@@ -172,7 +172,7 @@ void main() {
             requirePIIConsent: true);
         final config = RoutingConfiguration(rules: [rule1, rule2, rule3]);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
         when(event.isEssential).thenReturn(false);
         when(event.requiresConsent).thenReturn(true);
         when(event.containsPII).thenReturn(true);
@@ -218,7 +218,7 @@ void main() {
             id: 'rule2', priority: 5, targetGroup: TrackerGroup.development);
         final config = RoutingConfiguration(rules: [rule1, rule2]);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
         when(event.isEssential).thenReturn(false);
         when(event.requiresConsent).thenReturn(true);
         when(event.containsPII).thenReturn(false);
@@ -236,7 +236,7 @@ void main() {
             id: 'rule2', priority: 10, targetGroup: TrackerGroup.development);
         final config = RoutingConfiguration(rules: [rule1, rule2]);
         final event = MockBaseEvent();
-        when(event.getName()).thenReturn('test_event');
+        when(event.name).thenReturn('test_event');
         when(event.isEssential).thenReturn(false);
         when(event.requiresConsent).thenReturn(true);
         when(event.containsPII).thenReturn(false);
