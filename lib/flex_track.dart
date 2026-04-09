@@ -84,6 +84,11 @@ export 'src/strategies/built_in/console_tracker.dart';
 export 'src/strategies/built_in/mock_tracker.dart';
 export 'src/strategies/built_in/no_op_tracker.dart';
 
+// ============= WIDGETS =============
+
+// Click tracking wrapper
+export 'src/widgets/flex_click_track.dart';
+
 // ============= UTILITIES =============
 
 // Environment detection

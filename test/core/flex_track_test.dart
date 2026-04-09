@@ -470,6 +470,14 @@ void main() {
         expect(
             () => FlexTrack.instance, throwsA(isA<ConfigurationException>()));
       });
+
+      test('track throws ConfigurationException when not setup', () async {
+        expect(FlexTrack.isSetUp, isFalse);
+        await expectLater(
+          FlexTrack.track(TestEvent(testProperty: 'orphan')),
+          throwsA(isA<ConfigurationException>()),
+        );
+      });
     });
 
     group('Performance Features', () {
