@@ -1,5 +1,79 @@
 # FlexTrack
 
+## Quick start
+
+Four steps. **`MyFirebaseTracker`** and **`MyEvent`** are **your** code — this package does **not** ship Firebase, Mixpanel, or any vendor tracker; it only provides [`BaseTrackerStrategy`](lib/src/strategies/base_tracker_strategy.dart), [`FlexTrack`](lib/src/core/flex_track.dart), and built-ins like [`ConsoleTracker`](lib/src/strategies/built_in/console_tracker.dart) / [`MockTracker`](lib/src/strategies/built_in/mock_tracker.dart).
+
+```dart
+// 1) pubspec.yaml
+//    dependencies:
+//      flex_track: ^1.0.0
+//      # firebase_core: ...
+//      # firebase_analytics: ...   ← your app adds vendor SDKs
+
+import 'package:flex_track/flex_track.dart';
+import 'package:flutter/widgets.dart';
+// import 'package:firebase_analytics/firebase_analytics.dart';
+
+/// 2) Your tracker — wire the SDK you already depend on.
+class MyFirebaseTracker extends BaseTrackerStrategy {
+  MyFirebaseTracker() : super(id: 'firebase', name: 'My Firebase');
+
+  @override
+  Future<void> doInitialize() async {
+    // await Firebase.initializeApp();
+  }
+
+  @override
+  Future<void> doTrack(BaseEvent event) async {
+    // await FirebaseAnalytics.instance.logEvent(name: event.getName());
+  }
+}
+
+class MyEvent extends BaseEvent {
+  @override
+  String getName() => 'example';
+
+  @override
+  Map<String, Object>? getProperties() => const {};
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // 3) Setup — list every tracker you implemented
+  await FlexTrack.setup([MyFirebaseTracker()]);
+  // 4) Track
+  await FlexTrack.track(MyEvent());
+  runApp(const SizedBox.shrink());
+}
+```
+
+**No Firebase yet?** Use only the built-in sink: `await FlexTrack.setup([ConsoleTracker()]);` — you will see events in the debug console.
+
+**Flutter UI helpers (optional):** [`FlexClickTrack`](#widget-wrappers-overview) · [`FlexImpressionTrack`](#widget-wrappers-overview) · [`FlexMountTrack`](#widget-wrappers-overview) · [`FlexTrackRouteObserver` / `FlexTrackRouteViewMixin`](#widget-wrappers-overview) — [full widget guide](docs/widgets.md).
+
+---
+
+## Table of contents
+
+- [Overview](#overview)
+- [Architecture diagrams](#architecture-diagrams)
+- [What you gain while building](#what-you-gain-while-building)
+- [Install and initialize](#install-and-initialize)
+- [One destination (single tracker)](#one-destination-single-tracker)
+- [Define an event and send it](#define-an-event-and-send-it)
+- [Widget wrappers (overview)](#widget-wrappers-overview)
+- [Testing](#testing)
+- [More documentation (by goal)](#more-documentation-by-goal)
+- [Example app](#example-app)
+- [API reference](#api-reference)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
 > **Typed analytics for Flutter** — call `FlexTrack.track` with `BaseEvent` objects; **trackers** you register receive them. Optional **routing** and **widgets** keep analytics out of business logic without scattering SDK calls.
 
 The package is **vendor-neutral** (no Firebase/Mixpanel in this package). Add SDKs in your app and plug them in via [`BaseTrackerStrategy`](lib/src/strategies/base_tracker_strategy.dart). Starters: [example](example/).
@@ -16,7 +90,11 @@ The package is **vendor-neutral** (no Firebase/Mixpanel in this package). Add SD
 ╚═══════════════════════════════════════╩═══════════════════════════════════════╝
 ```
 
-**Architecture at a glance** — screens stay the same; either every screen talks to every SDK, or every screen calls **one API** (`FlexTrack.track`) and FlexTrack routes to the **trackers you register**. The built-in [`ConsoleTracker`](lib/src/strategies/built_in/console_tracker.dart) is the usual choice in **debug** (readable logs); Firebase, Mixpanel, etc. are **examples** of extra adapters you add in your app, not dependencies of this package.
+---
+
+## Architecture diagrams
+
+Screens stay the same; either every screen talks to every SDK, or every screen calls **one API** (`FlexTrack.track`) and FlexTrack routes to the **trackers you register**. Labels like “Firebase” in the **traditional** column are **illustrative products**, not classes from this package. The **FlexTrack** column shows **[`ConsoleTracker`](lib/src/strategies/built_in/console_tracker.dart)** (shipped, for debug logs) plus **example** slots for adapters **you** write.
 
 <table>
 <tr valign="top">
@@ -33,7 +111,8 @@ TRADITIONAL APPROACH (Manual Management)
 ┌─────────────────────────────────────────────────────┐
 │           DUPLICATE CODE EVERYWHERE                 │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌──────────┐  │
-│  │Firebase │ │Mixpanel │ │Amplitude│ │Custom API│  │
+│  │Your SDK │ │Your SDK │ │Your SDK │ │Your API  │  │
+│  │  #1     │ │  #2     │ │  #3     │ │          │  │
 │  └─────────┘ └─────────┘ └─────────┘ └──────────┘  │
 └─────────────────────────────────────────────────────┘
 </pre>
@@ -59,7 +138,8 @@ FLEXTRACK APPROACH (Centralized Management)
           ┌─────────────┼─────────────┐
           ▼             ▼             ▼
     ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │ Console │   │Firebase │   │Mixpanel │
+    │ Console │   │Your SDK │   │Your SDK │
+    │ Tracker │   │adapter  │   │adapter  │
     └─────────┘   └─────────┘   └─────────┘
 </pre>
 
@@ -67,7 +147,7 @@ FLEXTRACK APPROACH (Centralized Management)
 </tr>
 </table>
 
-*Right column: first sink is **`ConsoleTracker`** (debug / human-readable); others are example vendor adapters.*
+*Left: generic “your SDKs”. Right: **`ConsoleTracker`** is built-in; other boxes are **your** `BaseTrackerStrategy` subclasses (Firebase, Mixpanel, HTTP, …).*
 
 ---
 
@@ -96,6 +176,8 @@ dependencies:
   flex_track: ^1.0.0
 ```
 
+Minimal run with **only** a built-in tracker (no vendor code):
+
 ```dart
 import 'package:flex_track/flex_track.dart';
 import 'package:flutter/widgets.dart';
@@ -104,7 +186,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlexTrack.setup([ConsoleTracker()]);
   await FlexTrack.track(_HelloEvent());
-  runApp(const SizedBox.shrink()); // your app root
+  runApp(const SizedBox.shrink());
 }
 
 class _HelloEvent extends BaseEvent {
@@ -115,8 +197,6 @@ class _HelloEvent extends BaseEvent {
   Map<String, Object>? getProperties() => const {};
 }
 ```
-
-Run once and confirm output in the debug console.
 
 ---
 
@@ -175,6 +255,8 @@ Optional `BaseEvent` flags (`containsPII`, `requiresConsent`, …) **future-proo
 
 ## Widget wrappers (overview)
 
+These types are **exported from `flex_track`** — use them when you want tap / visibility / mount / route lifecycle to call `FlexTrack.track` with less boilerplate.
+
 | Widget | Role |
 |--------|------|
 | **`FlexClickTrack`** | Tap (not scroll/drag) in hit region |
@@ -230,7 +312,7 @@ Index: [docs/README.md](docs/README.md)
 
 ## Example app
 
-[example/](example/) — `main.dart`, sample events, sample trackers.
+[example/](example/) — `main.dart`, sample events, **sample** trackers you copy into your app (not re-exported by the package).
 
 ---
 
