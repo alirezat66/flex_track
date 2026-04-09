@@ -1,5 +1,7 @@
 # FlexTrack
 
+> **Where this README comes from:** On **GitHub** (`main`), this file is the canonical guide (~330 lines) with a [table of contents](#table-of-contents), honest **Quick start** (`MyFirebaseTracker` = *your* class), and [widget wrappers](#widget-wrappers-overview). **`FirebaseTracker` / `MixpanelTracker` in the repo live only under [`example/`](example/)** — they are **not** exported by the `flex_track` package. If **pub.dev** still shows thousands of lines or built-in vendor classes, that page is pinned to an **older published version**; publish a new version or open the [raw README on GitHub](https://raw.githubusercontent.com/alirezat66/flex_track/main/README.md).
+
 ## Quick start
 
 Four steps. **`MyFirebaseTracker`** and **`MyEvent`** are **your** code — this package does **not** ship Firebase, Mixpanel, or any vendor tracker; it only provides [`BaseTrackerStrategy`](lib/src/strategies/base_tracker_strategy.dart), [`FlexTrack`](lib/src/core/flex_track.dart), and built-ins like [`ConsoleTracker`](lib/src/strategies/built_in/console_tracker.dart) / [`MockTracker`](lib/src/strategies/built_in/mock_tracker.dart).
