@@ -31,7 +31,10 @@
 /// ```
 library;
 
-import 'package:flex_track/flex_track.dart';
+import 'src/core/flex_track.dart';
+import 'src/strategies/built_in/console_tracker.dart';
+import 'src/strategies/built_in/mock_tracker.dart';
+import 'src/strategies/tracker_strategy.dart';
 
 // ============= CORE EXPORTS =============
 
@@ -78,6 +81,7 @@ export 'src/strategies/base_tracker_strategy.dart';
 
 // Built-in trackers
 export 'src/strategies/built_in/console_tracker.dart';
+export 'src/strategies/built_in/mock_tracker.dart';
 export 'src/strategies/built_in/no_op_tracker.dart';
 
 // ============= UTILITIES =============
@@ -116,7 +120,7 @@ export 'src/core/flex_track.dart' show FlexTrack;
 // ============= VERSION INFO =============
 
 /// FlexTrack package version
-const String flexTrackVersion = '0.0.1';
+const String flexTrackVersion = '0.1.1';
 
 /// FlexTrack package description
 const String flexTrackDescription =
@@ -191,8 +195,7 @@ Future<void> setupFlexTrackForDevelopment() async {
 /// - No sampling
 ///
 /// ```dart
-/// final mockTracker = MockTracker();
-/// await setupFlexTrackForTesting(mockTracker);
+/// final mockTracker = await setupFlexTrackForTesting();
 ///
 /// // Your tests...
 /// expect(mockTracker.capturedEvents, hasLength(1));

@@ -1,4 +1,5 @@
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/routing/routing_config.dart';
 import '../routing/routing_engine.dart';
@@ -302,17 +303,17 @@ class FlexTrack {
   /// Print debug information to console
   static void printDebugInfo() {
     final info = getDebugInfo();
-    print('=== FlexTrack Debug Info ===');
-    print('Setup: ${info['isSetUp']}');
-    print('Initialized: ${info['isInitialized']}');
-    print('Enabled: ${info['isEnabled']}');
+    debugPrint('=== FlexTrack Debug Info ===');
+    debugPrint('Setup: ${info['isSetUp']}');
+    debugPrint('Initialized: ${info['isInitialized']}');
+    debugPrint('Enabled: ${info['isEnabled']}');
 
     if (info['eventProcessor'] != null) {
       final processor = info['eventProcessor'] as Map<String, dynamic>;
       final trackerInfo = processor['trackerRegistry'] as Map<String, dynamic>;
-      print(
+      debugPrint(
           'Trackers: ${trackerInfo['trackerCount']} registered, ${trackerInfo['enabledTrackers']} enabled');
-      print(
+      debugPrint(
           'Consent: General=${processor['hasGeneralConsent']}, PII=${processor['hasPIIConsent']}');
     }
   }
