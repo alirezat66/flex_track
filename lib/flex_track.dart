@@ -86,8 +86,11 @@ export 'src/strategies/built_in/no_op_tracker.dart';
 
 // ============= WIDGETS =============
 
-// Click tracking wrapper
+// Click / view tracking wrappers
 export 'src/widgets/flex_click_track.dart';
+export 'src/widgets/flex_route_track.dart';
+export 'src/widgets/flex_mount_track.dart';
+export 'src/widgets/flex_impression_track.dart';
 
 // ============= UTILITIES =============
 
