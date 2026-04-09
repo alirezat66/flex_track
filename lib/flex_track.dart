@@ -7,27 +7,30 @@
 /// ## Quick Start
 ///
 /// ```dart
-/// // Setup FlexTrack with trackers
+/// class UserSignupEvent extends BaseEvent {
+///   @override
+///   String getName() => 'user_signup';
+///   @override
+///   Map<String, Object>? getProperties() => const {};
+/// }
+///
 /// await FlexTrack.setup([
 ///   ConsoleTracker(),
-///   // Add your analytics trackers here
+///   // Register your own BaseTrackerStrategy subclasses here
 /// ]);
 ///
-/// // Track events
-/// await FlexTrack.track(CustomEvent.named('user_signup'));
+/// await FlexTrack.track(UserSignupEvent());
 /// ```
 ///
 /// ## Advanced Setup
 ///
 /// ```dart
-/// // Setup with custom routing
 /// await FlexTrack.setupWithRouting([
 ///   ConsoleTracker(),
 /// ], (routing) => routing
 ///   .defineGroup('analytics', ['firebase', 'mixpanel'])
 ///   .routeNamed('debug_').toDevelopment().onlyInDebug().and()
-///   .routeDefault().toAll()
-/// );
+///   .routeDefault().toAll().and());
 /// ```
 library;
 
@@ -128,7 +131,7 @@ export 'src/core/flex_track.dart' show FlexTrack;
 // ============= VERSION INFO =============
 
 /// FlexTrack package version
-const String flexTrackVersion = '0.1.1';
+const String flexTrackVersion = '1.0.0';
 
 /// FlexTrack package description
 const String flexTrackDescription =
