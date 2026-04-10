@@ -33,6 +33,7 @@ Routes analytics events to multiple trackers with consent management, sampling, 
 - [GDPR and consent](#gdpr-and-consent)
 - [Sampling and performance](#sampling-and-performance)
 - [Debugging](#debugging)
+- [FlexTrackClient and dependency injection](#flextrackclient-and-dependency-injection)
 - [Testing](#testing)
 - [Common pitfalls](#common-pitfalls)
 - [Contributing and license](#contributing-and-license)
@@ -102,6 +103,89 @@ await FlexTrack.track(AppOpenedEvent());
 ```
 
 That's it. Both trackers receive every event. Add routing rules when you need more control.
+
+---
+
+## FlexTrackClient and dependency injection
+
+`FlexTrack.setup()` still installs a **singleton** and `FlexTrack.track()` delegates to it. For **constructor injection** (Bloc/Cubit, Riverpod, tests without globals), build a **`FlexTrackClient`** with the same routing stack:
+
+```dart
+final analytics = await FlexTrackClient.create(
+  [ConsoleTracker(), FirebaseTracker()],
+  // routing: optional RoutingConfiguration; defaults to smart defaults
+);
+
+await analytics.track(AppOpenedEvent());
+await analytics.dispose(); // flush trackers when tearing down (e.g. tests)
+```
+
+With the routing DSL (mirror of `FlexTrack.setupWithRouting`):
+
+```dart
+final analytics = await FlexTrackClient.createWithRouting(
+  [ConsoleTracker()],
+  (b) {
+    b.routeDefault().toAll();
+    return b;
+  },
+);
+```
+
+After `FlexTrack.setup`, the underlying client is available as **`FlexTrack.instance.client`** if you need both global widgets and an injectable reference to the same instance.
+
+### Riverpod
+
+Define a provider (overridden in `main` and in tests):
+
+```dart
+// analytics_providers.dart — add flutter_riverpod to the app, not to flex_track
+import 'package:flex_track/flex_track.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final flexTrackClientProvider = Provider<FlexTrackClient>((ref) {
+  throw UnimplementedError('Override in ProviderScope');
+});
+```
+
+Bootstrap:
+
+```dart
+final client = await FlexTrackClient.create([ConsoleTracker(), FirebaseTracker()]);
+
+runApp(ProviderScope(
+  overrides: [flexTrackClientProvider.overrideWithValue(client)],
+  child: const MyApp(),
+));
+```
+
+Use inside a notifier or service:
+
+```dart
+Future<void> onPurchaseComplete(WidgetRef ref) async {
+  await ref.read(flexTrackClientProvider).track(PurchaseEvent(amount: 9.99));
+}
+```
+
+### Bloc / Cubit
+
+Pass the client into the cubit; domain code stays testable by injecting a client backed by `MockTracker`.
+
+```dart
+class CheckoutCubit extends Cubit<CheckoutState> {
+  CheckoutCubit(this._analytics) : super(const CheckoutState());
+  final FlexTrackClient _analytics;
+
+  Future<void> complete() async {
+    await _analytics.track(OrderCompletedEvent());
+    // ...
+  }
+}
+```
+
+For **strict** clean architecture, wrap `FlexTrackClient` behind your own `Analytics` interface in the domain module and implement the adapter in infrastructure.
+
+More detail: [docs/flex-track-client.md](docs/flex-track-client.md).
 
 ---
 
@@ -679,6 +763,10 @@ await FlexTrack.setup([
 ---
 
 ## Testing
+
+**Global singleton** (existing pattern): use `setupFlexTrackForTesting()` and `FlexTrack.reset()` in `tearDown`.
+
+**Injectable client** (no global): create a `FlexTrackClient` with a `MockTracker`, pass it into your class under test, and call `await client.dispose()` in `tearDown`. See [docs/flex-track-client.md](docs/flex-track-client.md).
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';

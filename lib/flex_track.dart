@@ -22,6 +22,11 @@
 /// await FlexTrack.track(UserSignupEvent());
 /// ```
 ///
+/// ## Injectable client (Riverpod, Bloc, tests)
+///
+/// Use [FlexTrackClient.create] when you want a dedicated instance instead of
+/// the global [FlexTrack.setup] singleton. See `docs/flex-track-client.md`.
+///
 /// ## Advanced Setup
 ///
 /// ```dart
@@ -41,8 +46,9 @@ import 'src/strategies/tracker_strategy.dart';
 
 // ============= CORE EXPORTS =============
 
-// Main FlexTrack class
+// Main FlexTrack API and injectable client
 export 'src/core/flex_track.dart';
+export 'src/core/flex_track_client.dart' show FlexTrackClient;
 export 'src/core/event_processor.dart'
     show EventProcessingResult, TrackingResult;
 export 'src/core/tracker_registry.dart' show TrackerRegistry;
