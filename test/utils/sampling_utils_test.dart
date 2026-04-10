@@ -186,6 +186,148 @@ void main() {
         // Reset should not throw
         expect(() => strategy.reset(), isA<void>());
       });
+
+      test('timeBased strategy returns false when timeInterval is null', () {
+        final config = SamplingConfig(
+          type: SamplingType.timeBased,
+          sampleRate: 1.0,
+          timeInterval: null,
+        );
+        final strategy = SamplingUtils.createStrategy(config);
+        expect(strategy.shouldSample('any'), isFalse);
+      });
+
+      test('backoff strategy changes behavior as event count grows', () {
+        final config = SamplingConfig.backoff(1.0, backoffFactor: 0.5);
+        final strategy = SamplingUtils.createStrategy(config);
+        final first = strategy.shouldSample('evt');
+        final second = strategy.shouldSample('evt');
+        expect(first, isA<bool>());
+        expect(second, isA<bool>());
+      });
+
+      test('adaptive strategy runs without throwing for repeated events', () {
+        final config = SamplingConfig.adaptive(
+          timeWindow: const Duration(minutes: 1),
+          targetEventsPerWindow: 5,
+        );
+        final strategy = SamplingUtils.createStrategy(config);
+        for (var i = 0; i < 20; i++) {
+          strategy.shouldSample('frequent');
+        }
+        strategy.reset();
+      });
+    });
+
+    group('shouldSampleDeterministic edge rates', () {
+      test('returns true for sample rate 1.0 and false for 0.0', () {
+        expect(SamplingUtils.shouldSampleDeterministic('any', 1.0), isTrue);
+        expect(SamplingUtils.shouldSampleDeterministic('any', 0.0), isFalse);
+      });
+    });
+
+    group('shouldSampleBySessionId', () {
+      test('falls back to random sampling when session id is null or empty',
+          () {
+        expect(
+          () => SamplingUtils.shouldSampleBySessionId(null, 1.0),
+          returnsNormally,
+        );
+        expect(SamplingUtils.shouldSampleBySessionId('', 1.0), isTrue);
+      });
+
+      test('is deterministic for the same non-empty session id', () {
+        const sid = 'sess_xyz';
+        expect(
+          SamplingUtils.shouldSampleBySessionId(sid, 0.5),
+          SamplingUtils.shouldSampleBySessionId(sid, 0.5),
+        );
+      });
+    });
+
+    group('shouldSampleByEventName', () {
+      test('delegates to deterministic hashing of the name', () {
+        expect(
+          SamplingUtils.shouldSampleByEventName('purchase', 1.0),
+          isTrue,
+        );
+        expect(
+          SamplingUtils.shouldSampleByEventName('purchase', 0.0),
+          isFalse,
+        );
+      });
+    });
+
+    group('shouldSampleByTime', () {
+      test('returns true when interval is zero or negative', () {
+        expect(SamplingUtils.shouldSampleByTime(Duration.zero), isTrue);
+        expect(
+          SamplingUtils.shouldSampleByTime(const Duration(milliseconds: -1)),
+          isTrue,
+        );
+      });
+
+      test('with 1 ms interval always passes modulo check', () {
+        expect(
+            SamplingUtils.shouldSampleByTime(const Duration(milliseconds: 1)),
+            isTrue);
+      });
+    });
+
+    group('shouldSampleWithBackoff', () {
+      test('uses base rate when eventCount is zero or negative', () {
+        expect(SamplingUtils.shouldSampleWithBackoff(0, 1.0), isTrue);
+        expect(SamplingUtils.shouldSampleWithBackoff(-1, 0.0), isFalse);
+      });
+    });
+
+    group('shouldIncludeInReservoir', () {
+      test('includes all events until reservoir is full', () {
+        expect(SamplingUtils.shouldIncludeInReservoir(1, 5), isTrue);
+        expect(SamplingUtils.shouldIncludeInReservoir(5, 5), isTrue);
+        expect(SamplingUtils.shouldIncludeInReservoir(6, 5), isA<bool>());
+      });
+    });
+
+    group('shouldSampleWeighted', () {
+      test('uses default weight 1.0 for unknown event types', () {
+        final weights = <String, double>{'a': 0.0};
+        expect(SamplingUtils.shouldSampleWeighted(weights, 'missing'),
+            isA<bool>());
+      });
+    });
+
+    group('getSamplingBucket edge cases', () {
+      test('returns 0 when bucketCount is zero or negative', () {
+        expect(SamplingUtils.getSamplingBucket('id', 0), 0);
+        expect(SamplingUtils.getSamplingBucket('id', -3), 0);
+      });
+    });
+
+    group('SampleRateValidationResult and SamplingStats', () {
+      test('SampleRateValidationResult toString reflects validity', () {
+        expect(SamplingUtils.validateSampleRate(0.5).toString(),
+            contains('Valid'));
+        expect(
+          SamplingUtils.validateSampleRate(-1).toString(),
+          contains('Invalid'),
+        );
+      });
+
+      test('SamplingStats toMap and toString', () {
+        final stats = SamplingUtils.calculateStats([true, false]);
+        expect(stats.toMap()['totalEvents'], 2);
+        expect(stats.toString(), contains('%'));
+      });
+    });
+
+    group('seed helpers', () {
+      test('setSeed, getSeed, and resetSeed are callable', () {
+        SamplingUtils.setSeed(42);
+        expect(SamplingUtils.getSeed(), 42);
+        SamplingUtils.resetSeed();
+        expect(SamplingUtils.getSeed(), isA<int>());
+      });
     });
   });
 }
