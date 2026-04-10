@@ -6,6 +6,7 @@ import '../routing/routing_builder.dart';
 import '../routing/routing_engine.dart' show RoutingDebugInfo;
 import '../strategies/tracker_strategy.dart';
 import '../exceptions/configuration_exception.dart';
+import 'event_dispatch_record.dart';
 import 'flex_track_client.dart';
 import 'tracker_registry.dart';
 import 'event_processor.dart';
@@ -37,6 +38,31 @@ class FlexTrack {
 
   /// Check if FlexTrack has been set up
   static bool get isSetUp => _instance != null;
+
+  static final Stream<BaseEvent> _emptyBaseEventStream =
+      Stream<BaseEvent>.empty();
+  static final Stream<EventDispatchRecord> _emptyDispatchStream =
+      Stream<EventDispatchRecord>.empty();
+  static final Stream<void> _emptyVoidStream = Stream<void>.empty();
+
+  /// Debug-only stream with routing targets and successful tracker ids per
+  /// processed event. Before [setup], empty. No emissions in release mode.
+  static Stream<EventDispatchRecord> get eventDispatchStream =>
+      isSetUp ? instance._client.eventDispatchStream : _emptyDispatchStream;
+
+  /// Debug-only stream of every [BaseEvent] passed through [track], [trackAll],
+  /// or [trackParallel] after processing. Before [setup], this stream is empty.
+  ///
+  /// In release mode the client does not emit on this stream.
+  static Stream<BaseEvent> get eventStream =>
+      isSetUp ? instance._client.eventStream : _emptyBaseEventStream;
+
+  /// Debug-only stream that emits when consent, tracker enablement, or the
+  /// processor enabled flag changes. Before [setup], this stream is empty.
+  ///
+  /// In release mode the client does not emit on this stream.
+  static Stream<void> get debugStateStream =>
+      isSetUp ? instance._client.debugStateStream : _emptyVoidStream;
 
   /// Whether FlexTrack is initialized and ready to track events
   bool get isInitialized => _client.isInitialized;

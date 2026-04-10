@@ -47,6 +47,7 @@ import 'src/strategies/tracker_strategy.dart';
 // ============= CORE EXPORTS =============
 
 // Main FlexTrack API and injectable client
+export 'src/core/event_dispatch_record.dart';
 export 'src/core/flex_track.dart';
 export 'src/core/flex_track_client.dart' show FlexTrackClient;
 export 'src/core/event_processor.dart'

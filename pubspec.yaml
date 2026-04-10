@@ -21,7 +21,11 @@ dependencies:
   flutter:
     sdk: flutter
   collection: ^1.18.0
+  shelf: ^1.4.0
+  shelf_router: ^1.1.0
+  shelf_web_socket: ^1.0.0
   visibility_detector: ^0.4.0+2
+  web_socket_channel: ^2.4.0
 
 dev_dependencies:
   flutter_test:

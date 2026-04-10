@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flex_track/src/models/event/base_event.dart';
 import 'package:flutter/foundation.dart';
 
@@ -6,6 +8,7 @@ import '../models/routing/routing_config.dart';
 import '../routing/routing_builder.dart';
 import '../routing/routing_engine.dart';
 import '../strategies/tracker_strategy.dart';
+import 'event_dispatch_record.dart';
 import 'event_processor.dart';
 import 'tracker_registry.dart';
 
@@ -24,6 +27,11 @@ class FlexTrackClient {
   final EventProcessor _eventProcessor;
   bool _isInitialized = false;
 
+  final StreamController<EventDispatchRecord> _dispatchStreamController =
+      StreamController<EventDispatchRecord>.broadcast(sync: true);
+  final StreamController<void> _debugStateController =
+      StreamController<void>.broadcast(sync: true);
+
   /// Registry for this client (read-only use from outside).
   TrackerRegistry get trackerRegistry => _trackerRegistry;
 
@@ -33,6 +41,21 @@ class FlexTrackClient {
 
   /// Whether event processing is enabled for this client.
   bool get isEnabled => _eventProcessor.isEnabled;
+
+  /// Debug-only stream of each processed event with routing and delivery
+  /// metadata. Empty/no-op in release mode.
+  Stream<EventDispatchRecord> get eventDispatchStream =>
+      _dispatchStreamController.stream;
+
+  /// Debug-only stream of every [BaseEvent] passed to [track], [trackAll], or
+  /// [trackParallel] after processing completes (same as [eventDispatchStream]
+  /// mapped to [EventDispatchRecord.event]). Empty/no-op in release mode.
+  Stream<BaseEvent> get eventStream =>
+      _dispatchStreamController.stream.map((r) => r.event);
+
+  /// Debug-only stream that emits when consent, tracker enablement, or
+  /// processor enable flag changes. Empty/no-op in release mode.
+  Stream<void> get debugStateStream => _debugStateController.stream;
 
   /// Builds a new client with its own registry, routing engine, and processor.
   static Future<FlexTrackClient> create(
@@ -101,36 +124,72 @@ class FlexTrackClient {
     }
   }
 
-  Future<EventProcessingResult> track(BaseEvent event) =>
-      _eventProcessor.processEvent(event);
+  Future<EventProcessingResult> track(BaseEvent event) async {
+    final result = await _eventProcessor.processEvent(event);
+    _emitDispatchIfDebug(_recordFromResult(event, result));
+    return result;
+  }
 
-  Future<List<EventProcessingResult>> trackAll(List<BaseEvent> events) =>
-      _eventProcessor.processEvents(events);
+  Future<List<EventProcessingResult>> trackAll(List<BaseEvent> events) async {
+    final results = await _eventProcessor.processEvents(events);
+    if (kDebugMode) {
+      for (var i = 0; i < events.length; i++) {
+        _emitDispatchIfDebug(_recordFromResult(events[i], results[i]));
+      }
+    }
+    return results;
+  }
 
-  Future<List<EventProcessingResult>> trackParallel(List<BaseEvent> events) =>
-      _eventProcessor.processEventsParallel(events);
+  Future<List<EventProcessingResult>> trackParallel(
+      List<BaseEvent> events) async {
+    final results = await _eventProcessor.processEventsParallel(events);
+    if (kDebugMode) {
+      for (var i = 0; i < events.length; i++) {
+        _emitDispatchIfDebug(_recordFromResult(events[i], results[i]));
+      }
+    }
+    return results;
+  }
 
-  void setGeneralConsent(bool hasConsent) =>
-      _eventProcessor.setGeneralConsent(hasConsent);
+  void setGeneralConsent(bool hasConsent) {
+    _eventProcessor.setGeneralConsent(hasConsent);
+    _notifyDebugStateIfDebug();
+  }
 
-  void setPIIConsent(bool hasConsent) =>
-      _eventProcessor.setPIIConsent(hasConsent);
+  void setPIIConsent(bool hasConsent) {
+    _eventProcessor.setPIIConsent(hasConsent);
+    _notifyDebugStateIfDebug();
+  }
 
-  void setConsent({bool? general, bool? pii}) =>
-      _eventProcessor.setConsent(general: general, pii: pii);
+  void setConsent({bool? general, bool? pii}) {
+    _eventProcessor.setConsent(general: general, pii: pii);
+    _notifyDebugStateIfDebug();
+  }
 
   Map<String, bool> getConsentStatus() => {
         'general': _eventProcessor.hasGeneralConsent,
         'pii': _eventProcessor.hasPIIConsent,
       };
 
-  void enableTracker(String trackerId) => _trackerRegistry.enable(trackerId);
+  void enableTracker(String trackerId) {
+    _trackerRegistry.enable(trackerId);
+    _notifyDebugStateIfDebug();
+  }
 
-  void disableTracker(String trackerId) => _trackerRegistry.disable(trackerId);
+  void disableTracker(String trackerId) {
+    _trackerRegistry.disable(trackerId);
+    _notifyDebugStateIfDebug();
+  }
 
-  void enableAllTrackers() => _trackerRegistry.enableAll();
+  void enableAllTrackers() {
+    _trackerRegistry.enableAll();
+    _notifyDebugStateIfDebug();
+  }
 
-  void disableAllTrackers() => _trackerRegistry.disableAll();
+  void disableAllTrackers() {
+    _trackerRegistry.disableAll();
+    _notifyDebugStateIfDebug();
+  }
 
   bool isTrackerEnabled(String trackerId) =>
       _trackerRegistry.isEnabled(trackerId);
@@ -148,9 +207,15 @@ class FlexTrackClient {
 
   Future<void> flush() => _trackerRegistry.flush();
 
-  void enable() => _eventProcessor.enable();
+  void enable() {
+    _eventProcessor.enable();
+    _notifyDebugStateIfDebug();
+  }
 
-  void disable() => _eventProcessor.disable();
+  void disable() {
+    _eventProcessor.disable();
+    _notifyDebugStateIfDebug();
+  }
 
   Map<String, dynamic> getDebugInfo() => {
         'isInitialized': isInitialized,
@@ -188,10 +253,40 @@ class FlexTrackClient {
   /// Flushes trackers if this client was initialized. Call when disposing
   /// the client (e.g. test tearDown). Does not reset initialization state;
   /// discard the client after [dispose] if you need a fresh configuration.
+  static EventDispatchRecord _recordFromResult(
+    BaseEvent event,
+    EventProcessingResult result,
+  ) {
+    final targets = List<String>.from(result.routingResult.targetTrackers);
+    final ok = <String>[
+      for (final t in result.trackingResults)
+        if (t.successful) t.trackerId,
+    ];
+    return EventDispatchRecord(
+      event: event,
+      targetTrackers: targets,
+      successfulTrackerIds: ok,
+    );
+  }
+
+  void _emitDispatchIfDebug(EventDispatchRecord record) {
+    if (kDebugMode && !_dispatchStreamController.isClosed) {
+      _dispatchStreamController.add(record);
+    }
+  }
+
+  void _notifyDebugStateIfDebug() {
+    if (kDebugMode && !_debugStateController.isClosed) {
+      _debugStateController.add(null);
+    }
+  }
+
   Future<void> dispose() async {
     if (_isInitialized) {
       await _trackerRegistry.flush();
     }
+    await _dispatchStreamController.close();
+    await _debugStateController.close();
   }
 
   @override

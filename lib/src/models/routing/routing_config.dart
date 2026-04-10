@@ -111,8 +111,13 @@ class RoutingConfiguration {
   }) {
     final matchingRules = getMatchingRules(event);
     final targetGroups = <TrackerGroup>[];
+    int? appliedFloorPriority;
 
     for (final rule in matchingRules) {
+      if (appliedFloorPriority != null && rule.priority < appliedFloorPriority) {
+        break;
+      }
+
       // Check consent requirements
       if (!rule.shouldApply(event,
           hasGeneralConsent: hasGeneralConsent, hasPIIConsent: hasPIIConsent)) {
@@ -124,14 +129,8 @@ class RoutingConfiguration {
         continue;
       }
 
+      appliedFloorPriority ??= rule.priority;
       targetGroups.add(rule.targetGroup);
-
-      // For most cases, we only want the highest priority rule
-      // But allow multiple rules if they have the same priority
-      if (matchingRules.length > 1 &&
-          matchingRules[0].priority != rule.priority) {
-        break;
-      }
     }
 
     return targetGroups;

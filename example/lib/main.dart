@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import 'app_route_observer.dart';
 import 'screens/home_screen.dart';
@@ -9,6 +10,8 @@ import 'utils/gdpr_manager.dart';
 /// Smaller integration patterns live under ../examples/ (static, Riverpod, BLoC+GetIt).
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  VisibilityDetectorController.instance.updateInterval =
+      const Duration(milliseconds: 200);
 
   await AnalyticsSetup.initialize();
   await GDPRManager.initialize();

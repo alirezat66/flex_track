@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   flex_track:
     path: ../
+  visibility_detector: ^0.4.0+2
   firebase_core: ^2.32.0
   firebase_analytics: ^10.10.7
   mixpanel_flutter: ^2.3.4

@@ -40,8 +40,17 @@ class RoutingEngine {
       final allTargetTrackers = <String>{};
       final warnings = <String>[];
 
+      // Highest priority tier that actually produced targets. Lower-priority
+      // rules are not evaluated once a higher tier has succeeded (but other
+      // rules at the same priority still run so they can merge).
+      int? appliedFloorPriority;
+
       // Process each matching rule
       for (final rule in matchingRules) {
+        if (appliedFloorPriority != null && rule.priority < appliedFloorPriority) {
+          break;
+        }
+
         // Check if rule should be applied based on consent
         if (!rule.shouldApply(event,
             hasGeneralConsent: hasGeneralConsent,
@@ -79,15 +88,9 @@ class RoutingEngine {
           continue;
         }
 
+        appliedFloorPriority ??= rule.priority;
         allTargetTrackers.addAll(resolvedTrackers);
         appliedRules.add(rule);
-
-        // For most cases, we only apply the highest priority rule
-        // But allow multiple rules with the same priority
-        if (appliedRules.length > 1 &&
-            appliedRules.first.priority != rule.priority) {
-          break;
-        }
       }
 
       return RoutingResult(

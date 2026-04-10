@@ -631,22 +631,13 @@ void main() {
           availableTrackers: {'tracker1', 'tracker2', 'tracker3'},
         );
 
-        // Based on actual RoutingEngine behavior:
-        // All matching rules are applied, but let's check what actually happens
-        print('Applied rules count: ${result.appliedRules.length}');
-        print('Target trackers: ${result.targetTrackers}');
-        print(
-            'Rule priorities: ${result.appliedRules.map((r) => r.priority).toList()}');
-
-        // Let's test what actually happens - all rules match the pattern 'test'
-        // so all should be applied regardless of priority
-        expect(result.appliedRules, hasLength(3)); // All rules match
-        expect(result.targetTrackers,
-            containsAll(['tracker1', 'tracker2', 'tracker3']));
-
-        // Verify the priorities are as expected
+        // Highest priority tier (10) merges both rules; priority-5 rule is not applied.
+        expect(result.appliedRules, hasLength(2));
+        expect(
+            result.targetTrackers, containsAll(['tracker1', 'tracker2']));
+        expect(result.targetTrackers, isNot(contains('tracker3')));
         final priorities = result.appliedRules.map((r) => r.priority).toList();
-        expect(priorities, containsAll([10, 10, 5]));
+        expect(priorities, [10, 10]);
       });
       test('should sort rules by priority correctly', () {
         config = RoutingConfiguration(
@@ -784,7 +775,7 @@ void main() {
           availableTrackers: trackers,
         );
         expect(piiWithConsentResult.targetTrackers, contains('secure_tracker'));
-        expect(piiWithConsentResult.appliedRules, hasLength(2));
+        expect(piiWithConsentResult.appliedRules, hasLength(1));
       });
 
       test('should allow essential events without consent', () {
@@ -1226,8 +1217,7 @@ void main() {
 
         expect(debugInfo.matchingRules, hasLength(3)); // All rules match
         expect(debugInfo.nonMatchingRules, isEmpty);
-        expect(debugInfo.routingResult.appliedRules,
-            hasLength(2)); // Only highest priority
+        expect(debugInfo.routingResult.appliedRules, hasLength(1));
         expect(debugInfo.routingResult.appliedRules.first.priority, equals(10));
       });
     });

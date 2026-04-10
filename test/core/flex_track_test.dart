@@ -177,7 +177,8 @@ void main() {
               .and()
               .routeDefault()
               .toAll()
-              .withPriority(0); // Complete the chain
+              .withPriority(0)
+              .and();
 
           return builder; // Return the builder
         });
@@ -189,12 +190,12 @@ void main() {
         // Business event should only go to mock1
         await FlexTrack.track(PurchaseTestEvent(amount: 100.0));
         expect(mockTracker1.capturedEvents, hasLength(1));
-        expect(mockTracker2.capturedEvents, hasLength(1));
+        expect(mockTracker2.capturedEvents, hasLength(0));
 
         // Technical event should only go to mock2
         await FlexTrack.track(DebugTestEvent());
-        expect(mockTracker1.capturedEvents, hasLength(2));
-        expect(mockTracker2.capturedEvents, hasLength(2));
+        expect(mockTracker1.capturedEvents, hasLength(1));
+        expect(mockTracker2.capturedEvents, hasLength(1));
       });
 
       test('should route events based on name pattern', () async {
@@ -207,7 +208,8 @@ void main() {
               .and()
               .routeDefault()
               .to(['mock2'])
-              .withPriority(0);
+              .withPriority(0)
+              .and();
 
           return builder;
         });
@@ -218,11 +220,11 @@ void main() {
 
         await FlexTrack.track(DebugTestEvent()); // debug_test
         expect(mockTracker1.capturedEvents, hasLength(1));
-        expect(mockTracker2.capturedEvents, hasLength(1));
+        expect(mockTracker2.capturedEvents, hasLength(0));
 
         await FlexTrack.track(TestEvent(testProperty: 'normal'));
-        expect(mockTracker1.capturedEvents, hasLength(2));
-        expect(mockTracker2.capturedEvents, hasLength(2));
+        expect(mockTracker1.capturedEvents, hasLength(1));
+        expect(mockTracker2.capturedEvents, hasLength(1));
       });
 
       test('should handle custom tracker groups', () async {
@@ -231,7 +233,8 @@ void main() {
           builder
               .defineGroup('analytics', ['mock1', 'mock2'])
               .routeDefault()
-              .toGroupNamed('analytics');
+              .toGroupNamed('analytics')
+              .and();
 
           return builder;
         });
@@ -269,14 +272,20 @@ void main() {
       test('should handle PII consent separately', () async {
         await FlexTrack.setupWithRouting([mockTracker1], (builder) {
           builder
+              .route<TestEvent>()
+              .toAll()
+              .withPriority(5)
+              .and()
               .routePII()
               .toAll()
               .requirePIIConsent()
               .withPriority(10)
               .and()
               .routeDefault()
-              .toAll()
-              .withPriority(0);
+              .to(['__noop__'])
+              .skipConsent()
+              .withPriority(0)
+              .and();
 
           return builder;
         });
@@ -291,16 +300,16 @@ void main() {
         await FlexTrack.track(TestEvent(testProperty: 'normal'));
         expect(mockTracker1.capturedEvents, hasLength(1));
 
-        // PII event should be blocked
+        // PII event should be blocked (no fallback route for PIITestEvent)
         await FlexTrack.track(PIITestEvent(email: 'test@test.com'));
-        expect(mockTracker1.capturedEvents, hasLength(2)); // Still only 1
+        expect(mockTracker1.capturedEvents, hasLength(1));
 
         // Enable PII consent
         FlexTrack.setPIIConsent(true);
 
         // Now PII event should work
         await FlexTrack.track(PIITestEvent(email: 'test2@test.com'));
-        expect(mockTracker1.capturedEvents, hasLength(3));
+        expect(mockTracker1.capturedEvents, hasLength(2));
       });
 
       test('should get current consent status', () async {
@@ -426,7 +435,8 @@ void main() {
               .and()
               .routeDefault()
               .toAll()
-              .withPriority(0);
+              .withPriority(0)
+              .and();
 
           return builder;
         });
