@@ -112,8 +112,7 @@ class _HomeWithMixinedPushState extends State<_HomeWithMixinedPush>
         onPressed: () {
           Navigator.of(context).push<void>(
             MaterialPageRoute<void>(
-              builder: (_) =>
-                  _SecondRouteTracked(observer: widget.observer),
+              builder: (_) => _SecondRouteTracked(observer: widget.observer),
             ),
           );
         },
@@ -257,7 +256,8 @@ void main() {
       expect(mock.capturedEvents.single.getName(), 'home_sticky');
     });
 
-    testWidgets('tracks each screen once with shared observer when both use mixin',
+    testWidgets(
+        'tracks each screen once with shared observer when both use mixin',
         (tester) async {
       final mock = await setupFlexTrackForTesting();
       final observer = FlexTrackRouteObserver();

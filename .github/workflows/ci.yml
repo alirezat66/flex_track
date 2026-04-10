@@ -16,6 +16,11 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: dart format --output=none --set-exit-if-changed lib test example/lib
+      - run: dart format --output=none --set-exit-if-changed lib test example/lib example/integration_test examples/static_app/lib examples/riverpod_app/lib examples/bloc_getit_app/lib
       - run: flutter analyze
       - run: flutter test
+      - run: cd example && flutter pub get && flutter analyze
+      - run: cd example && flutter test integration_test
+      - run: cd examples/static_app && flutter pub get && flutter analyze && flutter test
+      - run: cd examples/riverpod_app && flutter pub get && flutter analyze && flutter test
+      - run: cd examples/bloc_getit_app && flutter pub get && flutter analyze && flutter test

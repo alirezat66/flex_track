@@ -117,7 +117,8 @@ mixin FlexTrackRouteViewMixin<T extends StatefulWidget> on State<T>
             exception: e,
             stack: st,
             library: 'flex_track',
-            context: ErrorDescription('while dispatching FlexTrackRouteViewMixin'),
+            context:
+                ErrorDescription('while dispatching FlexTrackRouteViewMixin'),
           ),
         );
       },

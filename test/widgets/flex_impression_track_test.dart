@@ -52,7 +52,8 @@ void main() {
       );
     });
 
-    testWidgets('minVisibleDuration delays track until elapsed', (tester) async {
+    testWidgets('minVisibleDuration delays track until elapsed',
+        (tester) async {
       final mock = await setupFlexTrackForTesting();
 
       await tester.pumpWidget(
@@ -86,8 +87,7 @@ void main() {
       expect(mock.capturedEvents.single.getName(), 'delayed_impression');
     });
 
-    testWidgets(
-        'fires only once even if visibility updates multiple times',
+    testWidgets('fires only once even if visibility updates multiple times',
         (tester) async {
       final mock = await setupFlexTrackForTesting();
 

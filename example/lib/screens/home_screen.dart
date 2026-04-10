@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flex_track/flex_track.dart';
+
+import '../app_route_observer.dart';
 import '../events/app_events.dart';
 import '../events/business_events.dart';
 import '../events/user_events.dart';
 import '../utils/gdpr_manager.dart';
 import 'ecommerce_screen.dart';
-import 'user_journey_screen.dart';
 import 'setting_screen.dart';
+import 'user_journey_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,20 +17,33 @@ class HomeScreen extends StatefulWidget {
   HomeScreenState createState() => HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> with FlexTrackRouteViewMixin {
+  @override
+  FlexTrackRouteObserver get flexTrackRouteObserver => appFlexRouteObserver;
+
+  @override
+  BaseEvent get routeViewEvent => PageViewEvent(
+        pageName: 'home_shell',
+        parameters: const {'source': 'flex_track_example'},
+      );
+
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    DemoHomeTab(),
+    const DemoHomeTab(),
     const ECommerceScreen(),
-    UserJourneyScreen(),
-    SettingsScreen(),
+    const UserJourneyScreen(),
+    const SettingsScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    _checkConsentAndShow();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _checkConsentAndShow();
+      }
+    });
   }
 
   Future<void> _checkConsentAndShow() async {
@@ -129,65 +144,99 @@ class DemoHomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16.0),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'FlexTrack Demo',
+            'FlexTrack demo',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            'This demo showcases FlexTrack\'s powerful analytics routing system with GDPR compliance, multiple tracker integrations, and intelligent event handling.',
+            'Routing, consent, and multi-tracker delivery (SDKs here are mocks). '
+            'See README for sibling apps: static API, Riverpod, BLoC + GetIt.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          SizedBox(height: 24),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              children: [
-                _DemoCard(
-                  title: 'Basic Events',
-                  description: 'Track simple user interactions',
-                  icon: Icons.touch_app,
-                  onTap: () => _trackBasicEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Business Events',
-                  description: 'E-commerce and revenue tracking',
-                  icon: Icons.shopping_bag,
-                  onTap: () => _trackBusinessEvent(context),
-                ),
-                _DemoCard(
-                  title: 'User Events',
-                  description: 'User behavior and engagement',
-                  icon: Icons.person_outline,
-                  onTap: () => _trackUserEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Error Simulation',
-                  description: 'Test error tracking',
-                  icon: Icons.error_outline,
-                  onTap: () => _trackErrorEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Performance',
-                  description: 'Performance metrics',
-                  icon: Icons.speed,
-                  onTap: () => _trackPerformanceEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Debug Events',
-                  description: 'Development debugging',
-                  icon: Icons.bug_report,
-                  onTap: () => _trackDebugEvent(context),
-                ),
-              ],
+          const SizedBox(height: 20),
+          Text(
+            'Widget wrappers',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          FlexMountTrack(
+            event: FeatureUsageEvent(
+              featureName: 'widget_wrappers_strip',
+              action: 'mounted',
+              context: const {'screen': 'home'},
             ),
+            child: FlexClickTrack(
+              event: ButtonClickEvent(
+                buttonId: 'wrapper_cta',
+                buttonText: 'flex_click_track',
+                screenName: 'home',
+              ),
+              child: Card(
+                child: ListTile(
+                  leading: const Icon(Icons.ads_click),
+                  title: const Text('FlexClickTrack'),
+                  subtitle: const Text(
+                    'Tap here — also fires mount analytics once via FlexMountTrack',
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            children: [
+              _DemoCard(
+                title: 'Basic Events',
+                description: 'Track simple user interactions',
+                icon: Icons.touch_app,
+                onTap: () => _trackBasicEvent(context),
+              ),
+              _DemoCard(
+                title: 'Business Events',
+                description: 'E-commerce and revenue tracking',
+                icon: Icons.shopping_bag,
+                onTap: () => _trackBusinessEvent(context),
+              ),
+              _DemoCard(
+                title: 'User Events',
+                description: 'User behavior and engagement',
+                icon: Icons.person_outline,
+                onTap: () => _trackUserEvent(context),
+              ),
+              _DemoCard(
+                title: 'Error Simulation',
+                description: 'Test error tracking',
+                icon: Icons.error_outline,
+                onTap: () => _trackErrorEvent(context),
+              ),
+              _DemoCard(
+                title: 'Performance',
+                description: 'Performance metrics',
+                icon: Icons.speed,
+                onTap: () => _trackPerformanceEvent(context),
+              ),
+              _DemoCard(
+                title: 'Debug Events',
+                description: 'Development debugging',
+                icon: Icons.bug_report,
+                onTap: () => _trackDebugEvent(context),
+              ),
+            ],
           ),
 
           // Additional Demo Features

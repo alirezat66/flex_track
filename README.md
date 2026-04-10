@@ -13,6 +13,7 @@ Routes analytics events to multiple trackers with consent management, sampling, 
 ## Table of contents
 
 - [Quick start](#quick-start)
+- [Examples](#examples)
 - [Design philosophy](#design-philosophy)
 - [Creating events](#creating-events)
   - [Event flags](#event-flags)
@@ -103,6 +104,19 @@ await FlexTrack.track(AppOpenedEvent());
 ```
 
 That's it. Both trackers receive every event. Add routing rules when you need more control.
+
+---
+
+## Examples
+
+| Path | What it shows |
+| ---- | ------------- |
+| [`example/`](example/) | Flagship Flutter app: routing, consent UI, mock trackers, widget wrappers, `FlexTrackRouteObserver`. Run with `cd example && flutter run`. |
+| [`examples/static_app`](examples/static_app) | `FlexTrack.setup` / `FlexTrack.track` only (no DI). |
+| [`examples/riverpod_app`](examples/riverpod_app) | `FlexTrack.setup` in `main`, then `FlexTrack.instance.client` from a Riverpod `Provider`. |
+| [`examples/bloc_getit_app`](examples/bloc_getit_app) | Same client registered in GetIt; a `Cubit` calls `client.track`. |
+
+**Live web build** of the flagship example ships with the doc site: from the [documentation site](https://alirezat66.github.io/flex_track/) use **Live demo** in the navbar (`/demo/`), built in CI from `example/`.
 
 ---
 
