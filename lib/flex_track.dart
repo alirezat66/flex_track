@@ -25,7 +25,9 @@
 /// ## Injectable client (Riverpod, Bloc, tests)
 ///
 /// Use [FlexTrackClient.create] when you want a dedicated instance instead of
-/// the global [FlexTrack.setup] singleton. See `docs/flex-track-client.md`.
+/// the global [FlexTrack.setup] singleton. Wrap subtrees with [FlexTrackScope]
+/// so [FlexClickTrack] and related widgets use that client automatically.
+/// See `docs/flex-track-client.md`.
 ///
 /// ## Advanced Setup
 ///
@@ -101,6 +103,7 @@ export 'src/widgets/flex_click_track.dart';
 export 'src/widgets/flex_route_track.dart';
 export 'src/widgets/flex_mount_track.dart';
 export 'src/widgets/flex_impression_track.dart';
+export 'src/widgets/flex_track_scope.dart';
 
 // ============= UTILITIES =============
 

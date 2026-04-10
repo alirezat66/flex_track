@@ -18,30 +18,43 @@ class _DemoEvent extends BaseEvent {
   bool get requiresConsent => false;
 }
 
-/// Same [FlexTrackClient] installed by [FlexTrack.setup], exposed for manual calls.
+/// Provided in [main] via [ProviderScope] overrides — same instance wrapped by
+/// [FlexTrackScope] so [FlexClickTrack] picks it up without [FlexTrack.setup].
 final flexTrackClientProvider = Provider<FlexTrackClient>(
-  (_) => FlexTrack.instance.client,
+  (_) => throw UnimplementedError('Override flexTrackClientProvider in main'),
 );
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await FlexTrack.quickSetup([
+  final client = await FlexTrackClient.create([
     ConsoleTracker(showProperties: true, showTimestamps: false),
   ]);
 
-  runApp(const ProviderScope(child: RiverpodDemoApp()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        flexTrackClientProvider.overrideWithValue(client),
+      ],
+      child: const RiverpodDemoApp(),
+    ),
+  );
 }
 
-class RiverpodDemoApp extends StatelessWidget {
+class RiverpodDemoApp extends ConsumerWidget {
   const RiverpodDemoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final client = ref.watch(flexTrackClientProvider);
+
     return MaterialApp(
       title: 'flex_track + Riverpod',
       theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
-      home: const _HomePage(),
+      home: FlexTrackScope(
+        client: client,
+        child: const _HomePage(),
+      ),
     );
   }
 }
@@ -54,13 +67,15 @@ class _HomePage extends ConsumerWidget {
     final client = ref.watch(flexTrackClientProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Riverpod + FlexTrackClient')),
+      appBar: AppBar(title: const Text('Riverpod + FlexTrackScope')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const Text(
-            'FlexTrack.setup runs in main. Widget wrappers use FlexTrack.track; '
-            'this button uses the injected FlexTrackClient from Riverpod.',
+            'No FlexTrack.setup: a FlexTrackClient is created in main, injected '
+            'through Riverpod, and the home route is wrapped with FlexTrackScope. '
+            'FlexClickTrack below uses that scoped client. The button calls '
+            'client.track directly.',
           ),
           const SizedBox(height: 16),
           FlexClickTrack(
@@ -69,7 +84,7 @@ class _HomePage extends ConsumerWidget {
               child: ListTile(
                 leading: const Icon(Icons.touch_app),
                 title: const Text('FlexClickTrack'),
-                subtitle: const Text('Static FlexTrack.track under the hood'),
+                subtitle: const Text('Uses FlexTrackScope client (scoped)'),
               ),
             ),
           ),

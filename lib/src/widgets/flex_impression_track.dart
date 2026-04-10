@@ -1,11 +1,14 @@
 import 'dart:async';
 
-import 'package:flex_track/src/core/flex_track.dart';
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/widgets/flex_track_widget_dispatch.dart';
 import 'package:flutter/widgets.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 /// Tracks when [child] is **visible** in the viewport (scroll lists, etc.).
+///
+/// Uses [FlexTrackScope.maybeOf] when present, otherwise the global
+/// `FlexTrack.track` API when configured.
 ///
 /// **Policy**
 ///
@@ -14,7 +17,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 /// - [minVisibleDuration]: if non-null and positive, the fraction must stay at
 ///   or above the threshold for at least this long; if the widget leaves the
 ///   threshold earlier, the timer is reset.
-/// - [fireOnce]: if true (default), at most one [FlexTrack.track] per state
+/// - [fireOnce]: if true (default), at most one dispatch per state
 ///   instance. If false, another impression may fire after visibility drops
 ///   below the threshold and then meets it again.
 ///
@@ -62,7 +65,7 @@ class _FlexImpressionTrackState extends State<FlexImpressionTrack> {
   }
 
   void _onVisibilityChanged(VisibilityInfo info) {
-    if (!FlexTrack.isSetUp) {
+    if (!mounted || !flexTrackWidgetsEnabled(context)) {
       return;
     }
     if (widget.fireOnce && _permanentlyFired) {
@@ -124,18 +127,13 @@ class _FlexImpressionTrackState extends State<FlexImpressionTrack> {
       _firedThisStreak = true;
     }
 
-    FlexTrack.track(widget.event).then(
-      (_) {},
-      onError: (Object e, StackTrace st) {
-        FlutterError.reportError(
-          FlutterErrorDetails(
-            exception: e,
-            stack: st,
-            library: 'flex_track',
-            context: ErrorDescription('while dispatching FlexImpressionTrack'),
-          ),
-        );
-      },
+    if (!mounted) {
+      return;
+    }
+    dispatchFlexTrackWidgetTrack(
+      context,
+      widget.event,
+      FlexTrackWidgetSurface.impression,
     );
   }
 

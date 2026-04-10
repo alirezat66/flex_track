@@ -205,5 +205,102 @@ void main() {
 
       expect(mock.capturedEvents, isEmpty);
     });
+
+    testWidgets('uses FlexTrackScope client without FlexTrack.setup',
+        (tester) async {
+      final mock = MockTracker();
+      final client = await FlexTrackClient.create([mock]);
+      addTearDown(() async {
+        await client.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FlexTrackScope(
+            client: client,
+            child: Scaffold(
+              body: FlexImpressionTrack(
+                visibilityKey: const Key('imp_scoped'),
+                visibleFractionThreshold: 0.1,
+                event: CustomEvent.named('scoped_impression'),
+                child: const SizedBox(
+                  height: 100,
+                  width: double.infinity,
+                  child: ColoredBox(color: Colors.cyan),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      VisibilityDetectorController.instance.notifyNow();
+      await tester.pump();
+
+      expect(mock.capturedEvents.single.getName(), 'scoped_impression');
+    });
+
+    testWidgets('scoped client is preferred when global is also set up',
+        (tester) async {
+      final globalMock = await setupFlexTrackForTesting();
+      final scopedMock = MockTracker();
+      final scopedClient = await FlexTrackClient.create([scopedMock]);
+      addTearDown(() async {
+        await scopedClient.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FlexTrackScope(
+            client: scopedClient,
+            child: Scaffold(
+              body: FlexImpressionTrack(
+                visibilityKey: const Key('imp_scoped_wins'),
+                visibleFractionThreshold: 0.1,
+                event: CustomEvent.named('impression_scoped_wins'),
+                child: const SizedBox(
+                  height: 100,
+                  width: double.infinity,
+                  child: ColoredBox(color: Colors.indigo),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      VisibilityDetectorController.instance.notifyNow();
+      await tester.pump();
+
+      expect(scopedMock.capturedEvents.single.getName(), 'impression_scoped_wins');
+      expect(globalMock.capturedEvents, isEmpty);
+    });
+
+    testWidgets('no-op when neither FlexTrackScope nor FlexTrack.setup',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FlexImpressionTrack(
+              visibilityKey: const Key('imp_no_backend'),
+              visibleFractionThreshold: 0.1,
+              event: CustomEvent.named('should_not_impress'),
+              child: const SizedBox(
+                height: 100,
+                width: double.infinity,
+                child: ColoredBox(color: Colors.brown),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      VisibilityDetectorController.instance.notifyNow();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+    });
   });
 }

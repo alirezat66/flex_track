@@ -103,14 +103,28 @@ class CartCubit extends Cubit<CartState> {
 // CartCubit(analyticsClient)
 ```
 
-## Widgets and the global API
+## Widgets: `FlexTrackScope` vs the global API
 
-`FlexClickTrack`, `FlexMountTrack`, and other widgets that call **`FlexTrack.track`** still expect the **global** singleton. If you only use `FlexTrackClient` and never call `FlexTrack.setup`, those widgets will throw until you either:
+`FlexClickTrack`, `FlexImpressionTrack`, `FlexMountTrack`, and `FlexTrackRouteViewMixin` resolve events in this order:
 
-- Also call `FlexTrack.setup` with the same trackers, or
-- Refactor widgets to accept an optional client (not part of the current public widgets API).
+1. **`FlexTrackScope.maybeOf(context)`** — if a `FlexTrackScope` ancestor provides a `FlexTrackClient`, that instance receives the event.
+2. **Else `FlexTrack.track`** — if `FlexTrack.isSetUp` is true (after `FlexTrack.setup` / `quickSetup`).
+3. **Else** — no-op (no throw).
 
-Practical approach: call **`FlexTrack.setup`** in `main` for production so widgets work, and still use **`FlexTrackClient`** in injected services **if** you create that client with the same configuration—or use the global API everywhere for simplicity.
+So you can run **only** an injected `FlexTrackClient` (no `FlexTrack.setup`) as long as you wrap the relevant subtree:
+
+```dart
+FlexTrackScope(
+  client: myClient,
+  child: MyFeatureScreen(),
+);
+```
+
+**Riverpod:** create the client in `main`, override a `Provider<FlexTrackClient>`, and wrap `MaterialApp`’s `home` (or a feature root) with `FlexTrackScope(client: ref.watch(...), child: ...)`. See `examples/riverpod_app`.
+
+**Simplest app:** omit `FlexTrackScope`; call `FlexTrack.setup` once and widgets use the static API automatically.
+
+**Explicit scope with the default client:** after `FlexTrack.setup`, you can still wrap with `FlexTrackScope(client: FlexTrack.instance.client, child: ...)` so the same instance is used both from scope and from `FlexTrack.track`. See `examples/static_app`.
 
 ## Relation to `FlexTrack.instance.client`
 

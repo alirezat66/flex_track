@@ -181,5 +181,80 @@ void main() {
 
       expect(mock.capturedEvents, isEmpty);
     });
+
+    testWidgets('uses FlexTrackScope client without FlexTrack.setup',
+        (tester) async {
+      final mock = MockTracker();
+      final client = await FlexTrackClient.create([mock]);
+      addTearDown(() async {
+        await client.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FlexTrackScope(
+            client: client,
+            child: Scaffold(
+              body: FlexClickTrack(
+                event: CustomEvent.named('scoped_only'),
+                child: const Text('Scoped'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Scoped'));
+      await tester.pump();
+
+      expect(mock.capturedEvents.single.getName(), 'scoped_only');
+    });
+
+    testWidgets('scoped client is preferred when global is also set up',
+        (tester) async {
+      final globalMock = await setupFlexTrackForTesting();
+      final scopedMock = MockTracker();
+      final scopedClient = await FlexTrackClient.create([scopedMock]);
+      addTearDown(() async {
+        await scopedClient.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FlexTrackScope(
+            client: scopedClient,
+            child: Scaffold(
+              body: FlexClickTrack(
+                event: CustomEvent.named('scoped_wins'),
+                child: const Text('Tap'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Tap'));
+      await tester.pump();
+
+      expect(scopedMock.capturedEvents.single.getName(), 'scoped_wins');
+      expect(globalMock.capturedEvents, isEmpty);
+    });
+
+    testWidgets('no-op when neither FlexTrackScope nor FlexTrack.setup',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FlexClickTrack(
+              event: CustomEvent.named('should_not_send'),
+              child: const Text('Tap'),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Tap'));
+      await tester.pump();
+    });
   });
 }

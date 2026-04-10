@@ -1,9 +1,12 @@
-import 'package:flex_track/src/core/flex_track.dart';
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/widgets/flex_track_widget_dispatch.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 /// Fires [event] once after the first frame where this widget is laid out.
+///
+/// Uses [FlexTrackScope.maybeOf] when present, otherwise the global
+/// `FlexTrack.track` API when configured.
 ///
 /// **Limitations (by design)**
 ///
@@ -43,21 +46,10 @@ class _FlexMountTrackState extends State<FlexMountTrack> {
       return;
     }
     _dispatched = true;
-    if (!FlexTrack.isSetUp) {
-      return;
-    }
-    FlexTrack.track(widget.event).then(
-      (_) {},
-      onError: (Object e, StackTrace st) {
-        FlutterError.reportError(
-          FlutterErrorDetails(
-            exception: e,
-            stack: st,
-            library: 'flex_track',
-            context: ErrorDescription('while dispatching FlexMountTrack'),
-          ),
-        );
-      },
+    dispatchFlexTrackWidgetTrack(
+      context,
+      widget.event,
+      FlexTrackWidgetSurface.mount,
     );
   }
 

@@ -1,5 +1,5 @@
-import 'package:flex_track/src/core/flex_track.dart';
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/widgets/flex_track_widget_dispatch.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
@@ -21,9 +21,12 @@ class FlexTrackRouteObserver extends RouteObserver<PageRoute<dynamic>> {}
 /// Mixin on [State] for sending a [routeViewEvent] when the enclosing
 /// [PageRoute] becomes relevant.
 ///
+/// Uses [FlexTrackScope.maybeOf] when present, otherwise the global
+/// `FlexTrack.track` API when configured.
+///
 /// **Semantics**
 ///
-/// - **Initial / first open** — [FlexTrack.track] runs when
+/// - **Initial / first open** — tracking runs when
 ///   [trackOnInitialPush] is true (default), using either [RouteAware.didPush]
 ///   or a one-time post-frame callback if the initial route never receives
 ///   `didPush` (e.g. [MaterialApp] [home]).
@@ -106,22 +109,10 @@ mixin FlexTrackRouteViewMixin<T extends StatefulWidget> on State<T>
   void didPop() {}
 
   void _dispatchRouteView() {
-    if (!FlexTrack.isSetUp) {
-      return;
-    }
-    FlexTrack.track(routeViewEvent).then(
-      (_) {},
-      onError: (Object e, StackTrace st) {
-        FlutterError.reportError(
-          FlutterErrorDetails(
-            exception: e,
-            stack: st,
-            library: 'flex_track',
-            context:
-                ErrorDescription('while dispatching FlexTrackRouteViewMixin'),
-          ),
-        );
-      },
+    dispatchFlexTrackWidgetTrack(
+      context,
+      routeViewEvent,
+      FlexTrackWidgetSurface.routeViewMixin,
     );
   }
 }

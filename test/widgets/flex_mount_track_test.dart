@@ -101,6 +101,77 @@ void main() {
       expect(mock.capturedEvents, hasLength(1));
       expect(mock.capturedEvents.single.getName(), 'lazy_mount');
     });
+
+    testWidgets('uses FlexTrackScope client without FlexTrack.setup',
+        (tester) async {
+      final mock = MockTracker();
+      final client = await FlexTrackClient.create([mock]);
+      addTearDown(() async {
+        await client.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FlexTrackScope(
+            client: client,
+            child: Scaffold(
+              body: FlexMountTrack(
+                event: CustomEvent.named('scoped_mount'),
+                child: const Text('content'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(mock.capturedEvents.single.getName(), 'scoped_mount');
+    });
+
+    testWidgets('scoped client is preferred when global is also set up',
+        (tester) async {
+      final globalMock = await setupFlexTrackForTesting();
+      final scopedMock = MockTracker();
+      final scopedClient = await FlexTrackClient.create([scopedMock]);
+      addTearDown(() async {
+        await scopedClient.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FlexTrackScope(
+            client: scopedClient,
+            child: Scaffold(
+              body: FlexMountTrack(
+                event: CustomEvent.named('mount_scoped_wins'),
+                child: const Text('x'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(scopedMock.capturedEvents.single.getName(), 'mount_scoped_wins');
+      expect(globalMock.capturedEvents, isEmpty);
+    });
+
+    testWidgets('no-op when neither FlexTrackScope nor FlexTrack.setup',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: FlexMountTrack(
+              event: CustomEvent.named('should_not_mount_track'),
+              child: const Text('orphan'),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump();
+    });
   });
 }
 

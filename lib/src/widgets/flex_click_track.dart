@@ -1,10 +1,13 @@
-import 'package:flex_track/src/core/flex_track.dart';
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/widgets/flex_track_widget_dispatch.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
-/// Wraps [child] and sends [event] with [FlexTrack.track] when the user
+/// Wraps [child] and sends [event] when the user
 /// completes a **tap** in the hit region (short press with little movement).
+///
+/// Uses [FlexTrackScope.maybeOf] when present, otherwise the global
+/// `FlexTrack.track` API when configured.
 ///
 /// Uses a [Listener] with [HitTestBehavior.translucent] on pointer down/up so
 /// nested [InkWell]s and buttons still work, while drags/scrolls (movement
@@ -72,21 +75,10 @@ class _FlexClickTrackState extends State<FlexClickTrack> {
   }
 
   void _dispatchTrack() {
-    if (!FlexTrack.isSetUp) {
-      return;
-    }
-    FlexTrack.track(widget.event).then(
-      (_) {},
-      onError: (Object e, StackTrace st) {
-        FlutterError.reportError(
-          FlutterErrorDetails(
-            exception: e,
-            stack: st,
-            library: 'flex_track',
-            context: ErrorDescription('while dispatching FlexClickTrack'),
-          ),
-        );
-      },
+    dispatchFlexTrackWidgetTrack(
+      context,
+      widget.event,
+      FlexTrackWidgetSurface.click,
     );
   }
 }

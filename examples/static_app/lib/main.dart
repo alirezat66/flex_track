@@ -36,7 +36,12 @@ class StaticDemoApp extends StatelessWidget {
     return MaterialApp(
       title: 'flex_track (static API)',
       theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-      home: const _HomePage(),
+      // Optional: same client as `FlexTrack.track`; widgets check [FlexTrackScope]
+      // first, then fall back to the static API. Omit this wrapper for the simplest app.
+      home: FlexTrackScope(
+        client: FlexTrack.instance.client,
+        child: const _HomePage(),
+      ),
     );
   }
 }
@@ -52,8 +57,10 @@ class _HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const Text(
-            'Uses FlexTrack.setup / FlexTrack.track only. '
-            'Widget wrappers still call the static API internally.',
+            'Uses FlexTrack.setup in main. Home is wrapped with FlexTrackScope '
+            '(same client as the singleton) so FlexClickTrack resolves the '
+            'scoped client first; you can omit FlexTrackScope and widgets still '
+            'use FlexTrack.track.',
           ),
           const SizedBox(height: 16),
           FlexMountTrack(

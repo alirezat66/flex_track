@@ -284,5 +284,76 @@ void main() {
 
       expect(mock.capturedEvents, hasLength(2));
     });
+
+    testWidgets('uses FlexTrackScope client without FlexTrack.setup',
+        (tester) async {
+      final mock = MockTracker();
+      final client = await FlexTrackClient.create([mock]);
+      addTearDown(() async {
+        await client.dispose();
+      });
+      final observer = FlexTrackRouteObserver();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [observer],
+          home: FlexTrackScope(
+            client: client,
+            child: _RouteScreen(
+              observer: observer,
+              eventName: 'scoped_route_home',
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(mock.capturedEvents.single.getName(), 'scoped_route_home');
+    });
+
+    testWidgets('scoped client is preferred when global is also set up',
+        (tester) async {
+      final globalMock = await setupFlexTrackForTesting();
+      final scopedMock = MockTracker();
+      final scopedClient = await FlexTrackClient.create([scopedMock]);
+      addTearDown(() async {
+        await scopedClient.dispose();
+      });
+      final observer = FlexTrackRouteObserver();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [observer],
+          home: FlexTrackScope(
+            client: scopedClient,
+            child: _RouteScreen(
+              observer: observer,
+              eventName: 'route_scoped_wins',
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(scopedMock.capturedEvents.single.getName(), 'route_scoped_wins');
+      expect(globalMock.capturedEvents, isEmpty);
+    });
+
+    testWidgets('no-op when neither FlexTrackScope nor FlexTrack.setup',
+        (tester) async {
+      final observer = FlexTrackRouteObserver();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorObservers: [observer],
+          home: _RouteScreen(
+            observer: observer,
+            eventName: 'untracked_route',
+          ),
+        ),
+      );
+
+      await tester.pump();
+    });
   });
 }
