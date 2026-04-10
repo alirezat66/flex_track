@@ -1,133 +1,176 @@
 # flex_track
 
-Analytics routing for Flutter. Register trackers you implement, send typed events from one call site, and optionally route by category, consent, sampling, or environment.
+[![pub package](https://img.shields.io/pub/v/flex_track.svg)](https://pub.dev/packages/flex_track)
+[![CI](https://github.com/alirezat66/flex_track/actions/workflows/ci.yml/badge.svg)](https://github.com/alirezat66/flex_track/actions)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alirezat66/flex_track/blob/main/LICENSE)
 
-The package ships **no vendor SDKs**. You extend [`BaseTrackerStrategy`](lib/src/strategies/base_tracker_strategy.dart) — no hidden transitive dependencies, no SDK version conflicts.
-
----
-
-## Quick start
-
-Four steps. `MyFirebaseTracker` is **your** class — only [`ConsoleTracker`](lib/src/strategies/built_in/console_tracker.dart) and [`MockTracker`](lib/src/strategies/built_in/mock_tracker.dart) ship with the package.
-
-```dart
-// 1. pubspec.yaml
-//    dependencies:
-//      flex_track: ^1.0.0
-//      firebase_core: ...        # only if you're adding Firebase
-//      firebase_analytics: ...   # only if you're adding Firebase
-
-import 'package:flex_track/flex_track.dart';
-import 'package:flutter/widgets.dart';
-
-// 2. Implement your tracker (not part of the package).
-class MyFirebaseTracker extends BaseTrackerStrategy {
-  MyFirebaseTracker() : super(id: 'firebase', name: 'Firebase');
-
-  @override
-  Future<void> doInitialize() async {
-    // await Firebase.initializeApp();
-  }
-
-  @override
-  Future<void> doTrack(BaseEvent event) async {
-    // await FirebaseAnalytics.instance.logEvent(name: event.getName(),
-    //   parameters: event.getProperties()?.cast<String, Object>());
-  }
-}
-
-// 2b. Define an event.
-class AppOpenedEvent extends BaseEvent {
-  @override String getName() => 'app_opened';
-  @override Map<String, Object>? getProperties() => null;
-}
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // 3. Set up — pass every tracker you implemented.
-  await FlexTrack.setup([ConsoleTracker(), MyFirebaseTracker()]);
-
-  // 4. Track.
-  await FlexTrack.track(AppOpenedEvent());
-
-  runApp(const MyApp());
-}
-```
-
-No Firebase yet? Use `await FlexTrack.setup([ConsoleTracker()])` — events appear in the debug console.
+Routes analytics events to multiple trackers with consent management, sampling, and environment rules — from one call site.
 
 ---
 
 ## Table of contents
 
-- [What this package does (and doesn't)](#what-this-package-does-and-doesnt)
-- [Bring your own tracker](#bring-your-own-tracker)
-  - [Required methods](#required-methods)
-  - [Optional overrides](#optional-overrides)
-  - [Tracker id convention](#tracker-id-convention)
-  - [Example: Mixpanel-shaped tracker](#example-mixpanel-shaped-tracker)
-  - [Example: custom backend tracker](#example-custom-backend-tracker)
-- [Events](#events)
-  - [BaseEvent fields](#baseevent-fields)
+- [Quick start](#quick-start)
+- [Design philosophy](#design-philosophy)
+- [Creating events](#creating-events)
+  - [Event flags](#event-flags)
   - [EventCategory values](#eventcategory-values)
-- [Setup](#setup)
-  - [Simple setup](#simple-setup)
-  - [Setup with routing](#setup-with-routing)
-  - [Convenience setup functions](#convenience-setup-functions)
-- [Routing DSL](#routing-dsl)
-  - [Matchers](#matchers)
-  - [Targets](#targets)
-  - [Modifiers](#modifiers)
-  - [Rule priority](#rule-priority)
+- [Creating trackers](#creating-trackers)
+  - [Firebase example](#firebase-example)
+  - [Mixpanel example](#mixpanel-example)
+- [Smart routing](#smart-routing)
+  - [Routing DSL](#routing-dsl)
   - [Tracker groups](#tracker-groups)
-- [Consent](#consent)
-- [Sampling](#sampling)
-- [Preset configurations](#preset-configurations)
-  - [SmartDefaults](#smartdefaults)
-  - [GDPRDefaults](#gdprdefaults)
-  - [PerformanceDefaults](#performancedefaults)
+  - [Priority](#priority)
+  - [Environment modifiers](#environment-modifiers)
 - [Widget wrappers](#widget-wrappers)
   - [FlexClickTrack](#flexclicktrack)
   - [FlexImpressionTrack](#fleximpressiontrack)
   - [FlexMountTrack](#flexmounttrack)
   - [FlexTrackRouteViewMixin](#flextrackrouteviewmixin)
-- [User identification](#user-identification)
-- [Tracker lifecycle](#tracker-lifecycle)
-- [Testing](#testing)
+- [GDPR and consent](#gdpr-and-consent)
+- [Sampling and performance](#sampling-and-performance)
 - [Debugging](#debugging)
-- [Reference — event flags](#reference--event-flags)
-- [Reference — routing DSL](#reference--routing-dsl)
-- [Reference — preset index](#reference--preset-index)
-- [Contributing / license](#contributing--license)
+- [Testing](#testing)
+- [Common pitfalls](#common-pitfalls)
+- [Contributing and license](#contributing-and-license)
 
 ---
 
-## What this package does (and doesn't)
+## Quick start
 
-**Does:**
-- Provides a single `FlexTrack.track(event)` call site for all analytics
-- Routes each event to one or more trackers based on configurable rules
-- Handles consent gating, sampling, and environment filtering per rule
-- Includes Flutter widget wrappers for taps, impressions, mount, and route transitions
-- Ships `ConsoleTracker` (dev/debug), `MockTracker` (tests), and `NoOpTracker` (disable without removing)
+**Step 1 — add the dependency:**
 
-**Doesn't:**
-- Bundle Firebase, Mixpanel, Amplitude, or any other analytics SDK
-- Call any external service on its own
-- Manage app-level navigation or state
+```yaml
+# pubspec.yaml
+dependencies:
+  flex_track: ^1.0.0
+```
 
-**Why no built-in Firebase tracker?** The package owner cannot take on your Firebase project config, your SDK version requirements, or your initialisation sequencing. You write a thin adapter once; it stays in your repo, under your control.
+**Step 2 — implement your tracker** (the package ships no vendor SDKs; you write a thin adapter):
 
-The [`example/lib/trackers/`](example/lib/trackers/) directory contains working reference implementations for Firebase, Mixpanel, Amplitude, and a custom API — they are not exported by the package but are there to copy from.
+```dart
+// lib/trackers/firebase_tracker.dart
+import 'package:flex_track/flex_track.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+
+class FirebaseTracker extends BaseTrackerStrategy {
+  FirebaseTracker() : super(id: 'firebase', name: 'Firebase Analytics');
+
+  @override
+  Future<void> doInitialize() async {
+    // Firebase.initializeApp() should be called before FlexTrack.setup().
+    // Put any tracker-specific init here.
+  }
+
+  @override
+  Future<void> doTrack(BaseEvent event) async {
+    await FirebaseAnalytics.instance.logEvent(
+      name: event.getName(),
+      parameters: event.getProperties(),
+    );
+  }
+}
+```
+
+**Step 3 — set up:**
+
+```dart
+// lib/main.dart
+import 'package:flex_track/flex_track.dart';
+import 'trackers/firebase_tracker.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  await FlexTrack.setup([
+    ConsoleTracker(),   // built-in — prints to debug console
+    FirebaseTracker(),  // your class from step 2
+  ]);
+
+  runApp(const MyApp());
+}
+```
+
+**Step 4 — track:**
+
+```dart
+await FlexTrack.track(AppOpenedEvent());
+```
+
+That's it. Both trackers receive every event. Add routing rules when you need more control.
 
 ---
 
-## Bring your own tracker
+## Design philosophy
 
-All tracker implementations extend `BaseTrackerStrategy`.
+This package does not bundle Firebase, Mixpanel, Amplitude, or any other analytics SDK. You extend `BaseTrackerStrategy` — the adapter lives in your codebase, under your control. This means no transitive dependency conflicts, no surprise SDK version requirements, and no opaque initialisation happening inside the package. The package routes; you decide where events go and how they get there.
 
-### Required methods
+---
+
+## Creating events
+
+Extend `BaseEvent` and implement `getName()` and `getProperties()`. Everything else is optional.
+
+```dart
+class PurchaseEvent extends BaseEvent {
+  final double amount;
+  PurchaseEvent({required this.amount});
+
+  @override
+  String getName() => 'purchase';
+
+  @override
+  Map<String, Object> getProperties() => {'amount': amount};
+
+  @override
+  EventCategory get category => EventCategory.business;
+
+  @override
+  bool get isEssential => true;
+
+  @override
+  bool get containsPII => false;
+}
+```
+
+### Event flags
+
+All flags have safe defaults — override only the ones relevant to your event.
+
+| Flag | Default | Effect |
+|------|---------|--------|
+| `isEssential` | `false` | Bypasses consent checks and sampling — always sent |
+| `isHighVolume` | `false` | Signals to routing rules that sampling should apply |
+| `containsPII` | `false` | Blocks the event until PII consent is granted |
+| `requiresConsent` | `true` | Blocks the event until general consent is granted |
+
+Rules of thumb:
+- Crash reporters, security events → `isEssential: true`
+- Scroll position, hover events → `isHighVolume: true`
+- Profile updates, search queries → `containsPII: true`
+- App open, session start → `requiresConsent: false` if no personal data is sent
+
+### EventCategory values
+
+| Category | When to use |
+|----------|-------------|
+| `EventCategory.business` | Revenue, conversions, checkout funnel |
+| `EventCategory.user` | Behaviour, preferences, feature usage |
+| `EventCategory.technical` | Errors, performance, debug events |
+| `EventCategory.sensitive` | Events that combine PII with behaviour |
+| `EventCategory.marketing` | Campaign attribution, ad interactions |
+| `EventCategory.system` | App lifecycle, background tasks |
+
+---
+
+## Creating trackers
+
+All trackers extend `BaseTrackerStrategy`. Implement `doInitialize()` and `doTrack()`. The base class handles:
+- Guarding against double-initialisation
+- Catching and wrapping errors from your implementation
+- Enabling/disabling at runtime
 
 ```dart
 class MyTracker extends BaseTrackerStrategy {
@@ -135,592 +178,341 @@ class MyTracker extends BaseTrackerStrategy {
 
   @override
   Future<void> doInitialize() async {
-    // Called once by FlexTrack.setup(). Perform SDK init, open DB, etc.
-    // Throw here to abort setup for this tracker.
+    // Called once by FlexTrack.setup(). Perform SDK init here.
   }
 
   @override
   Future<void> doTrack(BaseEvent event) async {
-    // Called for each routed event. Do the actual SDK call here.
-    // event.getName()         → event name string
-    // event.getProperties()   → Map<String, Object>? (may be null)
-    // event.category          → EventCategory? (for reference)
+    // Called for each routed event.
+    // event.getName()       → String
+    // event.getProperties() → Map<String, Object>
+    // event.category        → EventCategory?
   }
 }
 ```
 
-`BaseTrackerStrategy` wraps both methods in error handling and guards against double-init and calls before init. You never need to call `initialize()` directly.
-
-### Optional overrides
-
-Override only what your backend supports:
+The `id` you pass to `super` is how routing rules reference this tracker:
 
 ```dart
-@override
-bool supportsBatchTracking() => true;   // opt in to batched delivery
-
-@override
-Future<void> doTrackBatch(List<BaseEvent> events) async {
-  // called instead of individual doTrack when supportsBatchTracking() == true
-}
-
-@override
-Future<void> doSetUserProperties(Map<String, dynamic> properties) async {
-  // called by FlexTrack.setUserProperties(...)
-}
-
-@override
-Future<void> doIdentifyUser(String userId, [Map<String, dynamic>? properties]) async {
-  // called by FlexTrack.identifyUser(...)
-}
-
-@override
-Future<void> doReset() async {
-  // called by FlexTrack.resetTrackers() — use on logout
-}
-
-@override
-Future<void> doFlush() async {
-  // called by FlexTrack.flush() — force-send any buffered events
-}
-
-@override
-bool get isGDPRCompliant => true;   // informational; used in debug output
+.to(['my_tracker'])   // matches super(id: 'my_tracker', ...)
 ```
 
-### Tracker id convention
+Use a stable, lowercase slug. Changing the id breaks any routing rule that references it.
 
-The `id` string you pass to `super(id: '...')` is how routing rules reference your tracker:
-
-```dart
-.to(['firebase', 'mixpanel'])   // matches super(id: 'firebase') and super(id: 'mixpanel')
-```
-
-Use a stable, lowercase slug. Changing it after setup breaks routing rules that reference it.
-
-### Example: Mixpanel-shaped tracker
-
-Add `mixpanel_flutter` to your own `pubspec.yaml`, then:
+### Firebase example
 
 ```dart
-class MyMixpanelTracker extends BaseTrackerStrategy {
-  MyMixpanelTracker() : super(id: 'mixpanel', name: 'Mixpanel');
+// lib/trackers/firebase_tracker.dart
+import 'package:flex_track/flex_track.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
-  late Mixpanel _mp;
+class FirebaseTracker extends BaseTrackerStrategy {
+  FirebaseTracker() : super(id: 'firebase', name: 'Firebase Analytics');
 
   @override
   Future<void> doInitialize() async {
-    _mp = await Mixpanel.init('YOUR_TOKEN', trackAutomaticEvents: false);
+    // Firebase.initializeApp() should already be called before FlexTrack.setup().
   }
 
   @override
   Future<void> doTrack(BaseEvent event) async {
-    _mp.track(event.getName(), properties: event.getProperties());
+    await FirebaseAnalytics.instance.logEvent(
+      name: event.getName(),
+      parameters: event.getProperties(),
+    );
   }
-
-  @override
-  Future<void> doIdentifyUser(String userId, [Map<String, dynamic>? props]) async {
-    _mp.identify(userId);
-    if (props != null) _mp.getPeople().set('\$name', props['name']);
-  }
-
-  @override
-  Future<void> doReset() async => _mp.reset();
 }
 ```
 
-### Example: custom backend tracker
+### Mixpanel example
 
 ```dart
-class MyApiTracker extends BaseTrackerStrategy {
-  MyApiTracker({required this.endpoint})
-    : super(id: 'api', name: 'My Analytics API');
+// lib/trackers/mixpanel_tracker.dart
+import 'package:flex_track/flex_track.dart';
+import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
-  final String endpoint;
+class MixpanelTracker extends BaseTrackerStrategy {
+  MixpanelTracker() : super(id: 'mixpanel', name: 'Mixpanel');
+
+  late Mixpanel _mixpanel;
 
   @override
   Future<void> doInitialize() async {
-    // Optionally verify endpoint reachability.
-  }
-
-  @override
-  bool supportsBatchTracking() => true;
-
-  @override
-  Future<void> doTrackBatch(List<BaseEvent> events) async {
-    final payload = events.map((e) => {
-      'name': e.getName(),
-      'props': e.getProperties(),
-      'ts': e.timestamp.millisecondsSinceEpoch,
-    }).toList();
-
-    await http.post(Uri.parse(endpoint),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(payload));
+    _mixpanel = await Mixpanel.init('YOUR_PROJECT_TOKEN', trackAutomaticEvents: false);
   }
 
   @override
   Future<void> doTrack(BaseEvent event) async {
-    await doTrackBatch([event]);
+    _mixpanel.track(event.getName(), properties: event.getProperties());
   }
 }
 ```
 
----
-
-## Events
-
-All events extend `BaseEvent`. The only two abstract members are `getName()` and `getProperties()`. Everything else is optional and defaults to safe values.
+Use both in setup:
 
 ```dart
-class PurchaseEvent extends BaseEvent {
-  PurchaseEvent({required this.amount, required this.currency});
+// lib/main.dart
+import 'trackers/firebase_tracker.dart';
+import 'trackers/mixpanel_tracker.dart';
 
-  final double amount;
-  final String currency;
-
-  @override
-  String getName() => 'purchase';
-
-  @override
-  Map<String, Object>? getProperties() => {
-    'amount': amount,
-    'currency': currency,
-  };
-
-  // Optional routing / consent hints:
-  @override EventCategory? get category => EventCategory.business;
-  @override bool get isEssential => true;    // bypass consent + sampling
-  @override bool get containsPII => false;
-  @override bool get requiresConsent => true; // default is true
-  @override bool get isHighVolume => false;
-}
-```
-
-Track one or many:
-
-```dart
-await FlexTrack.track(PurchaseEvent(amount: 9.99, currency: 'USD'));
-
-await FlexTrack.trackAll([
-  PageViewEvent(page: 'checkout'),
-  PurchaseEvent(amount: 9.99, currency: 'USD'),
-]);
-
-// Fire events in parallel (unordered delivery; use when order doesn't matter).
-await FlexTrack.trackParallel([Event1(), Event2(), Event3()]);
-```
-
-### BaseEvent fields
-
-| Field | Type | Default | Purpose |
-|-------|------|---------|---------|
-| `getName()` | `String` | **required** | Event name sent to backends |
-| `getProperties()` | `Map<String, Object>?` | **required** | Event payload (return `null` or `{}` if none) |
-| `category` | `EventCategory?` | `null` | Enables category-based routing rules |
-| `containsPII` | `bool` | `false` | Triggers PII consent rules |
-| `requiresConsent` | `bool` | `true` | Gated by general consent (set `false` for crash reporters) |
-| `isEssential` | `bool` | `false` | Bypasses consent checks and sampling when `true` |
-| `isHighVolume` | `bool` | `false` | Signals the routing engine to apply sampling rules |
-| `timestamp` | `DateTime` | `DateTime.now()` | Override for historical / replayed events |
-| `userId` | `String?` | `null` | Passed through to trackers and debug output |
-| `sessionId` | `String?` | `null` | Groups related events in debug output |
-| `preferredGroup` | `TrackerGroup?` | `null` | Hint to the routing engine; routing rules take precedence |
-
-### EventCategory values
-
-| Constant | When to use |
-|----------|-------------|
-| `EventCategory.business` | Revenue, conversions, funnels |
-| `EventCategory.user` | Behavioural actions, preferences |
-| `EventCategory.technical` | Errors, performance, debug |
-| `EventCategory.sensitive` | Events that contain PII data |
-| `EventCategory.marketing` | Campaign attribution, ad tracking |
-| `EventCategory.system` | Internal health checks, lifecycle |
-| `EventCategory.security` | Auth, access control, anomalies |
-
-You can also define custom categories on the routing builder:
-
-```dart
-routing.defineCategory('payments', description: 'Payment-related events')
-```
-
----
-
-## Setup
-
-### Simple setup
-
-```dart
 await FlexTrack.setup([
   ConsoleTracker(),
-  MyFirebaseTracker(),
+  FirebaseTracker(),
+  MixpanelTracker(),
 ]);
 ```
 
-`FlexTrack.setup` calls `initialize()` on every tracker, then applies smart defaults for routing. The singleton throws if called twice — call `await FlexTrack.reset()` before reconfiguring (e.g. between tests).
+---
 
-### Setup with routing
+## Smart routing
+
+Without a routing config, every event goes to every tracker. Routing rules let you control which events go where, with what sampling, and under what consent conditions.
+
+### Routing DSL
 
 ```dart
 await FlexTrack.setupWithRouting([
   ConsoleTracker(),
-  MyFirebaseTracker(), // id: 'firebase'
-  MyMixpanelTracker(), // id: 'mixpanel'
+  FirebaseTracker(),    // id: 'firebase'
+  MixpanelTracker(),   // id: 'mixpanel'
 ], (routing) => routing
 
-  // Business events to all trackers, never sampled.
+  // Business events: everywhere, never sampled.
   .routeCategory(EventCategory.business)
   .toAll()
   .noSampling()
+  .withPriority(20)
   .and()
 
-  // High-volume scroll/interaction events only to firebase, 1% sampled.
+  // High-volume events: firebase only, 1% sampling.
   .routeHighVolume()
   .to(['firebase'])
   .heavySampling()
   .and()
 
-  // PII events require explicit PII consent.
+  // PII events: require explicit PII consent.
   .routePII()
-  .toAll()
+  .to(['internal'])
   .requirePIIConsent()
   .and()
 
-  // Technical/debug events only appear in debug builds.
-  .routeCategory(EventCategory.technical)
-  .toDevelopment()
-  .onlyInDebug()
+  // Essential events: always fire, no consent check.
+  .routeEssential()
+  .toAll()
+  .skipConsent()
   .and()
 
-  // Catch-all.
+  // Events with an internal_metric property: api tracker only.
+  .routeWithProperty('internal_metric')
+  .to(['api'])
+  .and()
+
+  // Specific name pattern.
+  .routeMatching(RegExp(r'purchase_.*'))
+  .toAll()
+  .noSampling()
+  .and()
+
+  // Exact name match.
+  .routeNamed('app_start')
+  .to(['firebase'])
+  .and()
+
+  // Catch-all — always include this.
   .routeDefault()
   .toAll()
-  .and()
 );
 ```
 
-Rules are evaluated in priority order (highest first). The first matching rule wins. If no rule matches (shouldn't happen with a `.routeDefault()`), the engine falls back to all trackers.
+Rules are evaluated in priority order. The first matching rule wins.
 
-### Convenience setup functions
+**Full list of matchers:**
 
-The library exports three ready-made setup functions for common scenarios:
-
-```dart
-// Smart defaults (samples high-volume, routes technical to debug only).
-await setupFlexTrackWithDefaults([ConsoleTracker(), MyFirebaseTracker()]);
-
-// Development only — ConsoleTracker, no sampling, debug mode on.
-await setupFlexTrackForDevelopment();
-
-// Tests — MockTracker, no consent checks, no sampling.
-final mock = await setupFlexTrackForTesting();
-```
-
----
-
-## Routing DSL
-
-Every routing configuration is a chain of: **matcher → target → modifiers → `.and()`**.
-
-```
-routing
-  .<matcher>(...)   // what events to match
-  .<target>(...)    // where to send them
-  .<modifier>()     // how to send them
-  .<modifier>()
-  .and()            // commit rule, return builder for next rule
-```
-
-### Matchers
-
-| Method | Matches |
-|--------|---------|
-| `.route<MyEvent>()` | Exact Dart type |
-| `.routeNamed('pattern')` | Event name **contains** pattern (substring) |
-| `.routeExact('name')` | Event name equals `name` exactly |
-| `.routeMatching(RegExp(...))` | Event name matches regex |
+| Matcher | Matches when |
+|---------|-------------|
 | `.routeCategory(EventCategory.x)` | `event.category == x` |
-| `.routeCategoryNamed('custom')` | Category defined via `defineCategory(...)` |
-| `.routeWithProperty('key')` | `getProperties()` contains the key |
-| `.routeWithProperty('key', value)` | Key present and equals value |
-| `.routeEssential()` | `event.isEssential == true` |
 | `.routeHighVolume()` | `event.isHighVolume == true` |
+| `.routeEssential()` | `event.isEssential == true` |
 | `.routePII()` | `event.containsPII == true` |
-| `.routeDefault()` | Catch-all; should be the last rule |
+| `.routeMatching(RegExp(...))` | event name matches the regex |
+| `.routeNamed('pattern')` | event name contains the substring |
+| `.routeWithProperty('key')` | `getProperties()` contains the key |
+| `.routeDefault()` | catch-all (put this last) |
 
-### Targets
+**Full list of targets:**
 
-| Method | Sends to |
+| Target | Sends to |
 |--------|---------|
 | `.toAll()` | Every registered tracker |
 | `.to(['id1', 'id2'])` | Specific trackers by id |
-| `.toTracker('id')` | Single tracker |
-| `.toDevelopment()` | `TrackerGroup.development` (see below) |
-| `.toGroup(group)` | A `TrackerGroup` instance |
-| `.toGroupNamed('name')` | A group defined via `defineGroup(...)` |
+| `.toGroupNamed('name')` | A named group (see below) |
 
-### Modifiers
+**Consent modifiers:**
 
-**Sampling:**
-
-| Method | Rate |
-|--------|------|
-| `.noSampling()` | 100% (default) |
-| `.lightSampling()` | 10% |
-| `.mediumSampling()` | 50% |
-| `.heavySampling()` | 1% |
-| `.sample(0.25)` | Custom rate 0.0–1.0 |
-
-**Consent:**
-
-| Method | Effect |
-|--------|--------|
-| `.requireConsent()` | Gate on general consent (default) |
-| `.requirePIIConsent()` | Gate on PII consent |
-| `.skipConsent()` | Always fire regardless of consent state |
-
-**Environment:**
-
-| Method | Effect |
-|--------|--------|
-| `.onlyInDebug()` | Skipped in release builds |
-| `.onlyInProduction()` | Skipped in debug builds |
-
-**Other:**
-
-| Method | Effect |
-|--------|--------|
-| `.withPriority(n)` | Higher n evaluated first (default: 0) |
-| `.withDescription('...')` | Label for debug output |
-| `.withId('rule_id')` | Identify rule programmatically |
-| `.essential()` | Shorthand: `skipConsent().noSampling().highPriority()` |
-
-### Rule priority
-
-Rules are sorted by priority before any event is processed. Higher priority wins. When two rules share the same priority, registration order breaks the tie. Predefined presets assign explicit priorities so your custom rules can slot in:
-
-```dart
-.routeMatching(RegExp(r'^purchase'))
-.toAll()
-.noSampling()
-.withPriority(50)   // beats any preset rule (max preset priority ≈ 25)
-.and()
-```
+| Modifier | Effect |
+|----------|--------|
+| `.requireConsent()` | Blocked until `general: true` (default behaviour) |
+| `.requirePIIConsent()` | Blocked until `pii: true` |
+| `.skipConsent()` | Always fires regardless of consent state |
 
 ### Tracker groups
 
-Groups let you name a fixed set of trackers and reference it across rules.
-
-```dart
-routing
-  .defineGroup('analytics', ['firebase', 'mixpanel'])
-  .defineGroup('gdpr_safe', ['console', 'my_eu_backend'])
-
-  .routeCategory(EventCategory.sensitive)
-  .toGroupNamed('gdpr_safe')
-  .requirePIIConsent()
-  .and()
-
-  .routeDefault()
-  .toGroupNamed('analytics')
-  .and()
-```
-
-Two predefined groups exist without any `defineGroup` call:
-- `TrackerGroup.all` — every registered tracker
-- `TrackerGroup.development` — trackers registered with a `'console'` or `'dev'` id (convention, not enforced)
-
----
-
-## Consent
-
-```dart
-// After user accepts your consent dialog:
-FlexTrack.setConsent(general: true, pii: false);
-
-// Or individually:
-FlexTrack.setGeneralConsent(true);
-FlexTrack.setPIIConsent(true);
-
-// Read back:
-final status = FlexTrack.getConsentStatus();
-// {'general': true, 'pii': false}
-```
-
-How consent interacts with events and rules:
-
-| Event flag | Rule modifier | Outcome |
-|------------|---------------|---------|
-| `requiresConsent: true` (default) | `.requireConsent()` (default) | Blocked until `general: true` |
-| `requiresConsent: false` | any | Always fires |
-| `isEssential: true` | — | Bypasses both consent checks |
-| `containsPII: true` | `.requirePIIConsent()` | Blocked until `pii: true` |
-
-If no consent state has been set yet, `general` defaults to `false` and `pii` defaults to `false`. Events that require consent are dropped silently (no exception).
-
----
-
-## Sampling
-
-Sampling is applied per-rule. When a rule has `sample(0.1)`, each matching event independently has a 10% chance of being forwarded. The decision is made fresh per event using `dart:math`'s `Random`.
-
-```dart
-// Disable sampling globally (useful for testing or critical apps):
-routing.setSampling(false)
-
-// Or per-rule:
-.routeHighVolume().toAll().heavySampling().and()  // 1%
-.routeDefault().toAll().noSampling().and()         // 100%
-```
-
-`isEssential: true` on the event bypasses the sampling check for that event regardless of the rule's sample rate.
-
----
-
-## Preset configurations
-
-Three static preset classes are available. Call them inside `setupWithRouting`:
-
-```dart
-await FlexTrack.setupWithRouting(trackers, (routing) {
-  SmartDefaults.apply(routing);
-  return routing;
-});
-```
-
-### SmartDefaults
-
-`SmartDefaults.apply(builder)` — sensible starting point for most apps:
-- `security` events: always fire, no consent, no sampling
-- `essential` events: always fire, no consent, no sampling
-- `technical` events: debug builds only, 10% sampling
-- `system` events: skip consent, 10% sampling
-- `sensitive` events: require both consents
-- PII events: require PII consent
-- high-volume events: 1% sampling
-- default: everything else goes everywhere
-
-Variants: `SmartDefaults.applyPerformanceFocused`, `SmartDefaults.applyPrivacyFocused`, `SmartDefaults.applyDevelopmentFriendly`.
-
-### GDPRDefaults
-
-`GDPRDefaults.apply(builder, compliantTrackers: ['my_eu_backend'])`:
-- Defines a `gdpr_compliant` group from your compliantTrackers list
-- Routes PII, sensitive, and property-keyed events (`email`, `phone`, `ip_address`, `location`) to that group with PII consent required
-- `security` and `essential` events skip consent (legitimate interest basis)
-- Default rule requires general consent with 50% sampling
+Name a fixed set of trackers and reference them across rules:
 
 ```dart
 await FlexTrack.setupWithRouting([
   ConsoleTracker(),
-  MyFirebaseTracker(),    // id: 'firebase' — not GDPR safe
-  MyEuBackendTracker(),   // id: 'eu_backend' — GDPR safe
-], (routing) {
-  GDPRDefaults.apply(routing, compliantTrackers: ['eu_backend']);
-  return routing;
-});
+  FirebaseTracker(),
+  MixpanelTracker(),
+], (routing) => routing
+  .defineGroup('paid', ['mixpanel', 'amplitude'])
+  .defineGroup('internal', ['console', 'api'])
+
+  .routeCategory(EventCategory.user)
+  .toGroupNamed('paid')
+  .and()
+
+  .routeCategory(EventCategory.technical)
+  .toGroupNamed('internal')
+  .and()
+
+  .routeDefault()
+  .toAll()
+);
 ```
 
-Variants: `applyStrict` (EU), `applyMinimal`, `applyCCPA` (California), `applyForRegion(GDPRRegion.eu)`.
+### Priority
 
-### PerformanceDefaults
+Higher priority rules are evaluated first. Rules with equal priority are evaluated in the order they were added. The default priority is 0.
 
-`PerformanceDefaults.apply(builder)` — for high-event-rate apps:
-- UI interaction events (`click_*`, `tap_*`, `scroll_*`): 1% sampling
-- Mouse/pointer events: 0.1% sampling
-- Critical events (`purchase_*`, `error_*`): 0% sampling
-- Default: 50% sampling
+```dart
+routing
+  .routeCategory(EventCategory.business).toAll().withPriority(20).and()
+  .routeHighVolume().to(['firebase']).withPriority(10).and()
+  .routeDefault().toAll()
+  // business events (priority 20) are matched before high-volume (priority 10)
+```
 
-Variants: `applyMobileOptimized`, `applyWebOptimized`, `applyLowLatency`, `applyBandwidthConscious`, `applyHighThroughput`.
+This matters when an event matches multiple rules — only the first match is applied.
+
+### Environment modifiers
+
+```dart
+// Only in debug builds (kDebugMode == true).
+.routeCategory(EventCategory.technical).to(['console']).onlyInDebug().and()
+
+// Only in release builds.
+.routeCategory(EventCategory.marketing).toAll().onlyInProduction().and()
+```
+
+These work per-rule, so you can send the same event to the console in debug and to Firebase in production:
+
+```dart
+routing
+  .routeCategory(EventCategory.technical).to(['console']).onlyInDebug().and()
+  .routeDefault().toAll()
+```
 
 ---
 
 ## Widget wrappers
 
-All wrappers call `FlexTrack.track` and no-op safely if `FlexTrack` was never set up.
+All wrappers call `FlexTrack.track` internally and no-op safely if `FlexTrack.setup` was never called.
 
 ### FlexClickTrack
 
-Wraps any widget. Fires on a completed tap (finger down + up without exceeding `kTouchSlop`). Drags and scrolls do not trigger tracking.
-
-Uses a `Listener` with `HitTestBehavior.translucent`, so nested `InkWell`s, buttons, and `GestureDetector`s still receive their own gestures. You do not need to remove your existing `onPressed` to add analytics.
+Wraps any widget and fires an event on tap. Uses `GestureDetector` with `HitTestBehavior.translucent`, so child interactive widgets (`ElevatedButton`, `InkWell`, `TextButton`) still receive their own tap events as well. You do not need to remove existing `onPressed` handlers.
 
 ```dart
+// Works on non-interactive widgets directly:
 FlexClickTrack(
-  event: ShareButtonTappedEvent(),
-  child: IconButton(
-    icon: const Icon(Icons.share),
-    onPressed: _onShare,
+  event: BannerClickEvent(),
+  child: Image.network('https://example.com/banner.png'),
+)
+
+// Also works when the child is already interactive — both fire:
+FlexClickTrack(
+  event: SignUpButtonClickedEvent(),
+  child: ElevatedButton(
+    onPressed: _navigateToSignUp,
+    child: const Text('Sign up'),
   ),
 )
 ```
 
-No configuration beyond `event` and `child` is needed. The wrapper does not interfere with `Semantics` or accessibility.
-
 ### FlexImpressionTrack
 
-Fires when the child becomes sufficiently visible in the viewport. Depends on [`visibility_detector`](https://pub.dev/packages/visibility_detector), which is a direct dependency of `flex_track`.
+Fires when the child widget crosses a visibility threshold. Requires the [`visibility_detector`](https://pub.dev/packages/visibility_detector) package in your app.
 
 ```dart
 FlexImpressionTrack(
-  // Must be stable for the same logical slot (e.g. item id, not list index).
-  visibilityKey: ValueKey('product_${product.id}'),
-  event: ProductImpressionEvent(product.id),
+  // Must be stable for the same logical slot across rebuilds.
+  // Use item id, not list index.
+  visibilityKey: ValueKey('banner_${banner.id}'),
 
-  // Required: fraction of the widget that must be visible (0 < x ≤ 1).
+  event: BannerImpressionEvent(bannerId: banner.id),
+
+  // Fire when 50% of the widget is visible (default: 0.5).
   visibleFractionThreshold: 0.5,
 
-  // Optional: fraction must stay above threshold for this long.
-  minVisibleDuration: const Duration(milliseconds: 300),
+  // Optional: widget must stay visible for this long before firing.
+  minVisibleDuration: const Duration(milliseconds: 500),
 
-  // Optional: fire only once per State instance (default: true).
-  // Set false to re-fire each time visibility crosses the threshold.
+  // Default: true — fires at most once per widget lifecycle.
+  // Set false to re-fire after the widget leaves and re-enters view.
   fireOnce: true,
 
-  child: ProductTile(product: product),
+  child: BannerWidget(banner: banner),
 )
 ```
 
-Important:
-- **`visibilityKey` must be stable.** If your list rebuilds with a new key for the same slot, a new impression will fire.
-- `fireOnce: true` (default) fires at most once per `State` lifecycle. Re-inserting the widget into the tree resets the counter.
-- `fireOnce: false` fires once per visibility streak. The streak resets when the fraction drops below the threshold.
+Two things to get right:
+
+1. **`visibilityKey` must be stable for the same content.** If your list rebuilds and a different `Key` instance refers to the same banner slot, a new impression fires. Use `ValueKey(item.id)`, not `ValueKey(index)`.
+
+2. **`fireOnce: true` (default) is per `State` instance.** The event fires once and won't fire again even if the user scrolls away and back. Set `fireOnce: false` if you want re-impression tracking on each visibility streak.
 
 ### FlexMountTrack
 
-Fires exactly once after the widget's first frame is laid out. Useful for screen-view events in lazily-built lists (e.g. `ListView.builder`) when you want to know a row was rendered, not necessarily seen.
+Fires exactly once after the widget is first inserted into the widget tree. Useful in `ListView.builder` to know when an item was built (rendered on scroll), not necessarily seen.
 
 ```dart
+// Each time this ProductTile is built by ListView.builder, one event fires.
 FlexMountTrack(
-  event: ProductTileRenderedEvent(product.id),
+  event: ProductTileRenderedEvent(productId: product.id),
   child: ProductTile(product: product),
 )
 ```
 
-`FlexMountTrack` does **not** mean the user saw the widget — the widget may be off-screen at mount time. For viewable-impression semantics, use `FlexImpressionTrack`.
+`FlexMountTrack` fires on **mount**, not on visibility. The widget may be off-screen when it mounts (e.g. Flutter over-renders scroll views). Use `FlexImpressionTrack` when you need confirmed visibility.
 
 ### FlexTrackRouteViewMixin
 
-For screen-level route tracking via Flutter's navigator observer system.
-
-**Register one observer on `MaterialApp`:**
+Tracks screen views via Flutter's navigator observer. Register one `FlexTrackRouteObserver` instance on `MaterialApp`, then apply the mixin to each screen's `State`.
 
 ```dart
-final _routeObserver = FlexTrackRouteObserver();
+// lib/main.dart — register once
+final routeObserver = FlexTrackRouteObserver();
 
 MaterialApp(
-  navigatorObservers: [_routeObserver],
+  navigatorObservers: [routeObserver],
   home: const HomeScreen(),
 )
 ```
 
-**Apply the mixin on each screen's `State`:**
-
 ```dart
+// lib/screens/home_screen.dart
+import 'package:flex_track/flex_track.dart';
+import '../main.dart' show routeObserver;
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+  @override State<HomeScreen> createState() => _HomeScreenState();
+}
+
 class _HomeScreenState extends State<HomeScreen> with FlexTrackRouteViewMixin {
   @override
-  FlexTrackRouteObserver get flexTrackRouteObserver => _routeObserver;
+  FlexTrackRouteObserver get flexTrackRouteObserver => routeObserver;
 
   @override
   BaseEvent get routeViewEvent => HomeViewedEvent();
@@ -730,59 +522,156 @@ class _HomeScreenState extends State<HomeScreen> with FlexTrackRouteViewMixin {
   bool get trackWhenReturningFromChildRoute => false;
 
   @override
-  Widget build(BuildContext context) => Scaffold(/* ... */);
+  Widget build(BuildContext context) => const Scaffold(/* ... */);
 }
 ```
 
-The mixin subscribes via `RouteAware` and fires `routeViewEvent` on initial push and (optionally) on pop-back. It unsubscribes automatically in `dispose`.
-
-Full widget semantics and widget test examples: [docs/widgets.md](docs/widgets.md).
+The mixin subscribes via `RouteAware` and fires `routeViewEvent` on push, and optionally on pop-back. It unsubscribes automatically in `dispose` — no cleanup needed.
 
 ---
 
-## User identification
-
-Call these after setup and after consent is confirmed:
+## GDPR and consent
 
 ```dart
-// Attach a user id and optional traits to all subsequent events.
-await FlexTrack.identifyUser('user_123', {
-  'plan': 'pro',
-  'country': 'DE',
-});
+// Call this after the user responds to your consent dialog.
+FlexTrack.setConsent(general: true, pii: false);
 
-// Update user properties without changing the id.
-await FlexTrack.setUserProperties({'last_seen': DateTime.now().toIso8601String()});
-
-// On logout: clear identity in all trackers.
-await FlexTrack.resetTrackers();
+// Read the current state.
+final status = FlexTrack.getConsentStatus();
+// Returns: {'general': true, 'pii': false}
 ```
 
-Each method is forwarded to every enabled tracker's `doIdentifyUser` / `doSetUserProperties` / `doReset`. If your tracker doesn't override these, they no-op by default.
+Until consent is set, `general` and `pii` both default to `false`. Events that require consent are dropped silently — no exception is thrown.
+
+**Consent interaction table:**
+
+| Event flag | Rule modifier | What happens |
+|------------|---------------|-------------|
+| `requiresConsent: true` (default) | `.requireConsent()` (default) | Dropped until `general: true` |
+| `requiresConsent: false` | — | Always fires |
+| `isEssential: true` | — | Always fires regardless of any consent state |
+| `containsPII: true` | `.requirePIIConsent()` | Dropped until `pii: true` |
+
+**GDPR presets:**
+
+`GDPRDefaults.apply` adds pre-configured rules for PII, sensitive, user, marketing, and system categories. Pass `compliantTrackers` to limit PII events to specific backends.
+
+```dart
+await FlexTrack.setupWithRouting([
+  ConsoleTracker(),
+  FirebaseTracker(),        // id: 'firebase' — you've verified it's GDPR compliant
+  InternalApiTracker(),     // id: 'internal'
+], (routing) {
+  GDPRDefaults.apply(routing, compliantTrackers: ['firebase', 'internal']);
+  return routing;
+});
+```
+
+For stricter controls (e.g. EU deployment), use `GDPRDefaults.applyStrict`:
+
+```dart
+GDPRDefaults.applyStrict(routing, compliantTrackers: ['internal']);
+```
+
+`applyStrict` additionally requires consent for behavioral events (click, view, scroll patterns) and restricts more property keys.
 
 ---
 
-## Tracker lifecycle
+## Sampling and performance
+
+Sampling is applied per-rule. Each matching event independently has a random chance of being forwarded at the specified rate.
+
+| Method | Rate |
+|--------|------|
+| `.noSampling()` | 100% — all events |
+| `.lightSampling()` | 10% |
+| `.mediumSampling()` | 50% |
+| `.heavySampling()` | 1% |
+| `.sample(0.25)` | Custom rate (0.0–1.0) |
+
+`isEssential: true` on the event bypasses sampling for that event regardless of the rule's sample rate.
+
+**Performance presets:**
 
 ```dart
-// Enable or disable a tracker at runtime (persists until reset()).
-FlexTrack.enableTracker('firebase');
-FlexTrack.disableTracker('mixpanel');
+await FlexTrack.setupWithRouting(trackers, (routing) {
+  PerformanceDefaults.apply(routing);
+  return routing;
+});
 
-FlexTrack.enableAllTrackers();
-FlexTrack.disableAllTrackers();
+// More aggressive for mobile:
+PerformanceDefaults.applyMobileOptimized(routing);
+```
 
-FlexTrack.isTrackerEnabled('firebase'); // → bool
+`PerformanceDefaults.apply` applies heavy sampling to high-volume and UI interaction events, and no sampling to critical business events like purchases and errors.
 
-// List registered ids.
-final ids = FlexTrack.getTrackerIds(); // → Set<String>
+**Batch tracking:**
 
-// Force-flush any buffered events (call before app background/suspend).
-await FlexTrack.flush();
+```dart
+// Track multiple events in one call — more efficient than sequential track() calls.
+await FlexTrack.trackAll([
+  PageViewEvent(page: 'checkout'),
+  CheckoutStartedEvent(cartValue: 49.99),
+]);
+```
 
-// Check setup state.
-FlexTrack.isSetUp;   // → bool (safe to call before setup)
-FlexTrack.isEnabled; // → bool
+**Pausing and resuming:**
+
+```dart
+// Pause all tracking (e.g. user opts out mid-session).
+FlexTrack.disable();
+
+// Resume.
+FlexTrack.enable();
+```
+
+---
+
+## Debugging
+
+**Print a summary** of registered trackers, consent state, and routing config:
+
+```dart
+FlexTrack.printDebugInfo();
+```
+
+**Dry-run an event** through the routing engine without sending it:
+
+```dart
+final result = FlexTrack.debugEvent(PurchaseEvent(amount: 9.99));
+// Shows which rule matched, which trackers would receive the event,
+// whether consent passes, and whether sampling would drop it.
+```
+
+**Validate** the routing config for common mistakes (unreachable rules, missing default, etc.):
+
+```dart
+final errors = FlexTrack.validate();
+if (errors.isNotEmpty) {
+  for (final e in errors) debugPrint('Config error: $e');
+}
+```
+
+**ConsoleTracker options:**
+
+`ConsoleTracker` is the only built-in tracker. It accepts a few options:
+
+```dart
+ConsoleTracker(
+  showProperties: true,   // print event properties (default: true)
+  showTimestamps: true,   // prefix with HH:mm:ss.ms (default: true)
+  colorOutput: true,      // ANSI colours in terminal (default: true)
+  prefix: '📊 Analytics', // default: '📊 FlexTrack'
+)
+```
+
+Use it in production builds alongside your real trackers if you want a local audit log, or only include it conditionally:
+
+```dart
+await FlexTrack.setup([
+  if (kDebugMode) ConsoleTracker(),
+  FirebaseTracker(),
+]);
 ```
 
 ---
@@ -797,240 +686,136 @@ void main() {
   late MockTracker mock;
 
   setUp(() async {
+    // Returns a MockTracker pre-wired to FlexTrack.
+    // Consent checks and sampling are both disabled.
     mock = await setupFlexTrackForTesting();
-    // Disables consent checks and sampling.
-    // Sets debug mode on.
   });
 
   tearDown(() async {
-    await FlexTrack.reset(); // mandatory between tests
+    // FlexTrack is a singleton — always reset between tests.
+    await FlexTrack.reset();
   });
 
-  test('tracks purchase event', () async {
-    await FlexTrack.track(PurchaseEvent(amount: 9.99, currency: 'USD'));
+  test('tracks a purchase event', () async {
+    await FlexTrack.track(PurchaseEvent(amount: 9.99));
 
     expect(mock.capturedEvents, hasLength(1));
     expect(mock.capturedEvents.single.getName(), 'purchase');
-    expect(mock.capturedEvents.single.getProperties()?['amount'], 9.99);
+    expect(mock.capturedEvents.single.getProperties()['amount'], 9.99);
   });
 
-  test('captures user identification', () async {
-    await FlexTrack.identifyUser('u_1', {'plan': 'pro'});
+  test('does not send event without consent', () async {
+    // For consent tests, set up with a real routing config instead.
+    await FlexTrack.reset();
+    final customMock = MockTracker();
+    await FlexTrack.setupWithRouting([customMock], (r) => r
+      .routeDefault().toAll().requireConsent().and());
 
-    expect(mock.capturedUserIds, contains('u_1'));
-    expect(mock.capturedUserProperties.first['plan'], 'pro');
+    FlexTrack.setConsent(general: false);
+    await FlexTrack.track(PageViewEvent());
+
+    expect(customMock.capturedEvents, isEmpty);
   });
 }
 ```
 
 `MockTracker` exposes:
-- `capturedEvents` — `List<BaseEvent>` (unmodifiable view)
-- `capturedUserProperties` — `List<Map<String, dynamic>>`
-- `capturedUserIds` — `List<String>`
-- `clearCapturedData()` — reset between assertions in the same test
+- `capturedEvents` — `List<BaseEvent>` of every event that reached the tracker
+- Use `mock.capturedEvents.single` when you expect exactly one event
+- Use `mock.capturedEvents.where(...)` to filter by name or type
 
-If you need to test consent gating or sampling behaviour, set up with a custom routing config instead of `setupFlexTrackForTesting`:
-
-```dart
-setUp(() async {
-  final mock = MockTracker();
-  await FlexTrack.setupWithRouting([mock], (r) => r
-    .routePII().toAll().requirePIIConsent().and()
-    .routeDefault().toAll().and());
-});
-```
-
-More patterns and widget test examples: [docs/testing-and-troubleshooting.md](docs/testing-and-troubleshooting.md).
+`setupFlexTrackForTesting()` disables consent checking and sampling so your assertions aren't affected by those concerns unless you're specifically testing them. For those cases, bypass it and set up manually as shown above.
 
 ---
 
-## Debugging
+## Common pitfalls
 
-**Print a summary of all registered trackers, consent state, and routing config:**
+### 1. Calling track() before setup()
 
 ```dart
-FlexTrack.printDebugInfo();
+// ❌ Throws ConfigurationException — FlexTrack is not set up.
+await FlexTrack.track(MyEvent());
 ```
 
-**Dry-run an event through the routing engine without actually tracking it:**
-
 ```dart
-final info = FlexTrack.debugEvent(PurchaseEvent(amount: 9.99, currency: 'USD'));
-// info.matchedRule      → RoutingRule?
-// info.targetTrackers   → List<String>
-// info.skippedRules     → List<SkippedRule> (with reasons)
-// info.wouldSample      → bool
-// info.wouldPassConsent → bool
+// ✅ Always await setup() before tracking.
+await FlexTrack.setup([ConsoleTracker(), FirebaseTracker()]);
+await FlexTrack.track(MyEvent());
 ```
 
-**Validate the routing configuration for common mistakes:**
+`FlexTrack.setup()` must complete before any call to `track()`, `setConsent()`, or other instance methods.
+
+---
+
+### 2. Forgetting FlexTrack.reset() between tests
 
 ```dart
-final errors = FlexTrack.validate();
-if (errors.isNotEmpty) {
-  for (final e in errors) debugPrint('Config error: $e');
-}
+// ❌ Second test throws 'FlexTrack is already set up'.
+setUp(() async { await setupFlexTrackForTesting(); });
 ```
 
-**Get raw debug map (for logging or remote diagnostics):**
-
 ```dart
-final info = FlexTrack.getDebugInfo();
-// {'isSetUp': true, 'isInitialized': true, 'isEnabled': true, 'eventProcessor': {...}}
+// ✅ Always reset in tearDown.
+setUp(() async { mock = await setupFlexTrackForTesting(); });
+tearDown(() async { await FlexTrack.reset(); });
 ```
 
-**ConsoleTracker options:**
+FlexTrack is a singleton. Without `reset()`, `setup()` in the second test throws because the instance from the first test is still alive.
+
+---
+
+### 3. Unstable visibilityKey in FlexImpressionTrack
 
 ```dart
-ConsoleTracker(
-  showProperties: true,   // default: true
-  showTimestamps: true,   // default: true
-  colorOutput: true,      // default: true — ANSI colours in terminal
-  prefix: '📊 Analytics', // default: '📊 FlexTrack'
+// ❌ Using list index as key — impression re-fires when items shift position.
+FlexImpressionTrack(
+  visibilityKey: ValueKey(index),   // wrong
+  event: ProductImpressionEvent(product.id),
+  child: ProductTile(product: product),
 )
 ```
 
-`ConsoleTracker` also maintains an in-memory `eventHistory` list for inspection during development:
+```dart
+// ✅ Use a stable identifier tied to the content, not its position.
+FlexImpressionTrack(
+  visibilityKey: ValueKey(product.id),  // correct
+  event: ProductImpressionEvent(product.id),
+  child: ProductTile(product: product),
+)
+```
+
+When the key changes, `FlexImpressionTrack` treats it as a new widget and fires another impression — even if the same product was already shown.
+
+---
+
+### 4. Missing .routeDefault() at the end of a routing config
 
 ```dart
-final console = ConsoleTracker();
-// ... after some tracking ...
-console.eventHistory.last.getName(); // last tracked event name
-console.clearHistory();
+// ❌ Events not matched by any rule are silently dropped.
+await FlexTrack.setupWithRouting(trackers, (routing) => routing
+  .routeCategory(EventCategory.business).toAll().and()
+  .routeHighVolume().to(['firebase']).and()
+  // No default — any other event is dropped.
+);
 ```
-
----
-
-## Reference — event flags
-
-| Flag | Type | Default | Routing effect |
-|------|------|---------|----------------|
-| `category` | `EventCategory?` | `null` | Matched by `.routeCategory(...)` |
-| `containsPII` | `bool` | `false` | Matched by `.routePII()`; triggers `.requirePIIConsent()` rules |
-| `requiresConsent` | `bool` | `true` | Blocks on `.requireConsent()` rules when consent is `false` |
-| `isEssential` | `bool` | `false` | Bypasses consent checks and sampling for this event |
-| `isHighVolume` | `bool` | `false` | Matched by `.routeHighVolume()`; sampling rules often target this |
-| `userId` | `String?` | `null` | Displayed in `ConsoleTracker` output; not used for routing |
-| `sessionId` | `String?` | `null` | Displayed in `ConsoleTracker` output; not used for routing |
-| `timestamp` | `DateTime` | `DateTime.now()` | Not used by routing; forwarded to trackers via `getProperties()` if included |
-
----
-
-## Reference — routing DSL
-
-**Matchers** (on `RoutingBuilder`):
-
-```
-.route<T>()                              exact Dart type
-.routeNamed('substring')                 name contains substring
-.routeExact('name')                      name == 'name'
-.routeMatching(RegExp(r'...'))           regex
-.routeCategory(EventCategory.x)          category == x
-.routeCategoryNamed('custom')            user-defined category
-.routeWithProperty('key')                property key exists
-.routeWithProperty('key', value)         property key == value
-.routeEssential()                        isEssential == true
-.routeHighVolume()                       isHighVolume == true
-.routePII()                              containsPII == true
-.routeDefault()                          catch-all (put last)
-```
-
-**Targets** (on `RouteConfigBuilder`):
-
-```
-.toAll()                  TrackerGroup.all
-.to(['id1', 'id2'])       explicit tracker ids
-.toTracker('id')          single tracker
-.toDevelopment()          TrackerGroup.development
-.toGroupNamed('name')     user-defined group
-.toGroup(group)           TrackerGroup instance
-```
-
-**Modifiers** (on `RoutingRuleBuilder`):
-
-```
-Sampling:
-  .noSampling()            100%
-  .lightSampling()          10%
-  .mediumSampling()         50%
-  .heavySampling()           1%
-  .sample(0.05)           custom
-
-Consent:
-  .requireConsent()        gate on general consent (default)
-  .requirePIIConsent()     gate on PII consent
-  .skipConsent()           always fire
-
-Environment:
-  .onlyInDebug()           skipped in release
-  .onlyInProduction()      skipped in debug
-
-Priority / metadata:
-  .withPriority(n)         higher = evaluated first (default: 0)
-  .withDescription('...')  label in debug output
-  .withId('rule_id')       programmatic reference
-
-Shorthand:
-  .essential()             skipConsent + noSampling + highPriority(10)
-  .highPriority()          withPriority(10)
-  .lowPriority()           withPriority(-10)
-
-Chain:
-  .and()                   commit rule, return RoutingBuilder
-```
-
-**RoutingBuilder global options:**
 
 ```dart
-routing
-  .setSampling(false)          // disable sampling globally
-  .setConsentChecking(false)   // disable consent globally (useful in tests)
-  .setDebugMode(true)          // used by environment-based rules
-  .defineGroup('name', ['id1', 'id2'])
-  .defineCategory('custom_name')
+// ✅ Always end with routeDefault().
+await FlexTrack.setupWithRouting(trackers, (routing) => routing
+  .routeCategory(EventCategory.business).toAll().and()
+  .routeHighVolume().to(['firebase']).and()
+  .routeDefault().toAll()  // catches everything else
+);
 ```
 
----
-
-## Reference — preset index
-
-| Class | Method | Summary |
-|-------|--------|---------|
-| `SmartDefaults` | `apply` | Sensible defaults for most apps |
-| `SmartDefaults` | `applyPerformanceFocused` | Adds `high_frequency`/`batchable` property rules |
-| `SmartDefaults` | `applyPrivacyFocused` | Adds consent rules for user + marketing categories |
-| `SmartDefaults` | `applyDevelopmentFriendly` | Routes `debug_*`, `test_*`, `dev_*` to development only |
-| `GDPRDefaults` | `apply` | Standard GDPR (UK/global) |
-| `GDPRDefaults` | `applyStrict` | EU GDPR + behavioral event consent |
-| `GDPRDefaults` | `applyMinimal` | PII/sensitive only; everything else unguarded |
-| `GDPRDefaults` | `applyCCPA` | California opt-out model |
-| `GDPRDefaults` | `applyForRegion` | Dispatches to above by `GDPRRegion` enum |
-| `PerformanceDefaults` | `apply` | Aggressive sampling for UI interaction events |
-| `PerformanceDefaults` | `applyMobileOptimized` | Even more aggressive; adds touch/location rules |
-| `PerformanceDefaults` | `applyWebOptimized` | Adds SPA navigation and DOM event rules |
-| `PerformanceDefaults` | `applyLowLatency` | Only essential + critical events; 1% default |
-| `PerformanceDefaults` | `applyBandwidthConscious` | Only business-critical events; 0.1% default |
-| `PerformanceDefaults` | `applyHighThroughput` | Extreme sampling; 0.001% default |
-
-All presets can be combined — call them sequentially on the same builder. Rules added later at equal priority are evaluated after rules added earlier, so order matters.
+Run `FlexTrack.validate()` during development — it will flag a missing default rule.
 
 ---
 
-## Contributing / license
+## Contributing and license
 
-**Repository:** [github.com/alirezat66/flex_track](https://github.com/alirezat66/flex_track)
+Source: [github.com/alirezat66/flex_track](https://github.com/alirezat66/flex_track)
 
-**Further reading:**
+Issues and pull requests are welcome. Please open an issue before starting large changes.
 
-| Topic | File |
-|-------|------|
-| Tracker mental model, multiple backends | [docs/trackers.md](docs/trackers.md) |
-| Routing rules, priority, groups | [docs/routing-and-rules.md](docs/routing-and-rules.md) |
-| GDPR / performance presets, consent detail | [docs/privacy-performance-debugging.md](docs/privacy-performance-debugging.md) |
-| Widget semantics, widget tests | [docs/widgets.md](docs/widgets.md) |
-| Pitfalls, migration notes | [docs/testing-and-troubleshooting.md](docs/testing-and-troubleshooting.md) |
-| Runnable app + reference tracker implementations | [example/](example/) |
-
-**API entrypoint:** [`package:flex_track/flex_track.dart`](lib/flex_track.dart)
-
-**License:** [LICENSE](LICENSE)
+**License:** [MIT](https://github.com/alirezat66/flex_track/blob/main/LICENSE)
