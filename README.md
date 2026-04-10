@@ -12,32 +12,41 @@ Routes analytics events to multiple trackers with consent management, sampling, 
 
 ## Table of contents
 
-- [Quick start](#quick-start)
-- [Examples](#examples)
-- [Design philosophy](#design-philosophy)
-- [Creating events](#creating-events)
-  - [Event flags](#event-flags)
-  - [EventCategory values](#eventcategory-values)
-- [Creating trackers](#creating-trackers)
-  - [Firebase example](#firebase-example)
-  - [Mixpanel example](#mixpanel-example)
-- [Smart routing](#smart-routing)
-  - [Routing DSL](#routing-dsl)
-  - [Tracker groups](#tracker-groups)
-  - [Priority](#priority)
-  - [Environment modifiers](#environment-modifiers)
-- [Widget wrappers](#widget-wrappers)
-  - [FlexClickTrack](#flexclicktrack)
-  - [FlexImpressionTrack](#fleximpressiontrack)
-  - [FlexMountTrack](#flexmounttrack)
-  - [FlexTrackRouteViewMixin](#flextrackrouteviewmixin)
-- [GDPR and consent](#gdpr-and-consent)
-- [Sampling and performance](#sampling-and-performance)
-- [Debugging](#debugging)
-- [FlexTrackClient and dependency injection](#flextrackclient-and-dependency-injection)
-- [Testing](#testing)
-- [Common pitfalls](#common-pitfalls)
-- [Contributing and license](#contributing-and-license)
+- [flex\_track](#flex_track)
+  - [Table of contents](#table-of-contents)
+  - [Quick start](#quick-start)
+  - [Examples](#examples)
+  - [FlexTrackClient and dependency injection](#flextrackclient-and-dependency-injection)
+    - [Riverpod](#riverpod)
+    - [Bloc / Cubit](#bloc--cubit)
+  - [Design philosophy](#design-philosophy)
+  - [Creating events](#creating-events)
+    - [Event flags](#event-flags)
+    - [EventCategory values](#eventcategory-values)
+  - [Creating trackers](#creating-trackers)
+    - [Firebase example](#firebase-example)
+    - [Mixpanel example](#mixpanel-example)
+  - [Smart routing](#smart-routing)
+    - [Routing DSL](#routing-dsl)
+    - [Tracker groups](#tracker-groups)
+    - [Priority](#priority)
+    - [Environment modifiers](#environment-modifiers)
+  - [Widget wrappers](#widget-wrappers)
+    - [FlexClickTrack](#flexclicktrack)
+    - [FlexImpressionTrack](#fleximpressiontrack)
+    - [FlexMountTrack](#flexmounttrack)
+    - [FlexTrackRouteViewMixin](#flextrackrouteviewmixin)
+  - [GDPR and consent](#gdpr-and-consent)
+  - [Sampling and performance](#sampling-and-performance)
+  - [Debugging](#debugging)
+    - [FlexTrack Inspector](#flextrack-inspector)
+  - [Testing](#testing)
+  - [Common pitfalls](#common-pitfalls)
+    - [1. Calling track() before setup()](#1-calling-track-before-setup)
+    - [2. Forgetting FlexTrack.reset() between tests](#2-forgetting-flextrackreset-between-tests)
+    - [3. Unstable visibilityKey in FlexImpressionTrack](#3-unstable-visibilitykey-in-fleximpressiontrack)
+    - [4. Missing .routeDefault() at the end of a routing config](#4-missing-routedefault-at-the-end-of-a-routing-config)
+  - [Contributing and license](#contributing-and-license)
 
 ---
 
@@ -728,6 +737,35 @@ FlexTrack.enable();
 ---
 
 ## Debugging
+
+### FlexTrack Inspector
+
+In **debug** builds on **mobile/desktop** (not Flutter Web), you can start a local dashboard that streams events as they are dispatched. The console prints a URL such as:
+
+```text
+FlexTrack Inspector (open in browser): http://127.0.0.1:7788
+```
+
+Open that address in a browser to inspect the live event list, tracker status, consent snapshot, and per-event JSON.
+
+![FlexTrack Inspector dashboard with the flagship example app](docs/assets/inspector.gif)
+
+```dart
+import 'package:flex_track/flex_track_inspector.dart';
+import 'package:flutter/foundation.dart';
+
+// After FlexTrack.setup — e.g. in kDebugMode only:
+if (kDebugMode) {
+  final inspectorUrl = await FlexTrackInspector.start(port: 7788);
+  if (inspectorUrl != null) {
+    debugPrint('FlexTrack Inspector (open in browser): $inspectorUrl');
+  }
+}
+```
+
+See the flagship [`example/`](example/) app (`example/lib/utils/analytics_setup.dart`). On **Flutter Web**, `FlexTrackInspector.start` is a no-op (no embedded HTTP server).
+
+---
 
 **Print a summary** of registered trackers, consent state, and routing config:
 

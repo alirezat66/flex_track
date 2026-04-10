@@ -14,6 +14,8 @@ flutter run
 
 On first launch you will see a **privacy / consent** dialog (backed by an in-memory mock store, not real `SharedPreferences` persistence across restarts in tests).
 
+In **debug** mode on mobile or desktop, the app starts the **FlexTrack Inspector** (local HTTP dashboard). Watch the console for `FlexTrack Inspector (open in browser): http://127.0.0.1:7788` and open that URL to see live events and tracker state. (Not available on Flutter Web.)
+
 ## Integration test
 
 ```bash
