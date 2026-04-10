@@ -1,13 +1,8 @@
-# FlexTrack documentation (by goal)
+# flex_track markdown docs (moved)
 
-Pick the topic that matches what you are doing. The [main README](../README.md) covers installation, a single-tracker setup, defining events, and short summaries; these pages go deeper with examples and edge cases.
+Long-form documentation now lives in the **Docusaurus** site under [`website/docs/`](../website/docs/).
 
-| Goal | Document |
-|------|----------|
-| Multiple backends, vendor adapters, `BaseTrackerStrategy` | [trackers.md](trackers.md) |
-| Send different events to different trackers; sampling; rule priority | [routing-and-rules.md](routing-and-rules.md) |
-| Consent, GDPR presets, performance presets, batching, debug APIs | [privacy-performance-debugging.md](privacy-performance-debugging.md) |
-| Click, impression, mount, route / screen tracking | [widgets.md](widgets.md) |
-| `setupFlexTrackForTesting`, `MockTracker`, pitfalls, migration | [testing-and-troubleshooting.md](testing-and-troubleshooting.md) |
+- **Browse locally:** `cd website && npm install && npm start`
+- **Published site (GitHub Pages):** [https://alirezat66.github.io/flex_track/](https://alirezat66.github.io/flex_track/) (available after the **Documentation** workflow deploys from `main`)
 
-Also see the [example app](../example/) for runnable setup, events, and sample trackers.
+Historical topic filenames (`trackers.md`, `routing-and-rules.md`, etc.) have corresponding pages in `website/docs/guides/`.

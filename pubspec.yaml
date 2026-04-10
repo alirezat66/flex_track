@@ -4,7 +4,7 @@ version: 1.0.0  # Use semantic versioning
 homepage: https://github.com/alirezat66/flex_track
 repository: https://github.com/alirezat66/flex_track
 issue_tracker: https://github.com/alirezat66/flex_track/issues
-documentation: https://github.com/alirezat66/flex_track#readme
+documentation: https://alirezat66.github.io/flex_track/
 
 topics:
   - analytics

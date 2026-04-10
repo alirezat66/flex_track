@@ -6,6 +6,8 @@
 
 Routes analytics events to multiple trackers with consent management, sampling, and environment rules — from one call site.
 
+**Full documentation (guides, comparisons, architecture):** [https://alirezat66.github.io/flex_track/](https://alirezat66.github.io/flex_track/) (built from [`website/`](website/) with Docusaurus; the **Documentation** workflow on `main` publishes the `gh-pages` branch — set **Settings → Pages** to that branch if the site is not live yet). API reference: [pub.dev documentation](https://pub.dev/documentation/flex_track/latest/).
+
 ---
 
 ## Table of contents
