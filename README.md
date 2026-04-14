@@ -37,7 +37,7 @@ Instead of spreading analytics policy throughout the app, define it once and app
 
 ## Visual Demo
 
-![Inspector Demo](./assets/inspector.gif)
+![Inspector Demo](docs/assets/inspector.gif)
 
 ## Quick Example
 
