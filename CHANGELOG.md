@@ -1,3 +1,11 @@
+## 1.0.1
+
+* Improve package presentation and pub.dev listing metadata.
+* Add screenshot entries in `pubspec.yaml` for logo and banner assets.
+* README improvements and image path fixes for inspector demo rendering.
+
+---
+
 ## 1.0.0
 
 This release promotes the package to **1.0.0** and focuses on **injectable analytics**, **widget ergonomics**, **local debugging**, and **documentation**.
