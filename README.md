@@ -1,20 +1,63 @@
-# flex_track
+![FlexTrack Banner](docs/assets/banner.png)
+
+# FlexTrack
+
+Multi-tracker analytics orchestration for Flutter: route events, enforce consent, and debug dispatch decisions from one call site.
 
 [![pub package](https://img.shields.io/pub/v/flex_track.svg)](https://pub.dev/packages/flex_track)
 [![CI](https://github.com/alirezat66/flex_track/actions/workflows/ci.yml/badge.svg)](https://github.com/alirezat66/flex_track/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alirezat66/flex_track/blob/main/LICENSE)
 
-Routes analytics events to multiple trackers with consent management, sampling, and environment rules — from one call site.
+**Settings → Pages** to that branch if the site is not live yet). API reference: [pub.dev documentation](https://pub.dev/documentation/flex_track/latest/).
 
-**Full documentation (guides, comparisons, architecture):** [https://alirezat66.github.io/flex_track/](https://alirezat66.github.io/flex_track/) (built from [`website/`](website/) with Docusaurus; the **Documentation** workflow on `main` publishes the `gh-pages` branch — set **Settings → Pages** to that branch if the site is not live yet). API reference: [pub.dev documentation](https://pub.dev/documentation/flex_track/latest/).
+---
+
+## The Problem
+
+In many Flutter apps, analytics logic drifts into multiple layers and becomes difficult to reason about.
+
+- Events are scattered across widgets, cubits, repositories, and services.
+- Different trackers (Firebase, Mixpanel, internal APIs) need different routing rules.
+- Consent and PII checks are often duplicated or inconsistently applied.
+- High-volume events can flood pipelines and increase cost.
+- Teams struggle to verify what was sent, where it went, and why.
+
+This creates fragile analytics implementations that are hard to maintain and hard to trust.
+
+## The Solution
+
+FlexTrack introduces a centralized orchestration layer for analytics in Flutter.
+
+- One tracking call can dispatch to multiple trackers.
+- Declarative routing rules decide target trackers per event.
+- Consent, PII, and sampling policy are enforced in one place.
+- Debug tooling helps you inspect decisions and payload flow live.
+
+Instead of spreading analytics policy throughout the app, define it once and apply it consistently.
+
+## Visual Demo
+
+![Inspector Demo](./assets/inspector.gif)
+
+## Quick Example
+
+```dart
+await FlexTrack.track(AppOpenedEvent());
+```
+
+One call site, multiple tracker destinations, centralized policy.
 
 ---
 
 ## Table of contents
 
-- [flex\_track](#flex_track)
+- [FlexTrack](#flextrack)
   - [Table of contents](#table-of-contents)
   - [Quick start](#quick-start)
+  - [Compare with the usual approach](#compare-with-the-usual-approach)
+  - [Why this exists](#why-this-exists)
+  - [Who this is for / not for](#who-this-is-for--not-for)
+  - [Features](#features)
   - [Examples](#examples)
   - [FlexTrackClient and dependency injection](#flextrackclient-and-dependency-injection)
     - [Riverpod](#riverpod)
@@ -47,6 +90,7 @@ Routes analytics events to multiple trackers with consent management, sampling, 
     - [3. Unstable visibilityKey in FlexImpressionTrack](#3-unstable-visibilitykey-in-fleximpressiontrack)
     - [4. Missing .routeDefault() at the end of a routing config](#4-missing-routedefault-at-the-end-of-a-routing-config)
   - [Contributing and license](#contributing-and-license)
+  - [Support](#support)
 
 ---
 
@@ -113,6 +157,42 @@ await FlexTrack.track(AppOpenedEvent());
 ```
 
 That's it. Both trackers receive every event. Add routing rules when you need more control.
+
+---
+
+
+## Compare with the usual approach
+
+| Approach | Trade-offs |
+| --- | --- |
+| Direct SDK calls | Fast to start, but logic becomes scattered and difficult to audit. |
+| Custom wrappers | Centralizes calls, but often lacks routing, consent policy, and sampling controls. |
+| FlexTrack | Centralized, rule-driven, consent-aware, and testable orchestration across trackers. |
+
+## Why this exists
+
+Most production apps eventually use more than one analytics destination. Teams need to blend product analytics, growth metrics, and internal reporting while still enforcing consent and performance constraints.
+
+FlexTrack exists to make that architecture explicit, maintainable, and debuggable in Flutter.
+
+## Who this is for / not for
+
+**This is for:**
+- Flutter teams using multiple analytics providers
+- Apps with consent, GDPR, or PII controls
+- Teams that want clean routing policy and testable analytics behavior
+
+**This is not for:**
+- Tiny apps with one tracker and no policy requirements
+- Quick throwaway prototypes where minimal setup matters more than architecture
+
+## Features
+
+- Multi-tracker routing with a fluent DSL
+- Event policy controls (consent, PII, sampling, environment modifiers)
+- Debug Inspector with live event visibility
+- `FlexTrackClient` for dependency injection patterns
+- Widget wrappers for click, impression, mount, and route-view tracking
 
 ---
 
@@ -961,3 +1041,14 @@ Source: [github.com/alirezat66/flex_track](https://github.com/alirezat66/flex_tr
 Issues and pull requests are welcome. Please open an issue before starting large changes.
 
 **License:** [MIT](https://github.com/alirezat66/flex_track/blob/main/LICENSE)
+
+
+---
+
+## Support
+
+If this project helps you:
+
+- ⭐ Star the repo
+- 💬 Share feedback
+- 🐛 Open issues
