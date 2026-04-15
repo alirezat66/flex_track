@@ -114,7 +114,8 @@ class RoutingConfiguration {
     int? appliedFloorPriority;
 
     for (final rule in matchingRules) {
-      if (appliedFloorPriority != null && rule.priority < appliedFloorPriority) {
+      if (appliedFloorPriority != null &&
+          rule.priority < appliedFloorPriority) {
         break;
       }
 

@@ -43,11 +43,10 @@ class _StubTracker extends BaseTrackerStrategy {
 
 RoutingConfiguration _exampleLikeConfig() {
   final builder = RoutingBuilder();
-  builder
-      .defineGroup('free_tier', ['console', 'firebase'])
-      .defineGroup('premium', ['mixpanel', 'amplitude'])
-      .defineGroup('internal', ['custom_api'])
-      .defineGroup('gdpr_compliant', ['firebase', 'custom_api']);
+  builder.defineGroup('free_tier', ['console', 'firebase']).defineGroup(
+      'premium', ['mixpanel', 'amplitude']).defineGroup('internal', [
+    'custom_api'
+  ]).defineGroup('gdpr_compliant', ['firebase', 'custom_api']);
 
   GDPRDefaults.apply(builder, compliantTrackers: ['firebase', 'custom_api']);
 
@@ -94,7 +93,8 @@ void main() {
     final config = _exampleLikeConfig();
     final demoRule = config.rules
         .where((r) => r.eventNameRegex != null)
-        .firstWhere((r) => r.eventNameRegex!.pattern == r'^demo_free_tier_only$');
+        .firstWhere(
+            (r) => r.eventNameRegex!.pattern == r'^demo_free_tier_only$');
     expect(demoRule.eventType, isNull);
     expect(
       demoRule.matches(_DemoFreeTier(), isDebugMode: config.isDebugMode),
@@ -130,7 +130,8 @@ void main() {
       hasPIIConsent: true,
       availableTrackers: regIds,
     );
-    expect(withConsent.targetTrackers, unorderedEquals(['mixpanel', 'amplitude']));
+    expect(
+        withConsent.targetTrackers, unorderedEquals(['mixpanel', 'amplitude']));
   });
 
   test('EventProcessor emits non-empty routingResult.targetTrackers', () async {
@@ -150,9 +151,11 @@ void main() {
     proc.setConsent(general: true, pii: true);
 
     final r1 = await proc.processEvent(_DemoFreeTier());
-    expect(r1.routingResult.targetTrackers, unorderedEquals(['console', 'firebase']));
+    expect(r1.routingResult.targetTrackers,
+        unorderedEquals(['console', 'firebase']));
 
     final r2 = await proc.processEvent(_DemoBanner());
-    expect(r2.routingResult.targetTrackers, unorderedEquals(['mixpanel', 'amplitude']));
+    expect(r2.routingResult.targetTrackers,
+        unorderedEquals(['mixpanel', 'amplitude']));
   });
 }

@@ -28,9 +28,7 @@ class FlexTrackScope extends InheritedWidget {
   /// The scoped [FlexTrackClient], or null if there is no [FlexTrackScope]
   /// above [context].
   static FlexTrackClient? maybeOf(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<FlexTrackScope>()
-        ?.client;
+    return context.dependOnInheritedWidgetOfExactType<FlexTrackScope>()?.client;
   }
 
   @override

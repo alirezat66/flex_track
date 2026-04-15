@@ -303,8 +303,8 @@ void main() {
         categoryRuleBuilder.and();
 
         final config = parentBuilder.build();
-        expect(config.rules.first.description,
-            contains('business events to all'));
+        expect(
+            config.rules.first.description, contains('business events to all'));
       });
 
       test('should generate description for default rule', () {
@@ -316,8 +316,8 @@ void main() {
         defaultRuleBuilder.and();
 
         final config = parentBuilder.build();
-        expect(config.rules.first.description,
-            contains('default routing to all'));
+        expect(
+            config.rules.first.description, contains('default routing to all'));
       });
 
       test('should include sampling information in description', () {

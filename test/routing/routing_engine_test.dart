@@ -633,8 +633,7 @@ void main() {
 
         // Highest priority tier (10) merges both rules; priority-5 rule is not applied.
         expect(result.appliedRules, hasLength(2));
-        expect(
-            result.targetTrackers, containsAll(['tracker1', 'tracker2']));
+        expect(result.targetTrackers, containsAll(['tracker1', 'tracker2']));
         expect(result.targetTrackers, isNot(contains('tracker3')));
         final priorities = result.appliedRules.map((r) => r.priority).toList();
         expect(priorities, [10, 10]);

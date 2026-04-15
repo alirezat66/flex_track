@@ -47,7 +47,8 @@ class RoutingEngine {
 
       // Process each matching rule
       for (final rule in matchingRules) {
-        if (appliedFloorPriority != null && rule.priority < appliedFloorPriority) {
+        if (appliedFloorPriority != null &&
+            rule.priority < appliedFloorPriority) {
           break;
         }
 
