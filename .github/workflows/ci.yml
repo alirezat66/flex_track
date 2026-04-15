@@ -20,7 +20,10 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: cd example && flutter pub get && flutter analyze
-      - run: cd example && flutter test integration_test
+      # Integration tests need a single device (-d). On ubuntu-latest both linux
+      # and chrome are available, so `flutter test integration_test` fails with
+      # "More than one device connected". Run them locally or in a dedicated job
+      # with e.g. `flutter test integration_test -d linux` (often needs xvfb on CI).
       - run: cd examples/static_app && flutter pub get && flutter analyze && flutter test
       - run: cd examples/riverpod_app && flutter pub get && flutter analyze && flutter test
       - run: cd examples/bloc_getit_app && flutter pub get && flutter analyze && flutter test

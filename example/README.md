@@ -18,10 +18,15 @@ In **debug** mode on mobile or desktop, the app starts the **FlexTrack Inspector
 
 ## Integration test
 
+Integration tests must target **one** device. If several devices are available (e.g. Linux desktop and Chrome), pick one explicitly:
+
 ```bash
 cd example
-flutter test integration_test
+flutter test integration_test -d linux
+# or: flutter test integration_test -d chrome
 ```
+
+On headless Linux CI you may need a virtual display (e.g. `xvfb-run -a flutter test integration_test -d linux`). The main repo CI runs unit/widget tests only; run integration tests locally or in a dedicated workflow.
 
 ## Smaller samples
 
