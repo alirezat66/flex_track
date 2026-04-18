@@ -52,6 +52,10 @@ One call site, multiple tracker destinations, centralized policy.
 ## Table of contents
 
 - [FlexTrack](#flextrack)
+  - [The Problem](#the-problem)
+  - [The Solution](#the-solution)
+  - [Visual Demo](#visual-demo)
+  - [Quick Example](#quick-example)
   - [Table of contents](#table-of-contents)
   - [Quick start](#quick-start)
   - [Compare with the usual approach](#compare-with-the-usual-approach)
@@ -66,6 +70,7 @@ One call site, multiple tracker destinations, centralized policy.
   - [Creating events](#creating-events)
     - [Event flags](#event-flags)
     - [EventCategory values](#eventcategory-values)
+    - [Custom categories](#custom-categories)
   - [Event transformers](#event-transformers)
     - [App-wide context (setup once)](#app-wide-context-setup-once)
     - [Dynamic values (evaluated at dispatch time)](#dynamic-values-evaluated-at-dispatch-time)
