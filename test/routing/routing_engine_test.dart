@@ -1054,6 +1054,129 @@ void main() {
       });
     });
 
+    group('Custom Category Routing', () {
+      test('should route event with custom category to correct tracker', () {
+        const experimentsCategory = EventCategory('experiments');
+        config = RoutingConfiguration(
+          rules: [
+            RoutingRule(
+              category: experimentsCategory,
+              targetGroup: TrackerGroup('experiments', ['ab_tracker']),
+              priority: 10,
+            ),
+            RoutingRule(
+              isDefault: true,
+              targetGroup: TrackerGroup('default', ['analytics']),
+            ),
+          ],
+          customCategories: {'experiments': experimentsCategory},
+        );
+        engine = RoutingEngine(config);
+
+        final result = engine.routeEvent(
+          CustomCategoryTestEvent('experiment_viewed', experimentsCategory),
+          availableTrackers: {'ab_tracker', 'analytics'},
+        );
+
+        expect(result.targetTrackers, contains('ab_tracker'));
+        expect(result.targetTrackers, isNot(contains('analytics')));
+        expect(result.appliedRules.first.category, equals(experimentsCategory));
+      });
+
+      test('should fall through to default when custom category does not match',
+          () {
+        const experimentsCategory = EventCategory('experiments');
+        const paymentsCategory = EventCategory('payments');
+        config = RoutingConfiguration(
+          rules: [
+            RoutingRule(
+              category: experimentsCategory,
+              targetGroup: TrackerGroup('experiments', ['ab_tracker']),
+              priority: 10,
+            ),
+            RoutingRule(
+              isDefault: true,
+              targetGroup: TrackerGroup('default', ['analytics']),
+            ),
+          ],
+          customCategories: {
+            'experiments': experimentsCategory,
+            'payments': paymentsCategory,
+          },
+        );
+        engine = RoutingEngine(config);
+
+        final result = engine.routeEvent(
+          CustomCategoryTestEvent('payment_completed', paymentsCategory),
+          availableTrackers: {'ab_tracker', 'analytics'},
+        );
+
+        expect(result.targetTrackers, contains('analytics'));
+        expect(result.targetTrackers, isNot(contains('ab_tracker')));
+        expect(result.appliedRules.first.isDefault, isTrue);
+      });
+
+      test('should route subcategory event using full subcategory name', () {
+        final paymentsSubcategory =
+            EventCategory.business.createSubcategory('payments');
+        config = RoutingConfiguration(
+          rules: [
+            RoutingRule(
+              category: paymentsSubcategory,
+              targetGroup: TrackerGroup('payments', ['payment_tracker']),
+              priority: 15,
+            ),
+            RoutingRule(
+              category: EventCategory.business,
+              targetGroup: TrackerGroup('business', ['analytics']),
+              priority: 10,
+            ),
+            RoutingRule(
+              isDefault: true,
+              targetGroup: TrackerGroup('default', ['default_tracker']),
+            ),
+          ],
+          customCategories: {'business_payments': paymentsSubcategory},
+        );
+        engine = RoutingEngine(config);
+
+        final subcategoryResult = engine.routeEvent(
+          CustomCategoryTestEvent('checkout_completed', paymentsSubcategory),
+          availableTrackers: {'payment_tracker', 'analytics', 'default_tracker'},
+        );
+
+        expect(subcategoryResult.targetTrackers, contains('payment_tracker'));
+        expect(subcategoryResult.targetTrackers, isNot(contains('analytics')));
+      });
+
+      test('should treat two EventCategory instances with same name as equal',
+          () {
+        config = RoutingConfiguration(
+          rules: [
+            RoutingRule(
+              category: const EventCategory('experiments'),
+              targetGroup: TrackerGroup('experiments', ['ab_tracker']),
+              priority: 10,
+            ),
+            RoutingRule(
+              isDefault: true,
+              targetGroup: TrackerGroup('default', ['analytics']),
+            ),
+          ],
+        );
+        engine = RoutingEngine(config);
+
+        // Different instance, same name — equality is name-based
+        final result = engine.routeEvent(
+          CustomCategoryTestEvent(
+              'flag_exposed', const EventCategory('experiments')),
+          availableTrackers: {'ab_tracker', 'analytics'},
+        );
+
+        expect(result.targetTrackers, contains('ab_tracker'));
+      });
+    });
+
     group('Edge Cases and Error Handling', () {
       test('should handle empty available trackers', () {
         config = RoutingConfiguration(
@@ -1424,4 +1547,20 @@ class PropertyTestEvent extends BaseEvent {
 
   @override
   bool get containsPII => mockContainsPII;
+}
+
+class CustomCategoryTestEvent extends BaseEvent {
+  final String eventName;
+  final EventCategory _category;
+
+  CustomCategoryTestEvent(this.eventName, this._category);
+
+  @override
+  String getName() => eventName;
+
+  @override
+  Map<String, Object>? getProperties() => null;
+
+  @override
+  EventCategory get category => _category;
 }
