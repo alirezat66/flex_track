@@ -1,4 +1,5 @@
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/models/event/event_transformer.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/routing/routing_config.dart';
@@ -233,6 +234,19 @@ class FlexTrack {
   static Future<void> flush() async {
     await instance._client.flush();
   }
+
+  // ========== TRANSFORMERS ==========
+
+  /// Register a transformer applied to every event before routing and dispatch.
+  static void addTransformer(EventTransformer transformer) =>
+      instance._client.addTransformer(transformer);
+
+  /// Remove a previously registered transformer.
+  static void removeTransformer(EventTransformer transformer) =>
+      instance._client.removeTransformer(transformer);
+
+  /// Remove all registered transformers.
+  static void clearTransformers() => instance._client.clearTransformers();
 
   // ========== CONTROL ==========
 

@@ -66,6 +66,12 @@ One call site, multiple tracker destinations, centralized policy.
   - [Creating events](#creating-events)
     - [Event flags](#event-flags)
     - [EventCategory values](#eventcategory-values)
+  - [Event transformers](#event-transformers)
+    - [App-wide context (setup once)](#app-wide-context-setup-once)
+    - [Dynamic values (evaluated at dispatch time)](#dynamic-values-evaluated-at-dispatch-time)
+    - [Conditional transformers](#conditional-transformers)
+    - [Chaining transformers](#chaining-transformers)
+    - [EnrichedEvent](#enrichedevent)
   - [Creating trackers](#creating-trackers)
     - [Firebase example](#firebase-example)
     - [Mixpanel example](#mixpanel-example)
@@ -89,6 +95,7 @@ One call site, multiple tracker destinations, centralized policy.
     - [2. Forgetting FlexTrack.reset() between tests](#2-forgetting-flextrackreset-between-tests)
     - [3. Unstable visibilityKey in FlexImpressionTrack](#3-unstable-visibilitykey-in-fleximpressiontrack)
     - [4. Missing .routeDefault() at the end of a routing config](#4-missing-routedefault-at-the-end-of-a-routing-config)
+    - [5. Transformer added with an anonymous function can't be removed](#5-transformer-added-with-an-anonymous-function-cant-be-removed)
   - [Contributing and license](#contributing-and-license)
   - [Support](#support)
 
@@ -190,6 +197,7 @@ FlexTrack exists to make that architecture explicit, maintainable, and debuggabl
 
 - Multi-tracker routing with a fluent DSL
 - Event policy controls (consent, PII, sampling, environment modifiers)
+- Event transformers to automatically attach shared context to every event
 - Debug Inspector with live event visibility
 - `FlexTrackClient` for dependency injection patterns
 - Widget wrappers for click, impression, mount, and route-view tracking
@@ -351,6 +359,113 @@ Rules of thumb:
 | `EventCategory.sensitive` | Events that combine PII with behaviour |
 | `EventCategory.marketing` | Campaign attribution, ad interactions |
 | `EventCategory.system` | App lifecycle, background tasks |
+
+---
+
+## Event transformers
+
+Transformers let you automatically attach common parameters to every event — or to a filtered subset — without touching each call site. A transformer is a function that receives the outgoing event and returns a (potentially enriched) event. All transformers run inside `EventProcessor` before routing and before trackers receive the event.
+
+A common use case: attach the current screen name to every event so your analytics backend always knows which page the event came from.
+
+### App-wide context (setup once)
+
+Register transformers right after `FlexTrack.setup()`. They stay active for the lifetime of the app.
+
+```dart
+// lib/main.dart
+await FlexTrack.setup([ConsoleTracker(), FirebaseTracker()]);
+
+// Attach static context to every event.
+FlexTrack.addTransformer((event) => EnrichedEvent(event, {
+  'app_version': packageInfo.version,
+  'platform': Platform.operatingSystem,
+}));
+
+runApp(const MyApp());
+```
+
+### Dynamic values (evaluated at dispatch time)
+
+Because the transformer function is called **at the moment an event is fired**, dynamic values like the current route are always fresh — no stale captures.
+
+```dart
+// lib/main.dart
+final routeObserver = FlexTrackRouteObserver();
+
+// Register once after setup — currentRoute is read fresh on every event.
+FlexTrack.addTransformer((event) => EnrichedEvent(event, {
+  'current_route': routeObserver.currentRoute ?? 'unknown',
+}));
+```
+
+### Conditional transformers
+
+Use `conditionalTransformer` to enrich only events that match a condition. Events that don't match pass through unchanged.
+
+```dart
+FlexTrack.addTransformer(
+  conditionalTransformer(
+    (event) => event.category == EventCategory.business,
+    (event) => EnrichedEvent(event, {'checkout_experiment': 'variant_b'}),
+  ),
+);
+```
+
+Any predicate works — event name, type, category, or custom property check.
+
+### Chaining transformers
+
+Transformers are applied in registration order. Each transformer receives the output of the previous one, so they compose naturally.
+
+```dart
+// Transformer 1 — adds global context
+FlexTrack.addTransformer((event) => EnrichedEvent(event, {
+  'current_route': routeObserver.currentRoute ?? 'unknown',
+}));
+
+// Transformer 2 — adds session context on top
+FlexTrack.addTransformer((event) => EnrichedEvent(event, {
+  'session_id': sessionManager.currentSessionId,
+}));
+```
+
+### EnrichedEvent
+
+`EnrichedEvent` is a `BaseEvent` wrapper. It forwards all metadata from the original event (`category`, `containsPII`, `requiresConsent`, etc.) and overrides `getProperties()` to merge the original properties with the extra ones. Extra properties win on key collision.
+
+```dart
+// Extra properties override originals on the same key.
+EnrichedEvent(originalEvent, {'source': 'transformer'})
+```
+
+You never need to modify your event classes. `EnrichedEvent` is the only class you need to produce from a transformer.
+
+**Removing a transformer:**
+
+To remove a transformer later (e.g. when the user logs out), keep a reference to the function and pass it to `removeTransformer`:
+
+```dart
+BaseEvent _sessionTransformer(BaseEvent event) =>
+    EnrichedEvent(event, {'session_id': sessionManager.currentSessionId});
+
+// Add
+FlexTrack.addTransformer(_sessionTransformer);
+
+// Remove later
+FlexTrack.removeTransformer(_sessionTransformer);
+```
+
+`FlexTrack.clearTransformers()` removes all transformers at once.
+
+**With `FlexTrackClient` (dependency injection):**
+
+The same API is available on the injectable client:
+
+```dart
+final client = await FlexTrackClient.create([ConsoleTracker()]);
+client.addTransformer((event) => EnrichedEvent(event, {'tenant': tenantId}));
+```
 
 ---
 
@@ -1031,6 +1146,28 @@ await FlexTrack.setupWithRouting(trackers, (routing) => routing
 ```
 
 Run `FlexTrack.validate()` during development — it will flag a missing default rule.
+
+---
+
+### 5. Transformer added with an anonymous function can't be removed
+
+```dart
+// ❌ The lambda is a new object each call — removeTransformer won't find it.
+FlexTrack.addTransformer((e) => EnrichedEvent(e, {'route': '/home'}));
+FlexTrack.removeTransformer((e) => EnrichedEvent(e, {'route': '/home'})); // no-op
+```
+
+```dart
+// ✅ Keep a reference to the exact function instance.
+BaseEvent _routeTransformer(BaseEvent e) =>
+    EnrichedEvent(e, {'route': routeObserver.currentRoute ?? 'unknown'});
+
+FlexTrack.addTransformer(_routeTransformer);
+// Later:
+FlexTrack.removeTransformer(_routeTransformer);
+```
+
+If you never need to remove a transformer individually, anonymous lambdas are fine. Use `clearTransformers()` to remove everything at once.
 
 ---
 

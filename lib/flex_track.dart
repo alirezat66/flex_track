@@ -60,6 +60,8 @@ export 'src/core/tracker_registry.dart' show TrackerRegistry;
 
 // Base event system
 export 'src/models/event/base_event.dart';
+export 'src/models/event/enriched_event.dart';
+export 'src/models/event/event_transformer.dart';
 
 // Context and consent management
 export 'src/models/context/tracking_context.dart';
