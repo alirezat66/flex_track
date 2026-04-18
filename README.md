@@ -352,6 +352,41 @@ Rules of thumb:
 | `EventCategory.marketing` | Campaign attribution, ad interactions |
 | `EventCategory.system` | App lifecycle, background tasks |
 
+### Custom categories
+
+If the predefined categories don't fit your domain, define your own with `defineCategory()` on the `RoutingBuilder`:
+
+```dart
+FlexTrack.configure(
+  RoutingBuilder()
+    .defineCategory('experiments', description: 'A/B test and feature flag events')
+    .defineCategory('payments', description: 'Payment flow events')
+    // ... rest of your config
+);
+```
+
+Then assign it in your event:
+
+```dart
+class ExperimentEvent extends TrackableEvent {
+  @override
+  EventCategory get category => const EventCategory('experiments');
+}
+```
+
+And route it like any predefined category:
+
+```dart
+.routeCategory(const EventCategory('experiments')).to(['analytics']).and()
+```
+
+You can also create a subcategory of an existing one:
+
+```dart
+final paymentsCategory = EventCategory.business.createSubcategory('payments');
+// results in name: 'business_payments'
+```
+
 ---
 
 ## Creating trackers
