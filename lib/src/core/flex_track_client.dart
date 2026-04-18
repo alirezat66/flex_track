@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/models/event/event_transformer.dart';
 import 'package:flutter/foundation.dart';
 
 import '../exceptions/configuration_exception.dart';
@@ -126,15 +127,15 @@ class FlexTrackClient {
 
   Future<EventProcessingResult> track(BaseEvent event) async {
     final result = await _eventProcessor.processEvent(event);
-    _emitDispatchIfDebug(_recordFromResult(event, result));
+    _emitDispatchIfDebug(_recordFromResult(result));
     return result;
   }
 
   Future<List<EventProcessingResult>> trackAll(List<BaseEvent> events) async {
     final results = await _eventProcessor.processEvents(events);
     if (kDebugMode) {
-      for (var i = 0; i < events.length; i++) {
-        _emitDispatchIfDebug(_recordFromResult(events[i], results[i]));
+      for (final result in results) {
+        _emitDispatchIfDebug(_recordFromResult(result));
       }
     }
     return results;
@@ -144,8 +145,8 @@ class FlexTrackClient {
       List<BaseEvent> events) async {
     final results = await _eventProcessor.processEventsParallel(events);
     if (kDebugMode) {
-      for (var i = 0; i < events.length; i++) {
-        _emitDispatchIfDebug(_recordFromResult(events[i], results[i]));
+      for (final result in results) {
+        _emitDispatchIfDebug(_recordFromResult(result));
       }
     }
     return results;
@@ -207,6 +208,14 @@ class FlexTrackClient {
 
   Future<void> flush() => _trackerRegistry.flush();
 
+  void addTransformer(EventTransformer transformer) =>
+      _eventProcessor.addTransformer(transformer);
+
+  void removeTransformer(EventTransformer transformer) =>
+      _eventProcessor.removeTransformer(transformer);
+
+  void clearTransformers() => _eventProcessor.clearTransformers();
+
   void enable() {
     _eventProcessor.enable();
     _notifyDebugStateIfDebug();
@@ -250,20 +259,14 @@ class FlexTrackClient {
     }
   }
 
-  /// Flushes trackers if this client was initialized. Call when disposing
-  /// the client (e.g. test tearDown). Does not reset initialization state;
-  /// discard the client after [dispose] if you need a fresh configuration.
-  static EventDispatchRecord _recordFromResult(
-    BaseEvent event,
-    EventProcessingResult result,
-  ) {
+  static EventDispatchRecord _recordFromResult(EventProcessingResult result) {
     final targets = List<String>.from(result.routingResult.targetTrackers);
     final ok = <String>[
       for (final t in result.trackingResults)
         if (t.successful) t.trackerId,
     ];
     return EventDispatchRecord(
-      event: event,
+      event: result.event,
       targetTrackers: targets,
       successfulTrackerIds: ok,
     );
