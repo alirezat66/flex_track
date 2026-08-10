@@ -38,7 +38,7 @@ void main() {
       await eventProcessor.processEvent(event);
 
       final captured = mockTracker.capturedEvents.single;
-      expect(captured.getProperties()!['route'], '/home');
+      expect(captured.properties!['route'], '/home');
     });
 
     test('multiple transformers are applied in registration order', () async {
@@ -56,8 +56,8 @@ void main() {
 
       expect(order, [1, 2]);
       final captured = mockTracker.capturedEvents.single;
-      expect(captured.getProperties()!['step1'], 'a');
-      expect(captured.getProperties()!['step2'], 'b');
+      expect(captured.properties!['step1'], 'a');
+      expect(captured.properties!['step2'], 'b');
     });
 
     test('throwing transformer is skipped and pipeline completes', () async {
@@ -70,7 +70,7 @@ void main() {
 
       expect(result.successful, isTrue);
       final captured = mockTracker.capturedEvents.single;
-      expect(captured.getProperties()!['after_throw'], 'yes');
+      expect(captured.properties!['after_throw'], 'yes');
     });
 
     test('EventProcessingResult.event is the enriched event', () async {
@@ -82,7 +82,7 @@ void main() {
           await eventProcessor.processEvent(CustomEvent.named('test'));
 
       expect(result.event, isA<EnrichedEvent>());
-      expect(result.event.getProperties()!['enriched'], true);
+      expect(result.event.properties!['enriched'], true);
     });
 
     test('disabled processor returns early without applying transformers',
@@ -114,7 +114,7 @@ void main() {
       await eventProcessor.processEvent(CustomEvent.named('test'));
 
       final captured = mockTracker.capturedEvents.single;
-      expect(captured.getProperties()?.containsKey('route'), isNot(true));
+      expect(captured.properties?.containsKey('route'), isNot(true));
     });
 
     test('removeTransformer removes only the specified transformer', () async {
@@ -127,7 +127,7 @@ void main() {
 
       await eventProcessor.processEvent(CustomEvent.named('test'));
 
-      final props = mockTracker.capturedEvents.single.getProperties()!;
+      final props = mockTracker.capturedEvents.single.properties!;
       expect(props.containsKey('t1'), isFalse);
       expect(props['t2'], 'yes');
     });

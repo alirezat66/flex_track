@@ -130,8 +130,8 @@ class FirebaseTracker extends BaseTrackerStrategy {
   @override
   Future<void> doTrack(BaseEvent event) async {
     await FirebaseAnalytics.instance.logEvent(
-      name: event.getName(),
-      parameters: event.getProperties(),
+      name: event.name,
+      parameters: event.properties,
     );
   }
 }
@@ -308,7 +308,7 @@ This package does not bundle Firebase, Mixpanel, Amplitude, or any other analyti
 
 ## Creating events
 
-Extend `BaseEvent` and implement `getName()` and `getProperties()`. Everything else is optional.
+Extend `BaseEvent` and implement the `name` and `properties` getters. Everything else is optional.
 
 ```dart
 class PurchaseEvent extends BaseEvent {
@@ -316,10 +316,10 @@ class PurchaseEvent extends BaseEvent {
   PurchaseEvent({required this.amount});
 
   @override
-  String getName() => 'purchase';
+  String get name => 'purchase';
 
   @override
-  Map<String, Object> getProperties() => {'amount': amount};
+  Map<String, Object> get properties => {'amount': amount};
 
   @override
   EventCategory get category => EventCategory.business;
@@ -467,7 +467,7 @@ FlexTrack.addTransformer((event) => EnrichedEvent(event, {
 
 ### EnrichedEvent
 
-`EnrichedEvent` is a `BaseEvent` wrapper. It forwards all metadata from the original event (`category`, `containsPII`, `requiresConsent`, etc.) and overrides `getProperties()` to merge the original properties with the extra ones. Extra properties win on key collision.
+`EnrichedEvent` is a `BaseEvent` wrapper. It forwards all metadata from the original event (`category`, `containsPII`, `requiresConsent`, etc.) and overrides `properties` to merge the original properties with the extra ones. Extra properties win on key collision.
 
 ```dart
 // Extra properties override originals on the same key.
@@ -523,8 +523,8 @@ class MyTracker extends BaseTrackerStrategy {
   @override
   Future<void> doTrack(BaseEvent event) async {
     // Called for each routed event.
-    // event.getName()       → String
-    // event.getProperties() → Map<String, Object>
+    // event.name       → String
+    // event.properties → Map<String, Object>
     // event.category        → EventCategory?
   }
 }
@@ -556,8 +556,8 @@ class FirebaseTracker extends BaseTrackerStrategy {
   @override
   Future<void> doTrack(BaseEvent event) async {
     await FirebaseAnalytics.instance.logEvent(
-      name: event.getName(),
-      parameters: event.getProperties(),
+      name: event.name,
+      parameters: event.properties,
     );
   }
 }
@@ -582,7 +582,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
 
   @override
   Future<void> doTrack(BaseEvent event) async {
-    _mixpanel.track(event.getName(), properties: event.getProperties());
+    _mixpanel.track(event.name, properties: event.properties);
   }
 }
 ```
@@ -675,7 +675,7 @@ Rules are evaluated in priority order. The first matching rule wins.
 | `.routePII()` | `event.containsPII == true` |
 | `.routeMatching(RegExp(...))` | event name matches the regex |
 | `.routeNamed('pattern')` | event name contains the substring |
-| `.routeWithProperty('key')` | `getProperties()` contains the key |
+| `.routeWithProperty('key')` | `properties` contains the key |
 | `.routeDefault()` | catch-all (put this last) |
 
 **Full list of targets:**
@@ -1072,8 +1072,8 @@ void main() {
     await FlexTrack.track(PurchaseEvent(amount: 9.99));
 
     expect(mock.capturedEvents, hasLength(1));
-    expect(mock.capturedEvents.single.getName(), 'purchase');
-    expect(mock.capturedEvents.single.getProperties()['amount'], 9.99);
+    expect(mock.capturedEvents.single.name, 'purchase');
+    expect(mock.capturedEvents.single.properties['amount'], 9.99);
   });
 
   test('does not send event without consent', () async {

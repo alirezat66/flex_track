@@ -22,7 +22,7 @@ void main() {
       client.addTransformer((e) => EnrichedEvent(e, {'route': '/home'}));
       await client.track(CustomEvent.named('tap'));
 
-      expect(mock.capturedEvents.single.getProperties()!['route'], '/home');
+      expect(mock.capturedEvents.single.properties!['route'], '/home');
       await client.dispose();
     });
 
@@ -38,7 +38,7 @@ void main() {
 
       await client.track(CustomEvent.named('tap'));
 
-      final props = mock.capturedEvents.single.getProperties()!;
+      final props = mock.capturedEvents.single.properties!;
       expect(props.containsKey('t1'), isFalse);
       expect(props['t2'], 'yes');
       await client.dispose();
@@ -52,7 +52,7 @@ void main() {
 
       await client.track(CustomEvent.named('tap'));
 
-      expect(mock.capturedEvents.single.getProperties()?.containsKey('route'),
+      expect(mock.capturedEvents.single.properties?.containsKey('route'),
           isNot(true));
       await client.dispose();
     });
@@ -66,8 +66,8 @@ void main() {
       await client1.track(CustomEvent.named('e1'));
       await client2.track(CustomEvent.named('e2'));
 
-      expect(mock1.capturedEvents.single.getProperties()!['client'], '1');
-      expect(mock2.capturedEvents.single.getProperties()?.containsKey('client'),
+      expect(mock1.capturedEvents.single.properties!['client'], '1');
+      expect(mock2.capturedEvents.single.properties?.containsKey('client'),
           isNot(true));
 
       await client1.dispose();

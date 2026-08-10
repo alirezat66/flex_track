@@ -14,7 +14,7 @@ void main() {
 
       final result = transformer(event);
       expect(result, isA<EnrichedEvent>());
-      expect(result.getProperties()!['added'], 'yes');
+      expect(result.properties!['added'], 'yes');
     });
 
     test('passes event through unchanged when condition is false', () {

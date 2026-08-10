@@ -18,7 +18,7 @@ void main() {
       await tracker.initialize();
       await tracker.track(_ConsoleTestEvent('hello'));
       expect(tracker.eventHistory, hasLength(1));
-      expect(tracker.eventHistory.single.getName(), 'hello');
+      expect(tracker.eventHistory.single.name, 'hello');
     });
 
     test('track includes category, user, and session in log output path',
@@ -35,7 +35,7 @@ void main() {
     test('logs non-empty properties when showProperties is true', () async {
       await tracker.initialize();
       await tracker.track(_ConsoleTestEvent('x', props: {'k': 1}));
-      expect(tracker.eventHistory.single.getProperties(), isNotEmpty);
+      expect(tracker.eventHistory.single.properties, isNotEmpty);
     });
 
     test('skips property lines when showProperties is false', () async {
@@ -64,7 +64,7 @@ void main() {
       ]);
       expect(tracker.eventHistory, hasLength(2));
       expect(
-        tracker.eventHistory.map((e) => e.getName()).toList(),
+        tracker.eventHistory.map((e) => e.name).toList(),
         ['one', 'two'],
       );
     });
@@ -113,7 +113,7 @@ void main() {
         'many_props',
         props: {'a': 1, 'b': 2, 'c': 3, 'd': 4},
       ));
-      expect(t.eventHistory.single.getProperties()!.length, 4);
+      expect(t.eventHistory.single.properties!.length, 4);
     });
   });
 }
@@ -125,15 +125,15 @@ class _ConsoleTestEvent extends BaseEvent {
   final Map<String, Object>? props;
 
   @override
-  String getName() => _name;
+  String get name => _name;
 
   @override
-  Map<String, Object>? getProperties() => props;
+  Map<String, Object>? get properties => props;
 }
 
 class _RichEvent extends BaseEvent {
   @override
-  String getName() => 'rich';
+  String get name => 'rich';
 
   @override
   EventCategory? get category => EventCategory.user;
@@ -145,12 +145,12 @@ class _RichEvent extends BaseEvent {
   String? get sessionId => 's1';
 
   @override
-  Map<String, Object>? getProperties() => const {'x': 1};
+  Map<String, Object>? get properties => const {'x': 1};
 }
 
 class _FlaggedEvent extends BaseEvent {
   @override
-  String getName() => 'flagged';
+  String get name => 'flagged';
 
   @override
   bool get containsPII => true;
@@ -165,5 +165,5 @@ class _FlaggedEvent extends BaseEvent {
   bool get requiresConsent => false;
 
   @override
-  Map<String, Object>? getProperties() => const {};
+  Map<String, Object>? get properties => const {};
 }

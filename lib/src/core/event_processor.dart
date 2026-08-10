@@ -144,7 +144,7 @@ class EventProcessor {
           error: TrackerException(
             'Tracker not found: $trackerId',
             trackerId: trackerId,
-            eventName: processedEvent.getName(),
+            eventName: processedEvent.name,
             code: 'NOT_FOUND',
           ),
         ));
@@ -158,7 +158,7 @@ class EventProcessor {
           error: TrackerException(
             'Tracker is disabled: $trackerId',
             trackerId: trackerId,
-            eventName: processedEvent.getName(),
+            eventName: processedEvent.name,
             code: 'DISABLED',
           ),
         ));
@@ -181,7 +181,7 @@ class EventProcessor {
               : TrackerException(
                   'Failed to track event: $e',
                   trackerId: trackerId,
-                  eventName: processedEvent.getName(),
+                  eventName: processedEvent.name,
                   originalError: e,
                 ),
         ));
@@ -297,7 +297,7 @@ class EventProcessingResult {
   @override
   String toString() {
     return 'EventProcessingResult('
-        'event: ${event.getName()}, '
+        'event: ${event.name}, '
         'routed: $wasRouted, '
         'tracked: $wasTracked, '
         'successful: $successfulTrackingCount/${trackingResults.length}'

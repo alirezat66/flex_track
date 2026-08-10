@@ -45,7 +45,7 @@ void main() {
         await FlexTrack.track(_FacadeTestEvent('e2'));
 
         expect(second.capturedEvents, hasLength(1));
-        expect(second.capturedEvents.single.getName(), 'e2');
+        expect(second.capturedEvents.single.name, 'e2');
       },
     );
 
@@ -59,7 +59,7 @@ void main() {
         await FlexTrack.instance.client.track(_FacadeTestEvent('via_client'));
 
         expect(
-          mock.capturedEvents.map((e) => e.getName()).toList(),
+          mock.capturedEvents.map((e) => e.name).toList(),
           ['via_static', 'via_client'],
         );
       },
@@ -73,8 +73,8 @@ class _FacadeTestEvent extends BaseEvent {
   final String _name;
 
   @override
-  String getName() => _name;
+  String get name => _name;
 
   @override
-  Map<String, Object>? getProperties() => const {};
+  Map<String, Object>? get properties => const {};
 }

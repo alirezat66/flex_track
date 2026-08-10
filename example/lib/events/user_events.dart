@@ -13,10 +13,10 @@ class UserRegistrationEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'user_registration';
+  String get name => 'user_registration';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'registration_method': registrationMethod,
         'accepted_terms': hasAcceptedTerms,
         'accepted_marketing': hasAcceptedMarketing,
@@ -44,10 +44,10 @@ class UserLoginEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'user_login';
+  String get name => 'user_login';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'login_method': loginMethod,
         'is_first_login': isFirstLogin,
         'timestamp': timestamp.millisecondsSinceEpoch,
@@ -71,10 +71,10 @@ class UserProfileUpdateEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'user_profile_update';
+  String get name => 'user_profile_update';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'updated_fields': updatedFields,
         'is_complete': isComplete,
         'field_count': updatedFields.length,
@@ -103,10 +103,10 @@ class FeatureUsageEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'feature_usage';
+  String get name => 'feature_usage';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'feature_name': featureName,
         'action': action,
         if (duration != null) 'duration_seconds': duration!,
@@ -137,10 +137,10 @@ class UserEngagementEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'user_engagement';
+  String get name => 'user_engagement';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'engagement_type': engagementType,
         if (sessionDuration != null)
           'session_duration_seconds': sessionDuration!,

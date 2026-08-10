@@ -25,7 +25,7 @@ void main() {
       );
 
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'mounted_view');
+      expect(mock.capturedEvents.single.name, 'mounted_view');
 
       await tester.pump();
       expect(mock.capturedEvents, hasLength(1));
@@ -42,7 +42,7 @@ void main() {
       );
 
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'mount_first');
+      expect(mock.capturedEvents.single.name, 'mount_first');
 
       await tester.tap(find.text('toggle off'));
       await tester.pump();
@@ -51,7 +51,7 @@ void main() {
       await tester.pump();
 
       expect(mock.capturedEvents, hasLength(2));
-      expect(mock.capturedEvents.map((e) => e.getName()).toList(),
+      expect(mock.capturedEvents.map((e) => e.name).toList(),
           ['mount_first', 'mount_first']);
     });
 
@@ -99,7 +99,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(mock.capturedEvents, hasLength(1));
-      expect(mock.capturedEvents.single.getName(), 'lazy_mount');
+      expect(mock.capturedEvents.single.name, 'lazy_mount');
     });
 
     testWidgets('uses FlexTrackScope client without FlexTrack.setup',
@@ -125,7 +125,7 @@ void main() {
       );
 
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'scoped_mount');
+      expect(mock.capturedEvents.single.name, 'scoped_mount');
     });
 
     testWidgets('scoped client is preferred when global is also set up',
@@ -152,7 +152,7 @@ void main() {
       );
 
       await tester.pump();
-      expect(scopedMock.capturedEvents.single.getName(), 'mount_scoped_wins');
+      expect(scopedMock.capturedEvents.single.name, 'mount_scoped_wins');
       expect(globalMock.capturedEvents, isEmpty);
     });
 
