@@ -3,9 +3,8 @@ import 'package:flex_track/flex_track.dart';
 
 void main() {
   group('FlexTrack Convenience Functions', () {
-    setUp(() {
-      // Reset FlexTrack before each test to ensure a clean state
-      FlexTrack.reset();
+    setUp(() async {
+      await FlexTrack.reset();
     });
 
     test('setupFlexTrack initializes FlexTrack with provided trackers',

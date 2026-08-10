@@ -5,7 +5,7 @@ import '../events/app_events.dart';
 
 class UserJourneyScreen extends StatefulWidget {
   const UserJourneyScreen({super.key});
-  @override
+
   @override
   UserJourneyScreenState createState() => UserJourneyScreenState();
 }

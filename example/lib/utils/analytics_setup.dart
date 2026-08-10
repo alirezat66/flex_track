@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flex_track/flex_track.dart';
+import 'package:flex_track/flex_track_inspector.dart';
 import '../trackers/firebase_tracker.dart';
 import '../trackers/mixpanel_tracker.dart';
 import '../trackers/amplitude_tracker.dart';
@@ -18,6 +19,13 @@ class AnalyticsSetup {
 
     // Track app startup
     await FlexTrack.track(AppStartEvent());
+
+    if (kDebugMode) {
+      final inspectorUrl = await FlexTrackInspector.start(port: 7788);
+      if (inspectorUrl != null) {
+        debugPrint('FlexTrack Inspector (open in browser): $inspectorUrl');
+      }
+    }
   }
 
   static Future<List<TrackerStrategy>> _createTrackers() async {
@@ -77,6 +85,37 @@ class AnalyticsSetup {
 
     // Apply GDPR defaults first (highest priority)
     GDPRDefaults.apply(builder, compliantTrackers: ['firebase', 'custom_api']);
+
+    // Example: same app, different destinations — explicit tracker lists
+    builder
+        .routeExact('demo_free_tier_only')
+        .to(['console', 'firebase'])
+        .skipConsent()
+        .noSampling()
+        .withPriority(28)
+        .withDescription(
+            'Demo: console + Firebase only (no Mixpanel/Amplitude)')
+        .and();
+
+    builder
+        .routeExact('demo_premium_only')
+        .to(['mixpanel', 'amplitude'])
+        .requireConsent()
+        .noSampling()
+        .withPriority(28)
+        .withDescription(
+            'Demo: Mixpanel + Amplitude only (no console/Firebase)')
+        .and();
+
+    builder
+        .routeExact('demo_banner_impression')
+        .toGroupNamed('premium')
+        .requireConsent()
+        .noSampling()
+        .withPriority(27)
+        .withDescription(
+            'Demo: impression events always to premium (no sampling)')
+        .and();
 
     // E-commerce events (business critical)
     builder
@@ -152,7 +191,8 @@ class AnalyticsSetup {
         .toGroupNamed('free_tier')
         .mediumSampling()
         .withPriority(0)
-        .withDescription('Default routing for unmatched events');
+        .withDescription('Default routing for unmatched events')
+        .and();
 
     return builder;
   }

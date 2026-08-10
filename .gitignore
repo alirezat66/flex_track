@@ -29,3 +29,7 @@ migrate_working_dir/
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
+
+# Docusaurus docs site (local / optional; not versioned here)
+/website/
+/.github/workflows/docs.yml

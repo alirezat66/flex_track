@@ -7,36 +7,51 @@
 /// ## Quick Start
 ///
 /// ```dart
-/// // Setup FlexTrack with trackers
+/// class UserSignupEvent extends BaseEvent {
+///   @override
+///   String get name => 'user_signup';
+///   @override
+///   Map<String, Object>? get properties => const {};
+/// }
+///
 /// await FlexTrack.setup([
 ///   ConsoleTracker(),
-///   // Add your analytics trackers here
+///   // Register your own BaseTrackerStrategy subclasses here
 /// ]);
 ///
-/// // Track events
-/// await FlexTrack.track(CustomEvent.named('user_signup'));
+/// await FlexTrack.track(UserSignupEvent());
 /// ```
+///
+/// ## Injectable client (Riverpod, Bloc, tests)
+///
+/// Use [FlexTrackClient.create] when you want a dedicated instance instead of
+/// the global [FlexTrack.setup] singleton. Wrap subtrees with [FlexTrackScope]
+/// so [FlexClickTrack] and related widgets use that client automatically.
+/// See `docs/flex-track-client.md`.
 ///
 /// ## Advanced Setup
 ///
 /// ```dart
-/// // Setup with custom routing
 /// await FlexTrack.setupWithRouting([
 ///   ConsoleTracker(),
 /// ], (routing) => routing
 ///   .defineGroup('analytics', ['firebase', 'mixpanel'])
 ///   .routeNamed('debug_').toDevelopment().onlyInDebug().and()
-///   .routeDefault().toAll()
-/// );
+///   .routeDefault().toAll().and());
 /// ```
 library;
 
-import 'package:flex_track/flex_track.dart';
+import 'src/core/flex_track.dart';
+import 'src/strategies/built_in/console_tracker.dart';
+import 'src/strategies/built_in/mock_tracker.dart';
+import 'src/strategies/tracker_strategy.dart';
 
 // ============= CORE EXPORTS =============
 
-// Main FlexTrack class
+// Main FlexTrack API and injectable client
+export 'src/core/event_dispatch_record.dart';
 export 'src/core/flex_track.dart';
+export 'src/core/flex_track_client.dart' show FlexTrackClient;
 export 'src/core/event_processor.dart'
     show EventProcessingResult, TrackingResult;
 export 'src/core/tracker_registry.dart' show TrackerRegistry;
@@ -45,6 +60,8 @@ export 'src/core/tracker_registry.dart' show TrackerRegistry;
 
 // Base event system
 export 'src/models/event/base_event.dart';
+export 'src/models/event/enriched_event.dart';
+export 'src/models/event/event_transformer.dart';
 
 // Context and consent management
 export 'src/models/context/tracking_context.dart';
@@ -78,7 +95,17 @@ export 'src/strategies/base_tracker_strategy.dart';
 
 // Built-in trackers
 export 'src/strategies/built_in/console_tracker.dart';
+export 'src/strategies/built_in/mock_tracker.dart';
 export 'src/strategies/built_in/no_op_tracker.dart';
+
+// ============= WIDGETS =============
+
+// Click / view tracking wrappers
+export 'src/widgets/flex_click_track.dart';
+export 'src/widgets/flex_route_track.dart';
+export 'src/widgets/flex_mount_track.dart';
+export 'src/widgets/flex_impression_track.dart';
+export 'src/widgets/flex_track_scope.dart';
 
 // ============= UTILITIES =============
 
@@ -116,7 +143,7 @@ export 'src/core/flex_track.dart' show FlexTrack;
 // ============= VERSION INFO =============
 
 /// FlexTrack package version
-const String flexTrackVersion = '0.0.1';
+const String flexTrackVersion = '1.0.0';
 
 /// FlexTrack package description
 const String flexTrackDescription =
@@ -191,8 +218,7 @@ Future<void> setupFlexTrackForDevelopment() async {
 /// - No sampling
 ///
 /// ```dart
-/// final mockTracker = MockTracker();
-/// await setupFlexTrackForTesting(mockTracker);
+/// final mockTracker = await setupFlexTrackForTesting();
 ///
 /// // Your tests...
 /// expect(mockTracker.capturedEvents, hasLength(1));

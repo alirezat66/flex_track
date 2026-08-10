@@ -224,8 +224,7 @@ void main() {
         when(event.containsPII).thenReturn(false);
 
         final targetGroups = config.getTargetGroups(event);
-        print(targetGroups);
-        expect(targetGroups, [TrackerGroup.all, TrackerGroup.development]);
+        expect(targetGroups, [TrackerGroup.all]);
       });
 
       test('should include multiple groups if rules have same highest priority',

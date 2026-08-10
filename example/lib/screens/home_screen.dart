@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flex_track/flex_track.dart';
+
+import '../app_route_observer.dart';
 import '../events/app_events.dart';
 import '../events/business_events.dart';
+import '../events/demo_routing_and_widgets_events.dart';
 import '../events/user_events.dart';
 import '../utils/gdpr_manager.dart';
 import 'ecommerce_screen.dart';
-import 'user_journey_screen.dart';
+import 'event_enrichment_screen.dart';
 import 'setting_screen.dart';
+import 'user_journey_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,20 +19,34 @@ class HomeScreen extends StatefulWidget {
   HomeScreenState createState() => HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> with FlexTrackRouteViewMixin {
+  @override
+  FlexTrackRouteObserver get flexTrackRouteObserver => appFlexRouteObserver;
+
+  @override
+  BaseEvent get routeViewEvent => PageViewEvent(
+        pageName: 'home_shell',
+        parameters: const {'source': 'flex_track_example'},
+      );
+
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    DemoHomeTab(),
+    const DemoHomeTab(),
     const ECommerceScreen(),
-    UserJourneyScreen(),
-    SettingsScreen(),
+    const UserJourneyScreen(),
+    const SettingsScreen(),
+    const EventEnrichmentScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    _checkConsentAndShow();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _checkConsentAndShow();
+      }
+    });
   }
 
   Future<void> _checkConsentAndShow() async {
@@ -83,6 +101,10 @@ class HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.auto_awesome),
+            label: 'Enrichment',
+          ),
         ],
       ),
     );
@@ -98,6 +120,8 @@ class HomeScreenState extends State<HomeScreen> {
         return 'User Journey';
       case 3:
         return 'Settings';
+      case 4:
+        return 'Enrichment';
       default:
         return 'Unknown';
     }
@@ -129,65 +153,181 @@ class DemoHomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16.0),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'FlexTrack Demo',
+            'FlexTrack demo',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            'This demo showcases FlexTrack\'s powerful analytics routing system with GDPR compliance, multiple tracker integrations, and intelligent event handling.',
+            'Routing, consent, and multi-tracker delivery (SDKs here are mocks). '
+            'See README for sibling apps: static API, Riverpod, BLoC + GetIt.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          SizedBox(height: 24),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              children: [
-                _DemoCard(
-                  title: 'Basic Events',
-                  description: 'Track simple user interactions',
-                  icon: Icons.touch_app,
-                  onTap: () => _trackBasicEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Business Events',
-                  description: 'E-commerce and revenue tracking',
-                  icon: Icons.shopping_bag,
-                  onTap: () => _trackBusinessEvent(context),
-                ),
-                _DemoCard(
-                  title: 'User Events',
-                  description: 'User behavior and engagement',
-                  icon: Icons.person_outline,
-                  onTap: () => _trackUserEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Error Simulation',
-                  description: 'Test error tracking',
-                  icon: Icons.error_outline,
-                  onTap: () => _trackErrorEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Performance',
-                  description: 'Performance metrics',
-                  icon: Icons.speed,
-                  onTap: () => _trackPerformanceEvent(context),
-                ),
-                _DemoCard(
-                  title: 'Debug Events',
-                  description: 'Development debugging',
-                  icon: Icons.bug_report,
-                  onTap: () => _trackDebugEvent(context),
-                ),
-              ],
+          const SizedBox(height: 20),
+          Text(
+            'Widget wrappers',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          FlexMountTrack(
+            event: FeatureUsageEvent(
+              featureName: 'widget_wrappers_strip',
+              action: 'mounted',
+              context: const {'screen': 'home'},
             ),
+            child: FlexClickTrack(
+              event: ButtonClickEvent(
+                buttonId: 'wrapper_cta',
+                buttonText: 'flex_click_track',
+                screenName: 'home',
+              ),
+              child: Card(
+                child: ListTile(
+                  leading: const Icon(Icons.ads_click),
+                  title: const Text('FlexClickTrack'),
+                  subtitle: const Text(
+                    'Tap here — also fires mount analytics once via FlexMountTrack',
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'FlexImpressionTrack',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Scroll the row horizontally. When a card stays mostly visible briefly, '
+            'an impression is sent (see console, FlexTrack Inspector, or Mixpanel/Amplitude mocks).',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 132,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: 5,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, i) {
+                return FlexImpressionTrack(
+                  visibilityKey: ValueKey<String>('demo_promo_$i'),
+                  event: DemoBannerImpressionEvent(slotId: 'promo_$i'),
+                  visibleFractionThreshold: 0.55,
+                  minVisibleDuration: const Duration(milliseconds: 350),
+                  child: SizedBox(
+                    width: 176,
+                    child: Card(
+                      elevation: 2,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(
+                            'Promo ${i + 1}\nscroll →',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Selective routing',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Two events with explicit tracker lists: one hits console + Firebase only; '
+            'the other Mixpanel + Amplitude only (needs general consent).',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _trackSelectiveRouting(
+                    context,
+                    DemoFreeTierOnlyEvent(),
+                    'Free-tier only',
+                  ),
+                  child: const Text('Free tier only'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _trackSelectiveRouting(
+                    context,
+                    DemoPremiumOnlyEvent(),
+                    'Premium only',
+                  ),
+                  child: const Text('Premium only'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            children: [
+              _DemoCard(
+                title: 'Basic Events',
+                description: 'Track simple user interactions',
+                icon: Icons.touch_app,
+                onTap: () => _trackBasicEvent(context),
+              ),
+              _DemoCard(
+                title: 'Business Events',
+                description: 'E-commerce and revenue tracking',
+                icon: Icons.shopping_bag,
+                onTap: () => _trackBusinessEvent(context),
+              ),
+              _DemoCard(
+                title: 'User Events',
+                description: 'User behavior and engagement',
+                icon: Icons.person_outline,
+                onTap: () => _trackUserEvent(context),
+              ),
+              _DemoCard(
+                title: 'Error Simulation',
+                description: 'Test error tracking',
+                icon: Icons.error_outline,
+                onTap: () => _trackErrorEvent(context),
+              ),
+              _DemoCard(
+                title: 'Performance',
+                description: 'Performance metrics',
+                icon: Icons.speed,
+                onTap: () => _trackPerformanceEvent(context),
+              ),
+              _DemoCard(
+                title: 'Debug Events',
+                description: 'Development debugging',
+                icon: Icons.bug_report,
+                onTap: () => _trackDebugEvent(context),
+              ),
+            ],
           ),
 
           // Additional Demo Features
@@ -195,6 +335,28 @@ class DemoHomeTab extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _trackSelectiveRouting(
+    BuildContext context,
+    BaseEvent event,
+    String label,
+  ) async {
+    final result = await FlexTrack.track(event);
+    final routed = List<String>.from(result.routingResult.targetTrackers)
+      ..sort();
+    final delivered = result.trackingResults
+        .where((t) => t.successful)
+        .map((t) => t.trackerId)
+        .toList()
+      ..sort();
+    if (!context.mounted) {
+      return;
+    }
+    final msg = routed.isEmpty
+        ? '$label: routed to none (check consent / rules)'
+        : '$label — routed: ${routed.join(', ')} · delivered: ${delivered.isEmpty ? '—' : delivered.join(', ')}';
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   void _trackBasicEvent(BuildContext context) {
@@ -508,7 +670,7 @@ class _AdditionalDemoSection extends StatelessWidget {
 
   void _analyzeRouting(BuildContext context) {
     // Test different event types and show routing results
-    final testEvents = [
+    final testEvents = <BaseEvent>[
       ButtonClickEvent(
           buttonId: 'test', buttonText: 'Test', screenName: 'home'),
       PurchaseEvent(
@@ -519,6 +681,9 @@ class _AdditionalDemoSection extends StatelessWidget {
           paymentMethod: 'card'),
       ErrorEvent(errorType: 'test', errorMessage: 'Test error'),
       DebugEvent(debugInfo: 'Debug test'),
+      DemoFreeTierOnlyEvent(),
+      DemoPremiumOnlyEvent(),
+      DemoBannerImpressionEvent(slotId: 'analysis_slot'),
     ];
 
     final routingResults = testEvents.map((event) {

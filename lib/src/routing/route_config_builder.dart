@@ -32,7 +32,7 @@ class RouteConfigBuilder<T extends BaseEvent> {
     this.isHighVolume,
     this.isEssential,
     this.isDefault = false,
-  }) : _eventType = eventType ?? T;
+  }) : _eventType = eventType;
 
   // ========== TARGET SPECIFICATION ==========
 
