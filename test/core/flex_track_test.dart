@@ -123,8 +123,7 @@ void main() {
 
         expect(mockTracker1.capturedEvents, hasLength(1));
         expect(mockTracker2.capturedEvents, hasLength(1));
-        expect(
-            mockTracker1.capturedEvents.first.name, equals('test_event'));
+        expect(mockTracker1.capturedEvents.first.name, equals('test_event'));
       });
 
       test('should track multiple events', () async {

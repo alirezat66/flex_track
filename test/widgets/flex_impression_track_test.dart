@@ -274,8 +274,7 @@ void main() {
       VisibilityDetectorController.instance.notifyNow();
       await tester.pump();
 
-      expect(
-          scopedMock.capturedEvents.single.name, 'impression_scoped_wins');
+      expect(scopedMock.capturedEvents.single.name, 'impression_scoped_wins');
       expect(globalMock.capturedEvents, isEmpty);
     });
 

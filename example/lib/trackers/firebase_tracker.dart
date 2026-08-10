@@ -47,8 +47,7 @@ class FirebaseTracker extends BaseTrackerStrategy {
     //   parameters: _convertProperties(event.properties),
     // );
 
-    debugPrint(
-        '🔥 Firebase tracking: ${event.name} ${event.properties}');
+    debugPrint('🔥 Firebase tracking: ${event.name} ${event.properties}');
 
     // Handle special business events
     if (event is PurchaseEvent) {
