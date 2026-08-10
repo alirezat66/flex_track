@@ -118,8 +118,8 @@ void main() {
     });
 
     test('removeTransformer removes only the specified transformer', () async {
-      EventTransformer t1 = (e) => EnrichedEvent(e, {'t1': 'yes'});
-      EventTransformer t2 = (e) => EnrichedEvent(e, {'t2': 'yes'});
+      BaseEvent t1(BaseEvent e) => EnrichedEvent(e, {'t1': 'yes'});
+      BaseEvent t2(BaseEvent e) => EnrichedEvent(e, {'t2': 'yes'});
 
       eventProcessor.addTransformer(t1);
       eventProcessor.addTransformer(t2);
