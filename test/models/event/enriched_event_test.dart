@@ -10,7 +10,10 @@ void main() {
     setUp(() {
       original = CustomEvent.named(
         'test_event',
-        properties: {'original_key': 'original_value', 'shared_key': 'original'},
+        properties: {
+          'original_key': 'original_value',
+          'shared_key': 'original'
+        },
         category: EventCategory.user,
         containsPII: true,
         isHighVolume: true,

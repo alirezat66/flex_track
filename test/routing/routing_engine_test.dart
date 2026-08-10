@@ -1142,7 +1142,11 @@ void main() {
 
         final subcategoryResult = engine.routeEvent(
           CustomCategoryTestEvent('checkout_completed', paymentsSubcategory),
-          availableTrackers: {'payment_tracker', 'analytics', 'default_tracker'},
+          availableTrackers: {
+            'payment_tracker',
+            'analytics',
+            'default_tracker'
+          },
         );
 
         expect(subcategoryResult.targetTrackers, contains('payment_tracker'));
