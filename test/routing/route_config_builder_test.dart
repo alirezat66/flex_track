@@ -568,10 +568,10 @@ class TestEvent extends BaseEvent {
   TestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 }
 
 class BusinessEvent extends BaseEvent {
@@ -581,10 +581,10 @@ class BusinessEvent extends BaseEvent {
   BusinessEvent(this.eventName, this.revenue);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object> getProperties() => {'revenue': revenue};
+  Map<String, Object> get properties => {'revenue': revenue};
 
   @override
   EventCategory get category => EventCategory.business;

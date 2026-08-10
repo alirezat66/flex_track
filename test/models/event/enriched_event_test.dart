@@ -23,25 +23,25 @@ void main() {
 
     test('forwards getName from original', () {
       final enriched = EnrichedEvent(original, {});
-      expect(enriched.getName(), 'test_event');
+      expect(enriched.name, 'test_event');
     });
 
     test('returns only extra properties when original has none', () {
       final bare = CustomEvent.named('bare');
       final enriched = EnrichedEvent(bare, {'route': '/home'});
-      expect(enriched.getProperties(), {'route': '/home'});
+      expect(enriched.properties, {'route': '/home'});
     });
 
     test('merges original and extra properties', () {
       final enriched = EnrichedEvent(original, {'extra_key': 'extra_value'});
-      final props = enriched.getProperties();
+      final props = enriched.properties;
       expect(props['original_key'], 'original_value');
       expect(props['extra_key'], 'extra_value');
     });
 
     test('extra properties take precedence over original on key collision', () {
       final enriched = EnrichedEvent(original, {'shared_key': 'enriched'});
-      expect(enriched.getProperties()['shared_key'], 'enriched');
+      expect(enriched.properties['shared_key'], 'enriched');
     });
 
     test('forwards category from original', () {
@@ -108,7 +108,7 @@ void main() {
     test('stacking EnrichedEvents layers properties correctly', () {
       final first = EnrichedEvent(original, {'layer1': 'a'});
       final second = EnrichedEvent(first, {'layer2': 'b', 'shared_key': 'top'});
-      final props = second.getProperties();
+      final props = second.properties;
       expect(props['original_key'], 'original_value');
       expect(props['layer1'], 'a');
       expect(props['layer2'], 'b');
@@ -122,10 +122,10 @@ class _FixedTimestampEvent extends BaseEvent {
   _FixedTimestampEvent(this._timestamp);
 
   @override
-  String getName() => 'fixed';
+  String get name => 'fixed';
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   DateTime get timestamp => _timestamp;

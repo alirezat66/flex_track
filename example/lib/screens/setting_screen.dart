@@ -491,7 +491,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Event: ${testEvent.getName()}'),
+              Text('Event: ${testEvent.name}'),
               SizedBox(height: 8),
               Text(
                   'Target Trackers: ${debugInfo.routingResult.targetTrackers.join(', ')}'),

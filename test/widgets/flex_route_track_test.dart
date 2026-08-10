@@ -183,7 +183,7 @@ void main() {
       );
 
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'home_screen');
+      expect(mock.capturedEvents.single.name, 'home_screen');
     });
 
     testWidgets('didPopNext fires when trackWhenReturningFromChildRoute',
@@ -198,7 +198,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'resume_screen');
+      expect(mock.capturedEvents.single.name, 'resume_screen');
 
       await tester.tap(find.text('push'));
       await tester.pumpAndSettle();
@@ -207,7 +207,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        mock.capturedEvents.map((e) => e.getName()).toList(),
+        mock.capturedEvents.map((e) => e.name).toList(),
         ['resume_screen', 'resume_screen'],
       );
     });
@@ -224,13 +224,13 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'home_only');
+      expect(mock.capturedEvents.single.name, 'home_only');
 
       await tester.tap(find.text('open second'));
       await tester.pumpAndSettle();
 
       expect(mock.capturedEvents, hasLength(1));
-      expect(mock.capturedEvents.single.getName(), 'home_only');
+      expect(mock.capturedEvents.single.name, 'home_only');
     });
 
     testWidgets(
@@ -253,7 +253,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(mock.capturedEvents, hasLength(1));
-      expect(mock.capturedEvents.single.getName(), 'home_sticky');
+      expect(mock.capturedEvents.single.name, 'home_sticky');
     });
 
     testWidgets(
@@ -269,13 +269,13 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'screen_a');
+      expect(mock.capturedEvents.single.name, 'screen_a');
 
       await tester.tap(find.text('open tracked second'));
       await tester.pumpAndSettle();
 
       expect(
-        mock.capturedEvents.map((e) => e.getName()).toList(),
+        mock.capturedEvents.map((e) => e.name).toList(),
         ['screen_a', 'screen_b'],
       );
 
@@ -308,7 +308,7 @@ void main() {
       );
 
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'scoped_route_home');
+      expect(mock.capturedEvents.single.name, 'scoped_route_home');
     });
 
     testWidgets('scoped client is preferred when global is also set up',
@@ -335,7 +335,7 @@ void main() {
       );
 
       await tester.pump();
-      expect(scopedMock.capturedEvents.single.getName(), 'route_scoped_wins');
+      expect(scopedMock.capturedEvents.single.name, 'route_scoped_wins');
       expect(globalMock.capturedEvents, isEmpty);
     });
 

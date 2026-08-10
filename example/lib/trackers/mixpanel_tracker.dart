@@ -47,7 +47,7 @@ class MixpanelTracker extends BaseTrackerStrategy {
 
   @override
   Future<void> doTrack(BaseEvent event) async {
-    final properties = event.getProperties() ?? {};
+    final properties = event.properties ?? {};
 
     // Add event metadata
     final enhancedProperties = {
@@ -59,9 +59,9 @@ class MixpanelTracker extends BaseTrackerStrategy {
     };
 
     // In real implementation:
-    // _mixpanel.track(event.getName(), properties: enhancedProperties);
+    // _mixpanel.track(event.name, properties: enhancedProperties);
 
-    debugPrint('🎯 Mixpanel tracking: ${event.getName()} $enhancedProperties');
+    debugPrint('🎯 Mixpanel tracking: ${event.name} $enhancedProperties');
 
     // Handle special events
     if (event is PurchaseEvent) {

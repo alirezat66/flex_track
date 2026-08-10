@@ -590,15 +590,15 @@ void main() {
 class TestEvent extends BaseEvent {
   final String eventName;
   final EventCategory? eventCategory;
-  final Map<String, Object>? properties;
+  final Map<String, Object>? _properties;
 
-  TestEvent(this.eventName, [this.eventCategory, this.properties]);
-
-  @override
-  String getName() => eventName;
+  TestEvent(this.eventName, [this.eventCategory, this._properties]);
 
   @override
-  Map<String, Object>? getProperties() => properties;
+  String get name => eventName;
+
+  @override
+  Map<String, Object>? get properties => _properties;
 
   @override
   EventCategory? get category => eventCategory;
@@ -610,10 +610,10 @@ class HighVolumeTestEvent extends BaseEvent {
   HighVolumeTestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   bool get isHighVolume => true;
@@ -625,10 +625,10 @@ class EssentialTestEvent extends BaseEvent {
   EssentialTestEvent(this.eventName);
 
   @override
-  String getName() => eventName;
+  String get name => eventName;
 
   @override
-  Map<String, Object>? getProperties() => null;
+  Map<String, Object>? get properties => null;
 
   @override
   bool get isEssential => true;

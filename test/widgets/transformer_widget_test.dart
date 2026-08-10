@@ -40,8 +40,8 @@ void main() {
 
       expect(mock.capturedEvents, hasLength(1));
       final captured = mock.capturedEvents.single;
-      expect(captured.getName(), 'tap_test');
-      expect(captured.getProperties()!['current_route'], '/test_route');
+      expect(captured.name, 'tap_test');
+      expect(captured.properties!['current_route'], '/test_route');
 
       await client.dispose();
     });
@@ -80,7 +80,7 @@ void main() {
       await tester.pump();
 
       expect(mock.capturedEvents, hasLength(1));
-      final props = mock.capturedEvents.single.getProperties();
+      final props = mock.capturedEvents.single.properties;
       expect(props?.containsKey('current_route'), isNot(true));
 
       await client.dispose();
@@ -117,7 +117,7 @@ void main() {
       await tester.tap(find.text('Click'));
       await tester.pump();
 
-      expect(mock.capturedEvents.single.getName(), 'my_event');
+      expect(mock.capturedEvents.single.name, 'my_event');
 
       await client.dispose();
     });

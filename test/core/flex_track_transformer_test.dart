@@ -25,7 +25,7 @@ void main() {
       FlexTrack.addTransformer((e) => EnrichedEvent(e, {'route': '/test'}));
       await FlexTrack.track(CustomEvent.named('tap'));
 
-      expect(mock.capturedEvents.single.getProperties()!['route'], '/test');
+      expect(mock.capturedEvents.single.properties!['route'], '/test');
     });
 
     test('removeTransformer stops enrichment', () async {
@@ -38,7 +38,7 @@ void main() {
       await FlexTrack.track(CustomEvent.named('tap'));
 
       expect(
-        mock.capturedEvents.single.getProperties()?.containsKey('route'),
+        mock.capturedEvents.single.properties?.containsKey('route'),
         isNot(true),
       );
     });
@@ -50,7 +50,7 @@ void main() {
 
       await FlexTrack.track(CustomEvent.named('tap'));
 
-      final props = mock.capturedEvents.single.getProperties();
+      final props = mock.capturedEvents.single.properties;
       expect(props?.containsKey('a'), isNot(true));
       expect(props?.containsKey('b'), isNot(true));
     });

@@ -10,10 +10,10 @@ class _DemoEvent extends BaseEvent {
   final Map<String, Object>? _props;
 
   @override
-  String getName() => _name;
+  String get name => _name;
 
   @override
-  Map<String, Object>? getProperties() => _props;
+  Map<String, Object>? get properties => _props;
 
   @override
   bool get requiresConsent => false;

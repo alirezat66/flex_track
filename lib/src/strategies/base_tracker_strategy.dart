@@ -66,9 +66,9 @@ abstract class BaseTrackerStrategy implements TrackerStrategy {
       await doTrack(event);
     } catch (e) {
       throw TrackerException(
-        'Failed to track event ${event.getName()} with tracker $_id: $e',
+        'Failed to track event ${event.name} with tracker $_id: $e',
         trackerId: _id,
-        eventName: event.getName(),
+        eventName: event.name,
         originalError: e,
       );
     }

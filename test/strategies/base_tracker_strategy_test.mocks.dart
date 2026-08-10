@@ -73,7 +73,7 @@ class MockBaseEvent extends _i1.Mock implements _i2.BaseEvent {
       ) as DateTime);
 
   @override
-  String getName() => (super.noSuchMethod(
+  String get name => (super.noSuchMethod(
         Invocation.method(
           #getName,
           [],

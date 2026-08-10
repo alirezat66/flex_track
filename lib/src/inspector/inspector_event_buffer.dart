@@ -61,9 +61,9 @@ class InspectorEventRecord {
     return InspectorEventRecord(
       id: id,
       timeLabel: timeLabel,
-      name: event.getName(),
+      name: event.name,
       category: event.category?.name,
-      properties: jsonSafeProperties(event.getProperties()),
+      properties: jsonSafeProperties(event.properties),
       flags: {
         'essential': event.isEssential,
         'highVolume': event.isHighVolume,

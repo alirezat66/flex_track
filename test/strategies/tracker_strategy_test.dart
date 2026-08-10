@@ -90,7 +90,7 @@ class _BareTracker extends TrackerStrategy {
 
   @override
   Future<void> track(BaseEvent event) async {
-    trackedNames.add(event.getName());
+    trackedNames.add(event.name);
   }
 
   @override
@@ -110,8 +110,8 @@ class _NamedEvent extends BaseEvent {
   final String _name;
 
   @override
-  String getName() => _name;
+  String get name => _name;
 
   @override
-  Map<String, Object>? getProperties() => const {};
+  Map<String, Object>? get properties => const {};
 }

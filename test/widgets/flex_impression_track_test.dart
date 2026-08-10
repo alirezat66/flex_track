@@ -47,7 +47,7 @@ void main() {
 
       expect(mock.capturedEvents, isNotEmpty);
       expect(
-        mock.capturedEvents.map((e) => e.getName()),
+        mock.capturedEvents.map((e) => e.name),
         contains('banner_impression'),
       );
     });
@@ -84,7 +84,7 @@ void main() {
 
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pump();
-      expect(mock.capturedEvents.single.getName(), 'delayed_impression');
+      expect(mock.capturedEvents.single.name, 'delayed_impression');
     });
 
     testWidgets('fires only once even if visibility updates multiple times',
@@ -116,7 +116,7 @@ void main() {
       }
 
       expect(mock.capturedEvents, hasLength(1));
-      expect(mock.capturedEvents.single.getName(), 'once_only');
+      expect(mock.capturedEvents.single.name, 'once_only');
     });
 
     testWidgets('does NOT fire when visibility stays below threshold',
@@ -238,7 +238,7 @@ void main() {
       VisibilityDetectorController.instance.notifyNow();
       await tester.pump();
 
-      expect(mock.capturedEvents.single.getName(), 'scoped_impression');
+      expect(mock.capturedEvents.single.name, 'scoped_impression');
     });
 
     testWidgets('scoped client is preferred when global is also set up',
@@ -274,8 +274,7 @@ void main() {
       VisibilityDetectorController.instance.notifyNow();
       await tester.pump();
 
-      expect(
-          scopedMock.capturedEvents.single.getName(), 'impression_scoped_wins');
+      expect(scopedMock.capturedEvents.single.name, 'impression_scoped_wins');
       expect(globalMock.capturedEvents, isEmpty);
     });
 

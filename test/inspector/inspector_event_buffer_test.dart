@@ -11,10 +11,10 @@ class _BufEvent extends BaseEvent {
   final EventCategory? cat;
 
   @override
-  String getName() => _name;
+  String get name => _name;
 
   @override
-  Map<String, Object>? getProperties() => {'n': 1};
+  Map<String, Object>? get properties => {'n': 1};
 
   @override
   EventCategory? get category => cat;
