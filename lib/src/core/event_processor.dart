@@ -1,4 +1,6 @@
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/models/event/event_transformer.dart';
+import 'package:flutter/foundation.dart';
 
 import '../routing/routing_engine.dart';
 import '../exceptions/tracker_exception.dart';
@@ -8,6 +10,7 @@ import 'tracker_registry.dart';
 class EventProcessor {
   final TrackerRegistry _trackerRegistry;
   final RoutingEngine _routingEngine;
+  final List<EventTransformer> _transformers = [];
 
   bool _hasGeneralConsent = true;
   bool _hasPIIConsent = true;
@@ -57,6 +60,39 @@ class EventProcessor {
     if (pii != null) _hasPIIConsent = pii;
   }
 
+  /// Register a transformer that will be applied to every event before routing.
+  void addTransformer(EventTransformer transformer) {
+    _transformers.add(transformer);
+  }
+
+  /// Remove a previously registered transformer.
+  void removeTransformer(EventTransformer transformer) {
+    _transformers.remove(transformer);
+  }
+
+  /// Remove all registered transformers.
+  void clearTransformers() {
+    _transformers.clear();
+  }
+
+  /// The currently registered transformers (unmodifiable).
+  List<EventTransformer> get transformers => List.unmodifiable(_transformers);
+
+  BaseEvent _applyTransformers(BaseEvent event) {
+    var current = event;
+    for (final transformer in _transformers) {
+      try {
+        current = transformer(current);
+      } catch (e, stack) {
+        assert(() {
+          debugPrint('[FlexTrack] Transformer threw, skipping: $e\n$stack');
+          return true;
+        }());
+      }
+    }
+    return current;
+  }
+
   /// Process a single event
   Future<EventProcessingResult> processEvent(BaseEvent event) async {
     if (!_isEnabled) {
@@ -74,9 +110,11 @@ class EventProcessor {
       );
     }
 
+    final processedEvent = _applyTransformers(event);
+
     // Route the event to determine target trackers
     final routingResult = _routingEngine.routeEvent(
-      event,
+      processedEvent,
       hasGeneralConsent: _hasGeneralConsent,
       hasPIIConsent: _hasPIIConsent,
       availableTrackers: _trackerRegistry.registeredTrackerIds,
@@ -85,7 +123,7 @@ class EventProcessor {
     // If no trackers to send to, return early
     if (routingResult.targetTrackers.isEmpty) {
       return EventProcessingResult(
-        event: event,
+        event: processedEvent,
         routingResult: routingResult,
         trackingResults: [],
         successful: false,
@@ -106,7 +144,7 @@ class EventProcessor {
           error: TrackerException(
             'Tracker not found: $trackerId',
             trackerId: trackerId,
-            eventName: event.getName(),
+            eventName: processedEvent.getName(),
             code: 'NOT_FOUND',
           ),
         ));
@@ -120,7 +158,7 @@ class EventProcessor {
           error: TrackerException(
             'Tracker is disabled: $trackerId',
             trackerId: trackerId,
-            eventName: event.getName(),
+            eventName: processedEvent.getName(),
             code: 'DISABLED',
           ),
         ));
@@ -128,7 +166,7 @@ class EventProcessor {
       }
 
       try {
-        await tracker.track(event);
+        await tracker.track(processedEvent);
         trackingResults.add(TrackingResult(
           trackerId: trackerId,
           successful: true,
@@ -143,7 +181,7 @@ class EventProcessor {
               : TrackerException(
                   'Failed to track event: $e',
                   trackerId: trackerId,
-                  eventName: event.getName(),
+                  eventName: processedEvent.getName(),
                   originalError: e,
                 ),
         ));
@@ -151,7 +189,7 @@ class EventProcessor {
     }
 
     return EventProcessingResult(
-      event: event,
+      event: processedEvent,
       routingResult: routingResult,
       trackingResults: trackingResults,
       successful: anySuccessful,
@@ -184,6 +222,7 @@ class EventProcessor {
       'isEnabled': _isEnabled,
       'hasGeneralConsent': _hasGeneralConsent,
       'hasPIIConsent': _hasPIIConsent,
+      'transformerCount': _transformers.length,
       'trackerRegistry': _trackerRegistry.getDebugInfo(),
       'routingEngine': {
         'configuration': _routingEngine.configuration.toMap(),
