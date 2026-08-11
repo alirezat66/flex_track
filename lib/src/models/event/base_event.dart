@@ -8,18 +8,6 @@ abstract class BaseEvent {
   /// Returns the properties associated with the event.
   Map<String, Object>? get properties;
 
-  /// Returns the name of the event.
-  ///
-  /// Deprecated in favor of the [name] getter.
-  @Deprecated('Use the name getter instead')
-  String getName() => name;
-
-  /// Returns the properties associated with the event.
-  ///
-  /// Deprecated in favor of the [properties] getter.
-  @Deprecated('Use the properties getter instead')
-  Map<String, Object>? getProperties() => properties;
-
   /// Optional category for automatic routing
   /// Override this in subclasses to enable category-based routing
   EventCategory? get category => null;
