@@ -113,7 +113,7 @@ One call site, multiple tracker destinations, centralized policy.
 ```yaml
 # pubspec.yaml
 dependencies:
-  flex_track: ^1.0.0
+  flex_track: ^2.0.0
 ```
 
 **Step 2 — implement your tracker** (the package ships no vendor SDKs; you write a thin adapter):
