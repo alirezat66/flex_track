@@ -8,7 +8,7 @@ Multi-tracker analytics orchestration for Flutter: route events, enforce consent
 [![CI](https://github.com/alirezat66/flex_track/actions/workflows/ci.yml/badge.svg)](https://github.com/alirezat66/flex_track/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alirezat66/flex_track/blob/main/LICENSE)
 
-**Settings → Pages** to that branch if the site is not live yet). API reference: [pub.dev documentation](https://pub.dev/documentation/flex_track/latest/).
+[Interactive guide](https://flextrack.taghizadeh.dev/) · [API reference](https://pub.dev/documentation/flex_track/latest/)
 
 ---
 

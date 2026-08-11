@@ -1,10 +1,10 @@
 name: flex_track
 description: A flexible analytics tracking system for Flutter with intelligent routing, GDPR compliance, and multi-platform support
 version: 1.0.1  # Use semantic versioning
-homepage: https://github.com/alirezat66/flex_track
+homepage: https://flextrack.taghizadeh.dev/
 repository: https://github.com/alirezat66/flex_track
 issue_tracker: https://github.com/alirezat66/flex_track/issues
-documentation: https://alirezat66.github.io/flex_track/
+documentation: https://flextrack.taghizadeh.dev/
 
 topics:
   - analytics
@@ -41,5 +41,4 @@ dev_dependencies:
   build_runner: ^2.0.0 # Add build_runner for mock generation
 
 flutter: {}
-
 
