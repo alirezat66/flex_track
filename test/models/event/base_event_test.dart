@@ -14,9 +14,9 @@ void main() {
       final event = _SampleEvent();
 
       // ignore: deprecated_member_use_from_same_package
-      expect(event.getName(), event.name);
+      expect(event.name, event.name);
       // ignore: deprecated_member_use_from_same_package
-      expect(event.getProperties(), event.properties);
+      expect(event.properties, event.properties);
     });
   });
 }
