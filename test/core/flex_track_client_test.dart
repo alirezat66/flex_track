@@ -241,7 +241,7 @@ void main() {
           ]);
 
           expect(
-            mock.capturedEvents.map((e) => e.getName()).toList(),
+            mock.capturedEvents.map((e) => e.name).toList(),
             ['first', 'second', 'third'],
           );
 
@@ -262,7 +262,7 @@ void main() {
 
           expect(mock.capturedEvents, hasLength(2));
           expect(
-            mock.capturedEvents.map((e) => e.getName()).toSet(),
+            mock.capturedEvents.map((e) => e.name).toSet(),
             {'a', 'b'},
           );
 
@@ -379,10 +379,10 @@ Future<FlexTrackClient> _clientWithRelaxedRouting(
 
 class _TestEvent extends BaseEvent {
   @override
-  String getName() => 'test_event';
+  String get name => 'test_event';
 
   @override
-  Map<String, Object>? getProperties() => const {};
+  Map<String, Object>? get properties => const {};
 }
 
 class _NamedTestEvent extends BaseEvent {
@@ -391,10 +391,10 @@ class _NamedTestEvent extends BaseEvent {
   final String _name;
 
   @override
-  String getName() => _name;
+  String get name => _name;
 
   @override
-  Map<String, Object>? getProperties() => const {};
+  Map<String, Object>? get properties => const {};
 }
 
 class _BrokenInitTracker extends NoOpTracker {

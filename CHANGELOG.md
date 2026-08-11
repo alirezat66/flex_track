@@ -1,3 +1,51 @@
+## 2.0.0
+
+### Breaking changes
+
+`BaseEvent.getName()` and `BaseEvent.getProperties()` have been removed. Event implementations must now override the `name` and `properties` getters.
+
+Before:
+
+```dart
+class PurchaseEvent extends BaseEvent {
+  @override
+  String getName() => 'purchase';
+
+  @override
+  Map<String, Object>? getProperties() => {'amount': 29.99};
+}
+```
+
+After:
+
+```dart
+class PurchaseEvent extends BaseEvent {
+  @override
+  String get name => 'purchase';
+
+  @override
+  Map<String, Object>? get properties => {'amount': 29.99};
+}
+```
+
+### Added
+
+* Add an `EventTransformer` pipeline for enriching and normalizing events before routing and dispatch.
+* Add `EnrichedEvent` for layering additional properties onto an event while preserving its routing, consent, and privacy metadata.
+* Add support for custom event categories and subcategories.
+* Add the interactive FlexTrack guide at [flextrack.taghizadeh.dev](https://flextrack.taghizadeh.dev/).
+
+### Changed
+
+* Replace `BaseEvent.getName()` and `BaseEvent.getProperties()` with the `BaseEvent.name` and `BaseEvent.properties` getter API.
+* Update examples, tests, and documentation to use the getter API.
+
+### Fixed
+
+* Align transformer signatures around `BaseEvent` so transformed events flow consistently through clients, widgets, routing, and trackers.
+
+---
+
 ## 1.0.1
 
 * Improve package presentation and pub.dev listing metadata.

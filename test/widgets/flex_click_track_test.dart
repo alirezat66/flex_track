@@ -34,7 +34,7 @@ void main() {
       await tester.tap(find.text('Go'));
       await tester.pump();
 
-      expect(mock.capturedEvents.single.getName(), 'cta_tap');
+      expect(mock.capturedEvents.single.name, 'cta_tap');
     });
 
     testWidgets('sends event when child is plain Text (tap on text)',
@@ -55,7 +55,7 @@ void main() {
       await tester.tap(find.text('Tap me'));
       await tester.pump();
 
-      expect(mock.capturedEvents.single.getName(), 'label_tap');
+      expect(mock.capturedEvents.single.name, 'label_tap');
     });
 
     testWidgets(
@@ -83,7 +83,7 @@ void main() {
 
       expect(buttonPressed, isTrue,
           reason: 'Material button must still receive the tap');
-      expect(mock.capturedEvents.single.getName(), 'button_wrap');
+      expect(mock.capturedEvents.single.name, 'button_wrap');
     });
 
     testWidgets(
@@ -115,7 +115,7 @@ void main() {
       await tester.pump();
 
       expect(buttonPressed, isTrue);
-      expect(mock.capturedEvents.single.getName(), 'nested_container');
+      expect(mock.capturedEvents.single.name, 'nested_container');
     });
 
     testWidgets(
@@ -152,7 +152,7 @@ void main() {
 
       expect(buttonPressed, isFalse,
           reason: 'tap should not hit the ElevatedButton');
-      expect(mock.capturedEvents.single.getName(), 'padding_area');
+      expect(mock.capturedEvents.single.name, 'padding_area');
     });
 
     testWidgets('does NOT track on scroll/drag over widget', (tester) async {
@@ -207,7 +207,7 @@ void main() {
       await tester.tap(find.text('Scoped'));
       await tester.pump();
 
-      expect(mock.capturedEvents.single.getName(), 'scoped_only');
+      expect(mock.capturedEvents.single.name, 'scoped_only');
     });
 
     testWidgets('scoped client is preferred when global is also set up',
@@ -236,7 +236,7 @@ void main() {
       await tester.tap(find.text('Tap'));
       await tester.pump();
 
-      expect(scopedMock.capturedEvents.single.getName(), 'scoped_wins');
+      expect(scopedMock.capturedEvents.single.name, 'scoped_wins');
       expect(globalMock.capturedEvents, isEmpty);
     });
 

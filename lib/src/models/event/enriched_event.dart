@@ -5,7 +5,7 @@ import 'package:flex_track/src/models/routing/tracker_group.dart';
 /// A [BaseEvent] wrapper that merges extra properties onto an existing event
 /// without requiring mutation of the original.
 ///
-/// All metadata getters are forwarded to [original]. [getProperties] returns
+/// All metadata getters are forwarded to [original]. [properties] returns
 /// original properties merged with [extraProperties]; extra properties take
 /// precedence on key collision.
 ///
@@ -34,11 +34,11 @@ class EnrichedEvent extends BaseEvent {
   Map<String, Object> get extraProperties => _extraProperties;
 
   @override
-  String getName() => _original.getName();
+  String get name => _original.name;
 
   @override
-  Map<String, Object> getProperties() => {
-        ...?_original.getProperties(),
+  Map<String, Object> get properties => {
+        ...?_original.properties,
         ..._extraProperties,
       };
 

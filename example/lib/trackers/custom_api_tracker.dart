@@ -91,8 +91,8 @@ class CustomAPITracker extends BaseTrackerStrategy {
       final payload = {
         'events': eventsToSend
             .map((event) => {
-                  'name': event.getName(),
-                  'properties': event.getProperties(),
+                  'name': event.name,
+                  'properties': event.properties,
                   'timestamp': event.timestamp.toIso8601String(),
                   'category': event.category?.name,
                   'contains_pii': event.containsPII,

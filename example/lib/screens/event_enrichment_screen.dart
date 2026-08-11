@@ -23,8 +23,8 @@ class _EventEnrichmentScreenState extends State<EventEnrichmentScreen> {
     super.initState();
     _subscription = FlexTrack.eventDispatchStream.listen((record) {
       if (!mounted) return;
-      final name = record.event.getName();
-      final props = record.event.getProperties();
+      final name = record.event.name;
+      final props = record.event.properties;
       setState(() {
         _log.insert(0, '[$name] ${props ?? {}}');
       });

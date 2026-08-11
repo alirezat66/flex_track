@@ -9,9 +9,9 @@
 /// ```dart
 /// class UserSignupEvent extends BaseEvent {
 ///   @override
-///   String getName() => 'user_signup';
+///   String get name => 'user_signup';
 ///   @override
-///   Map<String, Object>? getProperties() => const {};
+///   Map<String, Object>? get properties => const {};
 /// }
 ///
 /// await FlexTrack.setup([

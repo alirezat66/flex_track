@@ -15,10 +15,10 @@ class AppStartEvent extends BaseEvent {
         platform = platform ?? 'unknown';
 
   @override
-  String getName() => 'app_start';
+  String get name => 'app_start';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'app_version': appVersion,
         'build_number': buildNumber,
         'platform': platform,
@@ -49,10 +49,10 @@ class PageViewEvent extends BaseEvent {
   }) : timestamp = timestamp ?? DateTime.now();
 
   @override
-  String getName() => 'page_view';
+  String get name => 'page_view';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'page_name': pageName,
         if (parameters != null) 'parameters': parameters!,
         'timestamp': timestamp.millisecondsSinceEpoch,
@@ -78,10 +78,10 @@ class ButtonClickEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'button_click';
+  String get name => 'button_click';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'button_id': buttonId,
         'button_text': buttonText,
         if (screenName != null) 'screen_name': screenName!,
@@ -110,10 +110,10 @@ class ErrorEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'error';
+  String get name => 'error';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'error_type': errorType,
         'error_message': errorMessage,
         if (stackTrace != null) 'stack_trace': stackTrace!,
@@ -146,10 +146,10 @@ class PerformanceEvent extends BaseEvent {
   });
 
   @override
-  String getName() => 'performance_metric';
+  String get name => 'performance_metric';
 
   @override
-  Map<String, Object> getProperties() => {
+  Map<String, Object> get properties => {
         'metric_name': metricName,
         'value': value,
         'unit': unit,

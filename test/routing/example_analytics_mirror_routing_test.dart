@@ -11,10 +11,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _DemoFreeTier extends BaseEvent {
   @override
-  String getName() => 'demo_free_tier_only';
+  String get name => 'demo_free_tier_only';
 
   @override
-  Map<String, Object>? getProperties() => const {'note': 'x'};
+  Map<String, Object>? get properties => const {'note': 'x'};
 
   @override
   bool get requiresConsent => false;
@@ -22,10 +22,10 @@ class _DemoFreeTier extends BaseEvent {
 
 class _DemoBanner extends BaseEvent {
   @override
-  String getName() => 'demo_banner_impression';
+  String get name => 'demo_banner_impression';
 
   @override
-  Map<String, Object>? getProperties() => const {'slot_id': '1'};
+  Map<String, Object>? get properties => const {'slot_id': '1'};
 
   @override
   EventCategory get category => EventCategory.user;
