@@ -1,12 +1,16 @@
 import 'package:flex_track/src/models/event/base_event.dart';
+import 'package:flex_track/src/models/event/enriched_event.dart';
 
 import 'event_category.dart';
 import 'tracker_group.dart';
+
+typedef EventTypeMatcher = bool Function(BaseEvent event);
 
 /// Represents a routing rule that determines where events should be sent
 class RoutingRule {
   final String? id;
   final Type? eventType;
+  final EventTypeMatcher? eventTypeMatcher;
   final String? eventNamePattern;
   final RegExp? eventNameRegex;
   final EventCategory? category;
@@ -28,6 +32,7 @@ class RoutingRule {
   const RoutingRule({
     this.id,
     this.eventType,
+    this.eventTypeMatcher,
     this.eventNamePattern,
     this.eventNameRegex,
     this.category,
@@ -55,7 +60,7 @@ class RoutingRule {
     if (productionOnly && isDebugMode) return false;
 
     // Check event type
-    if (eventType != null && event.runtimeType != eventType) {
+    if (!matchesEventType(event)) {
       return false;
     }
 
@@ -105,6 +110,23 @@ class RoutingRule {
     return true;
   }
 
+  /// Whether [event] satisfies this rule's type condition.
+  ///
+  /// Routing builders provide a subtype-aware matcher for `route<T>()`. The
+  /// event is unwrapped only for this type check so transformed properties and
+  /// metadata continue to participate in the remaining rule conditions.
+  bool matchesEventType(BaseEvent event) {
+    if (eventType == null) return true;
+
+    BaseEvent routingEvent = event;
+    while (routingEvent is EnrichedEvent) {
+      routingEvent = routingEvent.original;
+    }
+
+    return eventTypeMatcher?.call(routingEvent) ??
+        routingEvent.runtimeType == eventType;
+  }
+
   /// Returns true if this rule should be applied based on consent
   bool shouldApply(
     BaseEvent event, {
@@ -139,6 +161,7 @@ class RoutingRule {
   RoutingRule copyWith({
     String? id,
     Type? eventType,
+    EventTypeMatcher? eventTypeMatcher,
     String? eventNamePattern,
     RegExp? eventNameRegex,
     EventCategory? category,
@@ -160,6 +183,7 @@ class RoutingRule {
     return RoutingRule(
       id: id ?? this.id,
       eventType: eventType ?? this.eventType,
+      eventTypeMatcher: eventTypeMatcher ?? this.eventTypeMatcher,
       eventNamePattern: eventNamePattern ?? this.eventNamePattern,
       eventNameRegex: eventNameRegex ?? this.eventNameRegex,
       category: category ?? this.category,

@@ -474,6 +474,11 @@ FlexTrack.addTransformer((event) => EnrichedEvent(event, {
 
 `EnrichedEvent` is a `BaseEvent` wrapper. It forwards all metadata from the original event (`category`, `containsPII`, `requiresConsent`, etc.) and overrides `properties` to merge the original properties with the extra ones. Extra properties win on key collision.
 
+Type-based routes remain anchored to the original event through any number of
+`EnrichedEvent` wrappers. A `route<PurchaseEvent>()` rule therefore continues
+to match enriched purchases and subclasses of `PurchaseEvent`, while
+property-based routes can still match properties added by transformers.
+
 ```dart
 // Extra properties override originals on the same key.
 EnrichedEvent(originalEvent, {'source': 'transformer'})
