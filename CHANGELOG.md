@@ -9,6 +9,12 @@
   keyed by user id, session id, or event name. Essential events bypass
   sampling, and published UTF-8 vectors keep future SDK implementations in
   parity.
+- Event instances now capture an immutable UUID v4 identifier and UTC
+  occurrence timestamp. Enrichment preserves both values.
+- New clients now start with general and PII consent denied, matching the
+  documented privacy-safe default. Disabling consent checking on a routing
+  configuration now bypasses those checks as configured.
+- `flexTrackVersion` now matches the package version declared in `pubspec.yaml`.
 
 ## 2.0.0
 

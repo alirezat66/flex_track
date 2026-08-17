@@ -28,6 +28,7 @@ void main() {
         trackerRegistry: trackerRegistry,
         routingEngine: routingEngine,
       );
+      eventProcessor.setConsent(general: true, pii: true);
     });
 
     group('Enable/Disable Functionality', () {

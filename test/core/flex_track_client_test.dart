@@ -39,6 +39,7 @@ void main() {
           await client.initialize();
           expect(client.isInitialized, isTrue);
 
+          client.setGeneralConsent(true);
           await client.track(_TestEvent());
           expect(mock.capturedEvents, hasLength(1));
 
@@ -53,6 +54,7 @@ void main() {
           final client = await FlexTrackClient.create([mock]);
           await client.initialize();
           await client.initialize();
+          client.setGeneralConsent(true);
           await client.track(_TestEvent());
           expect(mock.capturedEvents, hasLength(1));
           await client.dispose();
@@ -103,6 +105,7 @@ void main() {
           final mock = MockTracker();
           await FlexTrack.setup([mock]);
           expect(FlexTrack.instance.client.trackerRegistry.get(mock.id), mock);
+          FlexTrack.setGeneralConsent(true);
           await FlexTrack.track(_TestEvent());
           expect(mock.capturedEvents, hasLength(1));
           await FlexTrack.reset();
@@ -111,6 +114,46 @@ void main() {
     });
 
     group('consent and processor control', () {
+      test('new clients deny general and PII consent by default', () async {
+        final client = await FlexTrackClient.create([MockTracker()]);
+
+        expect(client.getConsentStatus(), {
+          'general': false,
+          'pii': false,
+        });
+
+        await client.dispose();
+      });
+
+      test('ordinary events remain blocked until consent is granted', () async {
+        final mock = MockTracker();
+        final client = await FlexTrackClient.create([mock]);
+
+        expect((await client.track(_TestEvent())).wasTracked, isFalse);
+        client.setGeneralConsent(true);
+        expect((await client.track(_TestEvent())).wasTracked, isTrue);
+
+        await client.dispose();
+      });
+
+      test('essential events bypass the default-deny consent state', () async {
+        final mock = MockTracker();
+        final client = await FlexTrackClient.create([mock]);
+
+        expect((await client.track(_EssentialTestEvent())).wasTracked, isTrue);
+
+        await client.dispose();
+      });
+
+      test('disabled consent checking bypasses the consent gate', () async {
+        final mock = MockTracker();
+        final client = await _clientWithRelaxedRouting([mock]);
+
+        expect((await client.track(_TestEvent())).wasTracked, isTrue);
+
+        await client.dispose();
+      });
+
       test(
         'events that require consent are not delivered when general consent is denied',
         () async {
@@ -395,6 +438,11 @@ class _NamedTestEvent extends BaseEvent {
 
   @override
   Map<String, Object>? get properties => const {};
+}
+
+class _EssentialTestEvent extends _TestEvent {
+  @override
+  bool get isEssential => true;
 }
 
 class _BrokenInitTracker extends NoOpTracker {

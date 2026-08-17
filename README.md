@@ -315,6 +315,12 @@ This package does not bundle Firebase, Mixpanel, Amplitude, or any other analyti
 
 Extend `BaseEvent` and implement the `name` and `properties` getters. Everything else is optional.
 
+Every event receives an immutable UUID v4 `eventId` and UTC `timestamp` when
+it is constructed. Those values remain unchanged through enrichment and
+dispatch. For replay or restored offline events, pass the original metadata to
+`super(eventId: storedId, timestamp: storedTimestamp)` from your event
+constructor.
+
 ```dart
 class PurchaseEvent extends BaseEvent {
   final double amount;

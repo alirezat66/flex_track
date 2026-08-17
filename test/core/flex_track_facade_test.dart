@@ -77,4 +77,10 @@ class _FacadeTestEvent extends BaseEvent {
 
   @override
   Map<String, Object>? get properties => const {};
+
+  @override
+  bool get requiresConsent => false;
+
+  @override
+  bool get isEssential => true;
 }

@@ -432,6 +432,8 @@ void main() {
           return builder;
         });
 
+        FlexTrack.setConsent(general: true);
+
         final technicalEvent = TestEvent('debug_test', EventCategory.technical);
 
         // In debug mode, technical events should go to development trackers
@@ -602,6 +604,9 @@ class TestEvent extends BaseEvent {
 
   @override
   EventCategory? get category => eventCategory;
+
+  @override
+  bool get requiresConsent => false;
 }
 
 class HighVolumeTestEvent extends BaseEvent {
@@ -617,6 +622,9 @@ class HighVolumeTestEvent extends BaseEvent {
 
   @override
   bool get isHighVolume => true;
+
+  @override
+  bool get isEssential => true;
 }
 
 class EssentialTestEvent extends BaseEvent {
