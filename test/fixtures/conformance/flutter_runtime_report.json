@@ -1,0 +1,21 @@
+{
+  "implementation": "flutter",
+  "specVersion": "1.0.0",
+  "fixtureVersion": "1.0.0",
+  "total": 11,
+  "passed": 11,
+  "failed": 0,
+  "caseIds": [
+    "offline.queue-all-targets",
+    "offline.no-target-no-queue",
+    "delivery.partial-failure",
+    "delivery.all-success",
+    "flush.selective-retry-success",
+    "flush.retain-only-failures",
+    "flush.offline-noop",
+    "queue.duplicate-id-idempotent",
+    "queue.fifo-limit",
+    "queue.replace-preserves-position",
+    "lifecycle.initialize-idempotent"
+  ]
+}

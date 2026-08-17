@@ -87,3 +87,8 @@ abstract class TrackerStrategy {
     };
   }
 }
+
+/// Optional lifecycle capability for trackers that own disposable resources.
+abstract interface class DisposableTrackerStrategy {
+  Future<void> dispose();
+}

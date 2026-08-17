@@ -53,8 +53,11 @@ export 'src/core/event_dispatch_record.dart';
 export 'src/core/flex_track.dart';
 export 'src/core/flex_track_client.dart' show FlexTrackClient;
 export 'src/core/event_processor.dart'
-    show EventProcessingResult, TrackingResult;
+    show EventProcessingResult, TrackingResult, QueueFlushResult;
 export 'src/core/tracker_registry.dart' show TrackerRegistry;
+export 'src/runtime/event_queue.dart'
+    show EventQueue, InMemoryEventQueue, QueuedEvent, QueuedEventSnapshot;
+export 'src/runtime/file_event_queue.dart' show FileEventQueue;
 
 // ============= EVENT MODELS =============
 
@@ -143,7 +146,7 @@ export 'src/core/flex_track.dart' show FlexTrack;
 // ============= VERSION INFO =============
 
 /// FlexTrack package version
-const String flexTrackVersion = '2.1.0';
+const String flexTrackVersion = '2.2.0';
 
 /// FlexTrack package description
 const String flexTrackDescription =
