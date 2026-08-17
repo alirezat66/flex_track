@@ -137,7 +137,8 @@ class FlexTrackClient {
 
   Future<EventProcessingResult> track(BaseEvent event) async {
     final result = await _eventProcessor.processEvent(event);
-    _emitDispatchIfDebug(_recordFromResult(result));
+    _emitDispatchIfDebug(await _recordFromResult(result));
+    _notifyDebugStateIfDebug();
     return result;
   }
 
@@ -145,9 +146,10 @@ class FlexTrackClient {
     final results = await _eventProcessor.processEvents(events);
     if (kDebugMode) {
       for (final result in results) {
-        _emitDispatchIfDebug(_recordFromResult(result));
+        _emitDispatchIfDebug(await _recordFromResult(result));
       }
     }
+    _notifyDebugStateIfDebug();
     return results;
   }
 
@@ -156,9 +158,10 @@ class FlexTrackClient {
     final results = await _eventProcessor.processEventsParallel(events);
     if (kDebugMode) {
       for (final result in results) {
-        _emitDispatchIfDebug(_recordFromResult(result));
+        _emitDispatchIfDebug(await _recordFromResult(result));
       }
     }
+    _notifyDebugStateIfDebug();
     return results;
   }
 
@@ -219,11 +222,15 @@ class FlexTrackClient {
   Future<QueueFlushResult> flush({int limit = 100}) async {
     final result = await _eventProcessor.flushQueue(limit: limit);
     await _trackerRegistry.flush();
+    _notifyDebugStateIfDebug();
     return result;
   }
 
-  Future<QueueFlushResult> flushQueue({int limit = 100}) =>
-      _eventProcessor.flushQueue(limit: limit);
+  Future<QueueFlushResult> flushQueue({int limit = 100}) async {
+    final result = await _eventProcessor.flushQueue(limit: limit);
+    _notifyDebugStateIfDebug();
+    return result;
+  }
 
   Future<int> get queuedEventCount => _eventProcessor.queue.size();
 
@@ -278,7 +285,8 @@ class FlexTrackClient {
     }
   }
 
-  static EventDispatchRecord _recordFromResult(EventProcessingResult result) {
+  Future<EventDispatchRecord> _recordFromResult(
+      EventProcessingResult result) async {
     final targets = List<String>.from(result.routingResult.targetTrackers);
     final ok = <String>[
       for (final t in result.trackingResults)
@@ -288,6 +296,8 @@ class FlexTrackClient {
       event: result.event,
       targetTrackers: targets,
       successfulTrackerIds: ok,
+      queuedTrackerIds: List<String>.from(result.queuedTrackerIds),
+      queueSize: await _eventProcessor.queue.size(),
     );
   }
 

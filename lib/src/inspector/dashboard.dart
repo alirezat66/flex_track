@@ -306,6 +306,7 @@ select { cursor: pointer; }
     </div>
     <div class="scroll">
       <div class="section"><h2>Trackers</h2><div id="trackers"></div></div>
+      <div class="section"><h2>Offline queue</h2><div id="queue"></div></div>
       <div class="section"><h2>Consent</h2><div id="consent"></div></div>
       <div class="section"><h2>Validation</h2><div id="validation"></div></div>
     </div>
@@ -359,9 +360,11 @@ select { cursor: pointer; }
     var tb = document.getElementById('trackers');
     var cs = document.getElementById('consent');
     var vl = document.getElementById('validation');
+    var qu = document.getElementById('queue');
     tb.innerHTML = '';
     cs.innerHTML = '';
     vl.innerHTML = '';
+    qu.innerHTML = '';
     if (!data || data.isSetUp === false) {
       tb.innerHTML = '<div class="empty">FlexTrack not set up</div>';
       return;
@@ -395,6 +398,7 @@ select { cursor: pointer; }
     applyTrackerRowHighlight();
     var con = data.consent || {};
     cs.innerHTML = '<div>general: <b>' + !!con.general + '</b></div><div>pii: <b>' + !!con.pii + '</b></div>';
+    qu.innerHTML = '<div>pending events: <b>' + Number(data.queueSize || 0) + '</b></div>';
     var issues = data.validation || [];
     if (!issues.length) vl.innerHTML = '<div style="color:var(--success);font-size:12px;">No issues</div>';
     else issues.forEach(function(w){ var d=document.createElement('div'); d.className='warn'; d.textContent=w; vl.appendChild(d); });
@@ -470,7 +474,8 @@ select { cursor: pointer; }
     if (tid) {
       var targets = normIds(ev.targetTrackers);
       var ok = normIds(ev.successfulTrackerIds);
-      if (targets.indexOf(tid) < 0 && ok.indexOf(tid) < 0) return false;
+      var queued = normIds(ev.queuedTrackerIds);
+      if (targets.indexOf(tid) < 0 && ok.indexOf(tid) < 0 && queued.indexOf(tid) < 0) return false;
     }
     return true;
   }
@@ -519,7 +524,10 @@ select { cursor: pointer; }
       '<div class="detail-subh">Routed to (rule targets)</div>' +
       '<div class="tk-pills">' + pillsHtml(ev.targetTrackers, '') + '</div>' +
       '<div class="detail-subh">Delivered (track succeeded)</div>' +
-      '<div class="tk-pills">' + pillsHtml(ev.successfulTrackerIds, 'ok') + '</div></div>' +
+      '<div class="tk-pills">' + pillsHtml(ev.successfulTrackerIds, 'ok') + '</div>' +
+      '<div class="detail-subh">Queued for retry</div>' +
+      '<div class="tk-pills">' + pillsHtml(ev.queuedTrackerIds, '') + '</div>' +
+      '<div class="detail-subh">Queue size after dispatch</div><div><b>' + Number(ev.queueSize || 0) + '</b></div></div>' +
       '<div class="section"><h2>Properties</h2><pre class="detail-pre">' + escapeHtml(JSON.stringify(ev.properties || {}, null, 2)) + '</pre></div>';
     applyTrackerRowHighlight();
     renderFeed();

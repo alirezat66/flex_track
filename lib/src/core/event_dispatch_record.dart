@@ -9,6 +9,8 @@ class EventDispatchRecord {
     required this.event,
     this.targetTrackers = const [],
     this.successfulTrackerIds = const [],
+    this.queuedTrackerIds = const [],
+    this.queueSize = 0,
   });
 
   final BaseEvent event;
@@ -18,4 +20,10 @@ class EventDispatchRecord {
 
   /// Subset of [targetTrackers] where `doTrack` completed successfully.
   final List<String> successfulTrackerIds;
+
+  /// Subset of [targetTrackers] retained for a later delivery attempt.
+  final List<String> queuedTrackerIds;
+
+  /// Total number of events in the runtime queue after this dispatch.
+  final int queueSize;
 }

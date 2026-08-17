@@ -1,21 +1,33 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flex_track/flex_track.dart';
 import 'package:flex_track/flex_track_inspector.dart';
+import 'package:path_provider/path_provider.dart';
 import '../trackers/firebase_tracker.dart';
 import '../trackers/mixpanel_tracker.dart';
 import '../trackers/amplitude_tracker.dart';
 import '../trackers/custom_api_tracker.dart';
 import '../events/app_events.dart';
+import '../runtime/offline_delivery_demo.dart';
 
 class AnalyticsSetup {
   static Future<void> initialize() async {
     // Create trackers
     final trackers = await _createTrackers();
+    final deliveryDemo = OfflineDeliveryDemo.instance;
+    await deliveryDemo.initialize();
+    final supportDirectory = await getApplicationSupportDirectory();
+    final queue = FileEventQueue(
+      File('${supportDirectory.path}/flex_track/event_queue.json'),
+    );
 
     // Set up FlexTrack with advanced routing
     await FlexTrack.setupWithRouting(trackers, (builder) {
       return _configureRouting(builder);
-    });
+    }, queue: queue, onlineProvider: () => deliveryDemo.onlineProvider);
+
+    await deliveryDemo.refreshQueueSize();
 
     // Track app startup
     await FlexTrack.track(AppStartEvent());
@@ -28,6 +40,15 @@ class AnalyticsSetup {
     }
   }
 
+  /// Replays events restored from disk after consent has been loaded.
+  /// If the demo is still offline, [FlexTrack.flush] is a safe no-op and the
+  /// durable queue remains intact for a later manual or startup retry.
+  static Future<QueueFlushResult> flushRecoveredEvents() async {
+    final result = await FlexTrack.flush();
+    await OfflineDeliveryDemo.instance.refreshQueueSize();
+    return result;
+  }
+
   static Future<List<TrackerStrategy>> _createTrackers() async {
     final trackers = <TrackerStrategy>[];
 
@@ -37,6 +58,9 @@ class AnalyticsSetup {
       showTimestamps: true,
       colorOutput: true,
     ));
+    trackers
+      ..add(OfflineDeliveryDemo.instance.successTracker)
+      ..add(OfflineDeliveryDemo.instance.retryTracker);
 
     // Add production trackers based on environment
     if (!kDebugMode) {
@@ -85,6 +109,15 @@ class AnalyticsSetup {
 
     // Apply GDPR defaults first (highest priority)
     GDPRDefaults.apply(builder, compliantTrackers: ['firebase', 'custom_api']);
+
+    builder
+        .routeExact('demo_offline_delivery')
+        .to(['demo_delivery_success', 'demo_delivery_retry'])
+        .skipConsent()
+        .noSampling()
+        .withPriority(100)
+        .withDescription('Offline Delivery Lab destinations')
+        .and();
 
     // Example: same app, different destinations — explicit tracker lists
     builder

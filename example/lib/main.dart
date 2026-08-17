@@ -15,6 +15,7 @@ Future<void> main() async {
 
   await AnalyticsSetup.initialize();
   await GDPRManager.initialize();
+  await AnalyticsSetup.flushRecoveredEvents();
 
   runApp(const MyApp());
 }
