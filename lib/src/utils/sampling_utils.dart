@@ -1,4 +1,28 @@
+import 'dart:convert';
 import 'dart:math' as math;
+
+import '../models/event/base_event.dart';
+
+/// Decides whether an event is retained for a routing rule's sample rate.
+abstract interface class EventSampler {
+  bool shouldSample(BaseEvent event, double sampleRate);
+}
+
+/// Cross-platform deterministic sampler using FNV-1a over UTF-8 bytes.
+class DeterministicEventSampler implements EventSampler {
+  const DeterministicEventSampler();
+
+  @override
+  bool shouldSample(BaseEvent event, double sampleRate) {
+    if (event.isEssential) return true;
+    if (sampleRate >= 1.0) return true;
+    if (sampleRate <= 0.0) return false;
+    return SamplingUtils.shouldSampleDeterministic(
+      SamplingUtils.samplingKey(event),
+      sampleRate,
+    );
+  }
+}
 
 /// Utility class for event sampling operations
 class SamplingUtils {
@@ -19,11 +43,36 @@ class SamplingUtils {
     if (sampleRate >= 1.0) return true;
     if (sampleRate <= 0.0) return false;
 
-    // Use hash of input for deterministic sampling
-    final hash = input.hashCode.abs();
-    final normalizedHash = (hash % 10000) / 10000.0;
+    final normalizedHash = stableHash(input) / 0x100000000;
 
     return normalizedHash < sampleRate;
+  }
+
+  /// Stable FNV-1a 32-bit hash over the UTF-8 bytes of [input].
+  ///
+  /// Unlike Dart's [String.hashCode], this algorithm is explicitly defined
+  /// and can produce identical sampling decisions on every SDK platform.
+  static int stableHash(String input) {
+    var hash = 0x811c9dc5;
+    for (final byte in utf8.encode(input)) {
+      hash ^= byte;
+      hash = (hash * 0x01000193) & 0xffffffff;
+    }
+    return hash;
+  }
+
+  /// Stable identity used by the default routing sampler.
+  ///
+  /// Empty identity values are ignored. Event name is the deterministic
+  /// fallback until an application supplies a user or session identity.
+  static String samplingKey(BaseEvent event) {
+    final userId = event.userId;
+    if (userId != null && userId.isNotEmpty) return userId;
+
+    final sessionId = event.sessionId;
+    if (sessionId != null && sessionId.isNotEmpty) return sessionId;
+
+    return event.name;
   }
 
   /// Check if an event should be sampled based on user ID
@@ -112,7 +161,7 @@ class SamplingUtils {
   static int getSamplingBucket(String identifier, int bucketCount) {
     if (bucketCount <= 0) return 0;
 
-    final hash = identifier.hashCode.abs();
+    final hash = stableHash(identifier);
     return hash % bucketCount;
   }
 

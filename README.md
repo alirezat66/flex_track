@@ -928,7 +928,17 @@ GDPRDefaults.applyStrict(routing, compliantTrackers: ['internal']);
 
 ## Sampling and performance
 
-Sampling is applied per-rule. Each matching event independently has a random chance of being forwarded at the specified rate.
+Sampling is applied per rule and is deterministic by default. FlexTrack hashes
+the first non-empty value from `event.userId`, `event.sessionId`, and
+`event.name` with FNV-1a over UTF-8 bytes. The resulting stable bucket is
+compared with the rule's rate, so the same identity receives the same decision
+across launches and SDK implementations. Essential events always bypass
+sampling.
+
+When no user or session identity is available, all events with the same name
+share a decision. Supply a stable user or session id when you need a
+representative user-level sample. The cross-platform vectors are published in
+`test/fixtures/sampling_vectors.json`.
 
 | Method | Rate |
 |--------|------|

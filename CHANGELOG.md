@@ -5,6 +5,10 @@
 - Type-based routing now matches event subclasses and preserves the original
   routing identity through `EnrichedEvent` transformers. Other routing
   conditions still evaluate the transformed event.
+- Replaced clock-modulo routing sampling with deterministic FNV-1a sampling
+  keyed by user id, session id, or event name. Essential events bypass
+  sampling, and published UTF-8 vectors keep future SDK implementations in
+  parity.
 
 ## 2.0.0
 
