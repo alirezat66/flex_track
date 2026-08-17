@@ -1,6 +1,8 @@
 # Cross-SDK conformance
 
-The files in [`test/fixtures/conformance/`](../test/fixtures/conformance/) are
+The files in
+[`test/fixtures/conformance/`](https://github.com/alirezat66/flex_track/tree/main/test/fixtures/conformance)
+are
 the shared executable contract for Flutter and Kotlin Core MVP implementations.
 
 ## Version 1.0.0 files
@@ -61,4 +63,3 @@ Run the Flutter suite with:
 ```bash
 flutter test test/contract
 ```
-

@@ -1,4 +1,4 @@
-# Unreleased
+# 2.1.0 (2026-08-17)
 
 ## Added
 
@@ -98,8 +98,8 @@ This release promotes the package to **1.0.0** and focuses on **injectable analy
 ### Documentation
 
 * README: `FlexTrackClient`, `FlexTrackScope`, inspector section, table of contents.
-* **`docs/flex-track-client.md`** — injectable client, Riverpod/Bloc, widget scope behavior.
-* **`docs/assets/inspector.gif`** — demo of the inspector with the flagship app.
+* **`doc/flex-track-client.md`** — injectable client, Riverpod/Bloc, widget scope behavior.
+* **`doc/assets/inspector.gif`** — demo of the inspector with the flagship app.
 
 ---
 
