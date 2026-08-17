@@ -1,0 +1,18 @@
+{
+  "specVersion": "1.0.0",
+  "fixtureVersion": "1.0.0",
+  "implementation": "flutter",
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "caseIds": [
+    "routing.priority-overlap",
+    "routing.same-tier-merge",
+    "routing.default-group-fallback",
+    "consent.general-missing",
+    "consent.pii-missing",
+    "sampling.unicode-utf8",
+    "enrichment.identity-and-properties",
+    "debug.routing-decision"
+  ]
+}

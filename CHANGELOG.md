@@ -4,6 +4,8 @@
 
 - Published the versioned, language-neutral FlexTrack Core MVP specification
   shared by the Flutter and Kotlin implementations.
+- Added versioned JSON conformance fixtures, a Flutter runner and report, and
+  the Kotlin runner contract for cross-SDK behavior parity.
 
 ## Fixed
 

@@ -9,4 +9,6 @@ Historical topic filenames (`trackers.md`, `routing-and-rules.md`, etc.) have co
 
 - **[Core MVP specification](core-mvp-specification.md)** — normative,
   language-neutral contract shared by Flutter and Kotlin.
+- **[Cross-SDK conformance](conformance.md)** — shared fixtures, reports, and
+  the Kotlin runner contract.
 - **[FlexTrackClient and DI](flex-track-client.md)** — injectable client, Riverpod and Bloc examples, tests without the global singleton.
