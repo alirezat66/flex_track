@@ -1,5 +1,6 @@
 import 'package:flex_track/src/models/event/base_event.dart';
 import 'package:flex_track/src/models/event/enriched_event.dart';
+import 'package:flex_track/src/utils/sampling_utils.dart';
 
 import 'event_category.dart';
 import 'tracker_group.dart';
@@ -149,12 +150,11 @@ class RoutingRule {
   }
 
   /// Returns true if this rule should be sampled for the given event
-  bool shouldSample() {
-    if (sampleRate >= 1.0) return true;
-    if (sampleRate <= 0.0) return false;
-
-    // Use a simple random sampling
-    return (DateTime.now().millisecondsSinceEpoch % 1000) / 1000.0 < sampleRate;
+  bool shouldSample(
+    BaseEvent event, {
+    EventSampler sampler = const DeterministicEventSampler(),
+  }) {
+    return sampler.shouldSample(event, sampleRate);
   }
 
   /// Creates a copy of this rule with updated properties
