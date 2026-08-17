@@ -70,11 +70,21 @@ void main() {
     });
 
     test('forwards timestamp from original', () {
-      // Capture once — BaseEvent.timestamp calls DateTime.now() each time
+      // Capture once to verify the enriched event forwards the same value.
       final fixedTime = DateTime(2024, 1, 1);
       final fixedEvent = _FixedTimestampEvent(fixedTime);
       final enriched = EnrichedEvent(fixedEvent, {});
       expect(enriched.timestamp, equals(fixedTime));
+    });
+
+    test('preserves event id and timestamp through nested enrichment', () {
+      final first = EnrichedEvent(original, {'layer': 1});
+      final second = EnrichedEvent(first, {'layer': 2});
+
+      expect(first.eventId, original.eventId);
+      expect(second.eventId, original.eventId);
+      expect(first.timestamp, same(original.timestamp));
+      expect(second.timestamp, same(original.timestamp));
     });
 
     test('forwards userId from original', () {

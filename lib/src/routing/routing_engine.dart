@@ -53,9 +53,10 @@ class RoutingEngine {
         }
 
         // Check if rule should be applied based on consent
-        if (!rule.shouldApply(event,
-            hasGeneralConsent: hasGeneralConsent,
-            hasPIIConsent: hasPIIConsent)) {
+        if (_configuration.enableConsentChecking &&
+            !rule.shouldApply(event,
+                hasGeneralConsent: hasGeneralConsent,
+                hasPIIConsent: hasPIIConsent)) {
           skippedRules.add(SkippedRule(
             rule: rule,
             reason: 'Consent requirements not met',

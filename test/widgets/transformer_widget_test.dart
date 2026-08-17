@@ -13,6 +13,7 @@ void main() {
       final client = await FlexTrackClient.create(
         [mock],
         routing: RoutingConfiguration(
+          enableConsentChecking: false,
           rules: [RoutingRule(isDefault: true, targetGroup: TrackerGroup.all)],
         ),
       );
@@ -53,6 +54,7 @@ void main() {
       final client = await FlexTrackClient.create(
         [mock],
         routing: RoutingConfiguration(
+          enableConsentChecking: false,
           rules: [RoutingRule(isDefault: true, targetGroup: TrackerGroup.all)],
         ),
       );
@@ -92,6 +94,7 @@ void main() {
       final client = await FlexTrackClient.create(
         [mock],
         routing: RoutingConfiguration(
+          enableConsentChecking: false,
           rules: [RoutingRule(isDefault: true, targetGroup: TrackerGroup.all)],
         ),
       );

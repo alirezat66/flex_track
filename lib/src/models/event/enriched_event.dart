@@ -25,7 +25,8 @@ class EnrichedEvent extends BaseEvent {
 
   EnrichedEvent(BaseEvent original, Map<String, Object> extraProperties)
       : _original = original,
-        _extraProperties = Map.unmodifiable(extraProperties);
+        _extraProperties = Map.unmodifiable(extraProperties),
+        super(eventId: original.eventId, timestamp: original.timestamp);
 
   /// The original unwrapped event.
   BaseEvent get original => _original;
@@ -59,9 +60,6 @@ class EnrichedEvent extends BaseEvent {
 
   @override
   bool get isEssential => _original.isEssential;
-
-  @override
-  DateTime get timestamp => _original.timestamp;
 
   @override
   String? get userId => _original.userId;
