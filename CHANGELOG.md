@@ -1,5 +1,10 @@
 # Unreleased
 
+## Added
+
+- Published the versioned, language-neutral FlexTrack Core MVP specification
+  shared by the Flutter and Kotlin implementations.
+
 ## Fixed
 
 - Type-based routing now matches event subclasses and preserves the original
