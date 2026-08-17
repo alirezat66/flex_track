@@ -143,7 +143,7 @@ export 'src/core/flex_track.dart' show FlexTrack;
 // ============= VERSION INFO =============
 
 /// FlexTrack package version
-const String flexTrackVersion = '1.0.0';
+const String flexTrackVersion = '2.0.0';
 
 /// FlexTrack package description
 const String flexTrackDescription =

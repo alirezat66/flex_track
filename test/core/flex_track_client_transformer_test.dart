@@ -8,6 +8,7 @@ Future<(FlexTrackClient, MockTracker)> _makeClient() async {
   final client = await FlexTrackClient.create(
     [mock],
     routing: RoutingConfiguration(
+      enableConsentChecking: false,
       rules: [RoutingRule(isDefault: true, targetGroup: TrackerGroup.all)],
     ),
   );

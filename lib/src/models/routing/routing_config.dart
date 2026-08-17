@@ -123,8 +123,10 @@ class RoutingConfiguration {
       }
 
       // Check consent requirements
-      if (!rule.shouldApply(event,
-          hasGeneralConsent: hasGeneralConsent, hasPIIConsent: hasPIIConsent)) {
+      if (enableConsentChecking &&
+          !rule.shouldApply(event,
+              hasGeneralConsent: hasGeneralConsent,
+              hasPIIConsent: hasPIIConsent)) {
         continue;
       }
 

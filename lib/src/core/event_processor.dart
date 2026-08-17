@@ -12,8 +12,8 @@ class EventProcessor {
   final RoutingEngine _routingEngine;
   final List<EventTransformer> _transformers = [];
 
-  bool _hasGeneralConsent = true;
-  bool _hasPIIConsent = true;
+  bool _hasGeneralConsent = false;
+  bool _hasPIIConsent = false;
   bool _isEnabled = true;
 
   EventProcessor({

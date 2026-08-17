@@ -39,14 +39,12 @@ class AppStartEvent extends BaseEvent {
 class PageViewEvent extends BaseEvent {
   final String pageName;
   final Map<String, String>? parameters;
-  @override
-  final DateTime timestamp;
 
   PageViewEvent({
     required this.pageName,
     this.parameters,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+    super.timestamp,
+  });
 
   @override
   String get name => 'page_view';

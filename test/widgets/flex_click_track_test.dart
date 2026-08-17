@@ -186,6 +186,7 @@ void main() {
         (tester) async {
       final mock = MockTracker();
       final client = await FlexTrackClient.create([mock]);
+      client.setGeneralConsent(true);
       addTearDown(() async {
         await client.dispose();
       });
@@ -215,6 +216,7 @@ void main() {
       final globalMock = await setupFlexTrackForTesting();
       final scopedMock = MockTracker();
       final scopedClient = await FlexTrackClient.create([scopedMock]);
+      scopedClient.setGeneralConsent(true);
       addTearDown(() async {
         await scopedClient.dispose();
       });

@@ -27,6 +27,7 @@ void main() {
         trackerRegistry: trackerRegistry,
         routingEngine: routingEngine,
       );
+      eventProcessor.setConsent(general: true, pii: true);
     });
 
     test('single transformer enriches event reaching the tracker', () async {
