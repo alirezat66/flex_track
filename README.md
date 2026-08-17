@@ -1,4 +1,4 @@
-![FlexTrack Banner](docs/assets/banner.png)
+![FlexTrack Banner](doc/assets/banner.png)
 
 # FlexTrack
 
@@ -37,7 +37,7 @@ Instead of spreading analytics policy throughout the app, define it once and app
 
 ## Visual Demo
 
-![Inspector Demo](docs/assets/inspector.gif)
+![Inspector Demo](doc/assets/inspector.gif)
 
 ## Quick Example
 
@@ -113,7 +113,7 @@ One call site, multiple tracker destinations, centralized policy.
 ```yaml
 # pubspec.yaml
 dependencies:
-  flex_track: ^1.0.0
+  flex_track: ^2.1.0
 ```
 
 **Step 2 — implement your tracker** (the package ships no vendor SDKs; you write a thin adapter):
@@ -206,6 +206,10 @@ FlexTrack exists to make that architecture explicit, maintainable, and debuggabl
 - Debug Inspector with live event visibility
 - `FlexTrackClient` for dependency injection patterns
 - Widget wrappers for click, impression, mount, and route-view tracking
+
+The normative behavior shared by the Flutter and Kotlin SDKs is defined in the
+[FlexTrack Core MVP specification](doc/core-mvp-specification.md) and verified
+with [shared conformance fixtures](doc/conformance.md).
 
 ---
 
@@ -301,7 +305,7 @@ class CheckoutCubit extends Cubit<CheckoutState> {
 
 For **strict** clean architecture, wrap `FlexTrackClient` behind your own `Analytics` interface in the domain module and implement the adapter in infrastructure.
 
-More detail: [docs/flex-track-client.md](docs/flex-track-client.md).
+More detail: [doc/flex-track-client.md](doc/flex-track-client.md).
 
 ---
 
@@ -314,6 +318,12 @@ This package does not bundle Firebase, Mixpanel, Amplitude, or any other analyti
 ## Creating events
 
 Extend `BaseEvent` and implement the `name` and `properties` getters. Everything else is optional.
+
+Every event receives an immutable UUID v4 `eventId` and UTC `timestamp` when
+it is constructed. Those values remain unchanged through enrichment and
+dispatch. For replay or restored offline events, pass the original metadata to
+`super(eventId: storedId, timestamp: storedTimestamp)` from your event
+constructor.
 
 ```dart
 class PurchaseEvent extends BaseEvent {
@@ -473,6 +483,11 @@ FlexTrack.addTransformer((event) => EnrichedEvent(event, {
 ### EnrichedEvent
 
 `EnrichedEvent` is a `BaseEvent` wrapper. It forwards all metadata from the original event (`category`, `containsPII`, `requiresConsent`, etc.) and overrides `properties` to merge the original properties with the extra ones. Extra properties win on key collision.
+
+Type-based routes remain anchored to the original event through any number of
+`EnrichedEvent` wrappers. A `route<PurchaseEvent>()` rule therefore continues
+to match enriched purchases and subclasses of `PurchaseEvent`, while
+property-based routes can still match properties added by transformers.
 
 ```dart
 // Extra properties override originals on the same key.
@@ -923,7 +938,17 @@ GDPRDefaults.applyStrict(routing, compliantTrackers: ['internal']);
 
 ## Sampling and performance
 
-Sampling is applied per-rule. Each matching event independently has a random chance of being forwarded at the specified rate.
+Sampling is applied per rule and is deterministic by default. FlexTrack hashes
+the first non-empty value from `event.userId`, `event.sessionId`, and
+`event.name` with FNV-1a over UTF-8 bytes. The resulting stable bucket is
+compared with the rule's rate, so the same identity receives the same decision
+across launches and SDK implementations. Essential events always bypass
+sampling.
+
+When no user or session identity is available, all events with the same name
+share a decision. Supply a stable user or session id when you need a
+representative user-level sample. The cross-platform vectors are published in
+`test/fixtures/sampling_vectors.json`.
 
 | Method | Rate |
 |--------|------|
@@ -983,7 +1008,7 @@ FlexTrack Inspector (open in browser): http://127.0.0.1:7788
 
 Open that address in a browser to inspect the live event list, tracker status, consent snapshot, and per-event JSON.
 
-![FlexTrack Inspector dashboard with the flagship example app](docs/assets/inspector.gif)
+![FlexTrack Inspector dashboard with the flagship example app](doc/assets/inspector.gif)
 
 ```dart
 import 'package:flex_track/flex_track_inspector.dart';
@@ -1053,7 +1078,7 @@ await FlexTrack.setup([
 
 **Global singleton** (existing pattern): use `setupFlexTrackForTesting()` and `FlexTrack.reset()` in `tearDown`.
 
-**Injectable client** (no global): create a `FlexTrackClient` with a `MockTracker`, pass it into your class under test, and call `await client.dispose()` in `tearDown`. See [docs/flex-track-client.md](docs/flex-track-client.md).
+**Injectable client** (no global): create a `FlexTrackClient` with a `MockTracker`, pass it into your class under test, and call `await client.dispose()` in `tearDown`. See [doc/flex-track-client.md](doc/flex-track-client.md).
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';

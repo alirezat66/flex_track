@@ -27,7 +27,7 @@
 /// Use [FlexTrackClient.create] when you want a dedicated instance instead of
 /// the global [FlexTrack.setup] singleton. Wrap subtrees with [FlexTrackScope]
 /// so [FlexClickTrack] and related widgets use that client automatically.
-/// See `docs/flex-track-client.md`.
+/// See `doc/flex-track-client.md`.
 ///
 /// ## Advanced Setup
 ///
@@ -143,7 +143,7 @@ export 'src/core/flex_track.dart' show FlexTrack;
 // ============= VERSION INFO =============
 
 /// FlexTrack package version
-const String flexTrackVersion = '1.0.0';
+const String flexTrackVersion = '2.1.0';
 
 /// FlexTrack package description
 const String flexTrackDescription =

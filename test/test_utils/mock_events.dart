@@ -15,7 +15,7 @@ class CustomEvent extends BaseEvent {
     EventCategory? category,
     bool containsPII = false,
     bool isHighVolume = false,
-    bool isEssential = false,
+    bool isEssential = true,
   })  : _properties = properties,
         _category = category,
         _containsPII = containsPII,
@@ -28,7 +28,7 @@ class CustomEvent extends BaseEvent {
     EventCategory? category,
     bool containsPII = false,
     bool isHighVolume = false,
-    bool isEssential = false,
+    bool isEssential = true,
   }) {
     return CustomEvent(
       name,
@@ -59,6 +59,10 @@ class CustomEvent extends BaseEvent {
 
   @override
   bool get isEssential => _isEssential;
+
+  // Most tests using this fixture exercise routing or dispatch, not consent.
+  @override
+  bool get requiresConsent => false;
 }
 
 class PurchaseEvent extends CustomEvent {

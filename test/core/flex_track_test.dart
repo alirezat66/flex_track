@@ -12,6 +12,12 @@ class TestEvent extends BaseEvent {
 
   @override
   Map<String, Object> get properties => {'test_property': testProperty};
+
+  @override
+  bool get requiresConsent => false;
+
+  @override
+  bool get isEssential => true;
 }
 
 class PurchaseTestEvent extends BaseEvent {
@@ -128,6 +134,7 @@ void main() {
 
       test('should track multiple events', () async {
         await FlexTrack.setup([mockTracker1]);
+        FlexTrack.setConsent(general: true);
 
         final events = [
           TestEvent(testProperty: 'value1'),
@@ -182,6 +189,8 @@ void main() {
           return builder; // Return the builder
         });
 
+        FlexTrack.setConsent(general: true);
+
         // Clear any existing events
         mockTracker1.clearCapturedData();
         mockTracker2.clearCapturedData();
@@ -212,6 +221,8 @@ void main() {
 
           return builder;
         });
+
+        FlexTrack.setConsent(general: true);
 
         // Clear trackers
         mockTracker1.clearCapturedData();
@@ -260,7 +271,7 @@ void main() {
         FlexTrack.setConsent(general: false, pii: false);
 
         // Regular event requiring consent should be blocked
-        await FlexTrack.track(TestEvent(testProperty: 'blocked'));
+        await FlexTrack.track(DebugTestEvent());
         expect(mockTracker1.capturedEvents, hasLength(0));
 
         // Essential event should go through regardless
@@ -440,6 +451,8 @@ void main() {
           return builder;
         });
 
+        FlexTrack.setConsent(general: true);
+
         final businessEvent = PurchaseTestEvent(amount: 100.0);
         final debugInfo = FlexTrack.debugEvent(businessEvent);
 
@@ -506,7 +519,7 @@ void main() {
 
         // Track multiple events
         for (int i = 0; i < 10; i++) {
-          await FlexTrack.track(TestEvent(testProperty: 'sample_test_$i'));
+          await FlexTrack.track(DebugTestEvent());
         }
 
         // With 0% sampling, no events should be tracked

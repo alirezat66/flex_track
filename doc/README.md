@@ -7,4 +7,8 @@ Long-form documentation now lives in the **Docusaurus** site under [`website/doc
 
 Historical topic filenames (`trackers.md`, `routing-and-rules.md`, etc.) have corresponding pages in `website/docs/guides/` (when the Docusaurus site is present).
 
+- **[Core MVP specification](core-mvp-specification.md)** — normative,
+  language-neutral contract shared by Flutter and Kotlin.
+- **[Cross-SDK conformance](conformance.md)** — shared fixtures, reports, and
+  the Kotlin runner contract.
 - **[FlexTrackClient and DI](flex-track-client.md)** — injectable client, Riverpod and Bloc examples, tests without the global singleton.

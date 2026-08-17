@@ -4,6 +4,7 @@ import 'package:flex_track/src/models/event/base_event.dart';
 import 'routing_rule.dart';
 import 'tracker_group.dart';
 import 'event_category.dart';
+import '../../utils/sampling_utils.dart';
 
 /// Complete routing configuration that contains all rules and settings
 class RoutingConfiguration {
@@ -14,6 +15,7 @@ class RoutingConfiguration {
   final bool enableSampling;
   final bool enableConsentChecking;
   final bool isDebugMode;
+  final EventSampler sampler;
 
   const RoutingConfiguration({
     required this.rules,
@@ -23,6 +25,7 @@ class RoutingConfiguration {
     this.enableSampling = true,
     this.enableConsentChecking = true,
     this.isDebugMode = false,
+    this.sampler = const DeterministicEventSampler(),
   });
 
   /// Creates an empty routing configuration
@@ -120,13 +123,15 @@ class RoutingConfiguration {
       }
 
       // Check consent requirements
-      if (!rule.shouldApply(event,
-          hasGeneralConsent: hasGeneralConsent, hasPIIConsent: hasPIIConsent)) {
+      if (enableConsentChecking &&
+          !rule.shouldApply(event,
+              hasGeneralConsent: hasGeneralConsent,
+              hasPIIConsent: hasPIIConsent)) {
         continue;
       }
 
       // Check sampling
-      if (enableSampling && !rule.shouldSample()) {
+      if (enableSampling && !rule.shouldSample(event, sampler: sampler)) {
         continue;
       }
 
@@ -173,6 +178,7 @@ class RoutingConfiguration {
     bool? enableSampling,
     bool? enableConsentChecking,
     bool? isDebugMode,
+    EventSampler? sampler,
   }) {
     return RoutingConfiguration(
       rules: rules ?? this.rules,
@@ -183,6 +189,7 @@ class RoutingConfiguration {
       enableConsentChecking:
           enableConsentChecking ?? this.enableConsentChecking,
       isDebugMode: isDebugMode ?? this.isDebugMode,
+      sampler: sampler ?? this.sampler,
     );
   }
 
@@ -251,6 +258,7 @@ class RoutingConfiguration {
       'enableSampling': enableSampling,
       'enableConsentChecking': enableConsentChecking,
       'isDebugMode': isDebugMode,
+      'sampler': sampler.runtimeType.toString(),
       'rulesCount': rules.length,
       'customGroupsCount': customGroups.length,
       'customCategoriesCount': customCategories.length,

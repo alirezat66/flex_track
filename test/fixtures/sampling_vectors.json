@@ -1,0 +1,26 @@
+{
+  "algorithm": "fnv1a-32-utf8",
+  "bucketDivisor": 4294967296,
+  "vectors": [
+    {"input": "", "hash": 2166136261, "at25": false, "at50": false},
+    {"input": "a", "hash": 3826002220, "at25": false, "at50": false},
+    {"input": "hello", "hash": 1335831723, "at25": false, "at50": true},
+    {"input": "purchase", "hash": 2513801058, "at25": false, "at50": false},
+    {"input": "user-123", "hash": 2358496403, "at25": false, "at50": false},
+    {"input": "session-α", "hash": 2520526275, "at25": false, "at50": false},
+    {"input": "你好", "hash": 2257816995, "at25": false, "at50": false},
+    {"input": "🙂", "hash": 1470331467, "at25": false, "at50": true},
+    {"input": "résumé", "hash": 3068721788, "at25": false, "at50": false},
+    {"input": "مرحبا", "hash": 2831450846, "at25": false, "at50": false},
+    {"input": "नमस्ते", "hash": 538106393, "at25": true, "at50": true},
+    {"input": "Straße", "hash": 499330616, "at25": true, "at50": true},
+    {"input": "null\u0000byte", "hash": 1921921222, "at25": false, "at50": true},
+    {"input": "line\nbreak", "hash": 527786666, "at25": true, "at50": true},
+    {"input": "emoji-🚀", "hash": 2040893807, "at25": false, "at50": true},
+    {"input": "UPPER_lower-123", "hash": 1815750080, "at25": false, "at50": true},
+    {"input": "café", "hash": 2821410889, "at25": false, "at50": false},
+    {"input": "mañana", "hash": 798077619, "at25": true, "at50": true},
+    {"input": "東京", "hash": 1759422319, "at25": false, "at50": true},
+    {"input": "한국어", "hash": 18907935, "at25": true, "at50": true}
+  ]
+}

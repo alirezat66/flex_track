@@ -163,6 +163,8 @@ class RoutingRuleBuilder {
     final rule = RoutingRule(
       id: _id,
       eventType: _config.eventType,
+      eventTypeMatcher:
+          _config.eventType == null ? null : _config.matchesEventType,
       eventNamePattern: _config.eventNamePattern,
       eventNameRegex: _config.eventNameRegex,
       category: _config.category,

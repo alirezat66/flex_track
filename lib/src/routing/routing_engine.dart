@@ -53,9 +53,10 @@ class RoutingEngine {
         }
 
         // Check if rule should be applied based on consent
-        if (!rule.shouldApply(event,
-            hasGeneralConsent: hasGeneralConsent,
-            hasPIIConsent: hasPIIConsent)) {
+        if (_configuration.enableConsentChecking &&
+            !rule.shouldApply(event,
+                hasGeneralConsent: hasGeneralConsent,
+                hasPIIConsent: hasPIIConsent)) {
           skippedRules.add(SkippedRule(
             rule: rule,
             reason: 'Consent requirements not met',
@@ -64,7 +65,8 @@ class RoutingEngine {
         }
 
         // Check sampling
-        if (_configuration.enableSampling && !rule.shouldSample()) {
+        if (_configuration.enableSampling &&
+            !rule.shouldSample(event, sampler: _configuration.sampler)) {
           skippedRules.add(SkippedRule(
             rule: rule,
             reason:
@@ -181,7 +183,7 @@ class RoutingEngine {
   String _getRuleNonMatchReason(RoutingRule rule, BaseEvent event) {
     final reasons = <String>[];
 
-    if (rule.eventType != null && event.runtimeType != rule.eventType) {
+    if (!rule.matchesEventType(event)) {
       reasons.add(
           'Event type mismatch: expected ${rule.eventType}, got ${event.runtimeType}');
     }

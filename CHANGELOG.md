@@ -1,3 +1,28 @@
+# 2.1.0 (2026-08-17)
+
+## Added
+
+- Published the versioned, language-neutral FlexTrack Core MVP specification
+  shared by the Flutter and Kotlin implementations.
+- Added versioned JSON conformance fixtures, a Flutter runner and report, and
+  the Kotlin runner contract for cross-SDK behavior parity.
+
+## Fixed
+
+- Type-based routing now matches event subclasses and preserves the original
+  routing identity through `EnrichedEvent` transformers. Other routing
+  conditions still evaluate the transformed event.
+- Replaced clock-modulo routing sampling with deterministic FNV-1a sampling
+  keyed by user id, session id, or event name. Essential events bypass
+  sampling, and published UTF-8 vectors keep future SDK implementations in
+  parity.
+- Event instances now capture an immutable UUID v4 identifier and UTC
+  occurrence timestamp. Enrichment preserves both values.
+- New clients now start with general and PII consent denied, matching the
+  documented privacy-safe default. Disabling consent checking on a routing
+  configuration now bypasses those checks as configured.
+- `flexTrackVersion` now matches the package version declared in `pubspec.yaml`.
+
 ## 2.0.0
 
 ### Breaking changes
@@ -73,8 +98,8 @@ This release promotes the package to **1.0.0** and focuses on **injectable analy
 ### Documentation
 
 * README: `FlexTrackClient`, `FlexTrackScope`, inspector section, table of contents.
-* **`docs/flex-track-client.md`** — injectable client, Riverpod/Bloc, widget scope behavior.
-* **`docs/assets/inspector.gif`** — demo of the inspector with the flagship app.
+* **`doc/flex-track-client.md`** — injectable client, Riverpod/Bloc, widget scope behavior.
+* **`doc/assets/inspector.gif`** — demo of the inspector with the flagship app.
 
 ---
 
