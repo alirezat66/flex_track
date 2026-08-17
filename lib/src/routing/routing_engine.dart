@@ -181,7 +181,7 @@ class RoutingEngine {
   String _getRuleNonMatchReason(RoutingRule rule, BaseEvent event) {
     final reasons = <String>[];
 
-    if (rule.eventType != null && event.runtimeType != rule.eventType) {
+    if (!rule.matchesEventType(event)) {
       reasons.add(
           'Event type mismatch: expected ${rule.eventType}, got ${event.runtimeType}');
     }
