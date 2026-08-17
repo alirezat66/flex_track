@@ -9,6 +9,7 @@ import '../events/user_events.dart';
 import '../utils/gdpr_manager.dart';
 import 'ecommerce_screen.dart';
 import 'event_enrichment_screen.dart';
+import 'offline_delivery_screen.dart';
 import 'setting_screen.dart';
 import 'user_journey_screen.dart';
 
@@ -37,6 +38,7 @@ class HomeScreenState extends State<HomeScreen> with FlexTrackRouteViewMixin {
     const UserJourneyScreen(),
     const SettingsScreen(),
     const EventEnrichmentScreen(),
+    const OfflineDeliveryScreen(),
   ];
 
   @override
@@ -105,6 +107,10 @@ class HomeScreenState extends State<HomeScreen> with FlexTrackRouteViewMixin {
             icon: Icon(Icons.auto_awesome),
             label: 'Enrichment',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.cloud_queue),
+            label: 'Delivery',
+          ),
         ],
       ),
     );
@@ -122,6 +128,8 @@ class HomeScreenState extends State<HomeScreen> with FlexTrackRouteViewMixin {
         return 'Settings';
       case 4:
         return 'Enrichment';
+      case 5:
+        return 'Delivery';
       default:
         return 'Unknown';
     }

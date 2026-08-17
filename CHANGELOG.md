@@ -1,3 +1,23 @@
+# 2.2.0 (2026-08-17)
+
+## Added
+
+- Added the language-neutral Runtime Delivery Specification 1.0.0, shared JSON
+  schema, 11 deterministic fixtures, and a machine-readable Flutter report.
+- Added injectable `EventQueue`, `InMemoryEventQueue`, and IO-only atomic
+  `FileEventQueue` implementations.
+- Added offline dispatch, durable event snapshots, selective per-tracker retry,
+  `queuedTrackerIds`, `QueueFlushResult`, and queued-event diagnostics.
+
+## Changed
+
+- Tracker destinations are attempted concurrently while result order remains
+  deterministic and failures stay isolated.
+- `flush()` now replays the offline queue before flushing tracker-owned buffers.
+- Concurrent flush calls are serialized to prevent duplicate delivery.
+- Retry uses the stored processed event and destinations without rerunning
+  transformers, routing, sampling, or already-successful destinations.
+
 # 2.1.0 (2026-08-17)
 
 ## Added

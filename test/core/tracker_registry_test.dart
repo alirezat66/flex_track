@@ -176,11 +176,9 @@ void main() {
       } catch (e) {
         print(e);
       }
-      expect(registry.isInitialized,
-          isTrue); // Registry is marked as initialized even with failures
+      expect(registry.isInitialized, isFalse);
       expect(registry.isTrackerInitialized('tracker1'), isFalse);
-      expect(registry.isTrackerInitialized('tracker2'),
-          isTrue); // Other trackers should still initialize
+      expect(registry.isTrackerInitialized('tracker2'), isFalse);
     });
 
     test('should enable a tracker', () {

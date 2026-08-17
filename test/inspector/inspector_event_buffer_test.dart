@@ -23,11 +23,19 @@ class _BufEvent extends BaseEvent {
   bool get isEssential => true;
 }
 
-EventDispatchRecord _rec(BaseEvent e, {List<String>? t, List<String>? ok}) {
+EventDispatchRecord _rec(
+  BaseEvent e, {
+  List<String>? t,
+  List<String>? ok,
+  List<String>? queued,
+  int queueSize = 0,
+}) {
   return EventDispatchRecord(
     event: e,
     targetTrackers: t ?? const [],
     successfulTrackerIds: ok ?? const [],
+    queuedTrackerIds: queued ?? const [],
+    queueSize: queueSize,
   );
 }
 
@@ -66,10 +74,30 @@ void main() {
     expect(p['category'], 'business');
     expect(p['targetTrackers'], ['console', 'firebase']);
     expect(p['successfulTrackerIds'], ['console']);
+    expect(p['queuedTrackerIds'], isEmpty);
+    expect(p['queueSize'], 0);
     expect(p['flags'], {
       'essential': true,
       'highVolume': false,
       'containsPII': false,
     });
+  });
+
+  test('toEventPayload includes offline queue fields', () {
+    final buf = InspectorEventBuffer();
+    final rec = buf.append(
+      _rec(
+        _BufEvent('offline'),
+        t: const ['reliable', 'retry'],
+        ok: const ['reliable'],
+        queued: const ['retry'],
+        queueSize: 3,
+      ),
+      'uuid',
+      '12:00:00.001',
+    );
+
+    expect(rec.toEventPayload()['queuedTrackerIds'], ['retry']);
+    expect(rec.toEventPayload()['queueSize'], 3);
   });
 }

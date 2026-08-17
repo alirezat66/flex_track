@@ -8,6 +8,7 @@ class TrackerRegistry {
   final Map<String, TrackerStrategy> _trackers = {};
   final Map<String, bool> _initializationStatus = {};
   bool _isInitialized = false;
+  bool _isDisposed = false;
 
   /// Returns true if the registry has been initialized
   bool get isInitialized => _isInitialized;
@@ -126,10 +127,18 @@ class TrackerRegistry {
         failures[trackerId] = e is Exception ? e : Exception(e.toString());
       }
     }
-    _isInitialized = true;
-
     // Report any failures
     if (failures.isNotEmpty) {
+      for (final entry in _trackers.entries) {
+        if (_initializationStatus[entry.key] ?? false) {
+          try {
+            await _disposeTracker(entry.value);
+          } catch (_) {
+            // Initialization failure remains the primary error.
+          }
+          _initializationStatus[entry.key] = false;
+        }
+      }
       final failureMessage =
           failures.entries.map((e) => '${e.key}: ${e.value}').join(', ');
 
@@ -138,6 +147,7 @@ class TrackerRegistry {
         code: 'INITIALIZATION_FAILURES',
       );
     }
+    _isInitialized = true;
   }
 
   /// Enable a tracker
@@ -231,6 +241,20 @@ class TrackerRegistry {
     }
 
     await Future.wait(futures);
+  }
+
+  /// Disposes every initialized tracker once, without short-circuiting peers.
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    final futures = <Future<void>>[];
+    for (final entry in _trackers.entries) {
+      if (_initializationStatus[entry.key] ?? false) {
+        futures.add(_disposeTracker(entry.value));
+      }
+    }
+    await Future.wait(futures, eagerError: false);
+    _isInitialized = false;
   }
 
   /// Track a single event on all enabled trackers
@@ -340,3 +364,8 @@ class TrackerRegistry {
     return 'TrackerRegistry(${_trackers.length} trackers, initialized: $_isInitialized)';
   }
 }
+
+Future<void> _disposeTracker(TrackerStrategy tracker) =>
+    tracker is DisposableTrackerStrategy
+        ? (tracker as DisposableTrackerStrategy).dispose()
+        : tracker.flush();

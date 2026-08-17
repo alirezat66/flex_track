@@ -1,0 +1,73 @@
+{
+  "$schema": "runtime_mvp.schema.json",
+  "specVersion": "1.0.0",
+  "fixtureVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "offline.queue-all-targets",
+      "behavior": "offline",
+      "input": {"targets": ["analytics", "archive"]},
+      "expected": {"attempted": [], "queued": ["analytics", "archive"], "queueSize": 1}
+    },
+    {
+      "id": "offline.no-target-no-queue",
+      "behavior": "offline",
+      "input": {"targets": []},
+      "expected": {"attempted": [], "queued": [], "queueSize": 0}
+    },
+    {
+      "id": "delivery.partial-failure",
+      "behavior": "partialFailure",
+      "input": {"targets": ["analytics", "archive"], "failing": ["archive"]},
+      "expected": {"successful": ["analytics"], "queued": ["archive"], "queueSize": 1}
+    },
+    {
+      "id": "delivery.all-success",
+      "behavior": "partialFailure",
+      "input": {"targets": ["analytics", "archive"], "failing": []},
+      "expected": {"successful": ["analytics", "archive"], "queued": [], "queueSize": 0}
+    },
+    {
+      "id": "flush.selective-retry-success",
+      "behavior": "flush",
+      "input": {"pending": ["archive"], "failing": [], "online": true},
+      "expected": {"attemptedEvents": 1, "deliveredEvents": 1, "remainingEvents": 0, "pending": []}
+    },
+    {
+      "id": "flush.retain-only-failures",
+      "behavior": "flush",
+      "input": {"pending": ["analytics", "archive"], "failing": ["archive"], "online": true},
+      "expected": {"attemptedEvents": 1, "deliveredEvents": 0, "remainingEvents": 1, "pending": ["archive"], "attempts": 1}
+    },
+    {
+      "id": "flush.offline-noop",
+      "behavior": "flush",
+      "input": {"pending": ["analytics"], "failing": [], "online": false},
+      "expected": {"attemptedEvents": 0, "deliveredEvents": 0, "remainingEvents": 1, "pending": ["analytics"], "attempts": 0}
+    },
+    {
+      "id": "queue.duplicate-id-idempotent",
+      "behavior": "queue",
+      "input": {"operation": "duplicate", "eventIds": ["event-1", "event-1"]},
+      "expected": {"eventIds": ["event-1"], "queueSize": 1}
+    },
+    {
+      "id": "queue.fifo-limit",
+      "behavior": "queue",
+      "input": {"operation": "read", "eventIds": ["event-1", "event-2", "event-3"], "limit": 2},
+      "expected": {"eventIds": ["event-1", "event-2"], "queueSize": 3}
+    },
+    {
+      "id": "queue.replace-preserves-position",
+      "behavior": "queue",
+      "input": {"operation": "replace", "eventIds": ["event-1", "event-2"]},
+      "expected": {"eventIds": ["event-1", "event-2"], "queueSize": 2, "attempts": [1, 0]}
+    },
+    {
+      "id": "lifecycle.initialize-idempotent",
+      "behavior": "lifecycle",
+      "input": {"initializeCalls": 2},
+      "expected": {"trackerInitializeCalls": 1}
+    }
+  ]
+}

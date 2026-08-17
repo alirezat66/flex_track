@@ -41,6 +41,8 @@ class InspectorEventRecord {
     required this.flags,
     required this.targetTrackers,
     required this.successfulTrackerIds,
+    required this.queuedTrackerIds,
+    required this.queueSize,
   });
 
   final String id;
@@ -51,6 +53,8 @@ class InspectorEventRecord {
   final Map<String, bool> flags;
   final List<String> targetTrackers;
   final List<String> successfulTrackerIds;
+  final List<String> queuedTrackerIds;
+  final int queueSize;
 
   factory InspectorEventRecord.fromDispatch({
     required String id,
@@ -71,6 +75,8 @@ class InspectorEventRecord {
       },
       targetTrackers: List<String>.from(dispatch.targetTrackers),
       successfulTrackerIds: List<String>.from(dispatch.successfulTrackerIds),
+      queuedTrackerIds: List<String>.from(dispatch.queuedTrackerIds),
+      queueSize: dispatch.queueSize,
     );
   }
 
@@ -84,6 +90,8 @@ class InspectorEventRecord {
       'flags': flags,
       'targetTrackers': targetTrackers,
       'successfulTrackerIds': successfulTrackerIds,
+      'queuedTrackerIds': queuedTrackerIds,
+      'queueSize': queueSize,
     };
   }
 

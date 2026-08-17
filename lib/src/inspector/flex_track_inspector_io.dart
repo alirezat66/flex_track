@@ -156,8 +156,8 @@ class _FlexTrackInspectorServer {
     );
   }
 
-  Response _handleStatus(Request request) {
-    final payload = _buildStatusPayload();
+  Future<Response> _handleStatus(Request request) async {
+    final payload = await _buildStatusPayload();
     return Response.ok(
       jsonEncode(payload),
       headers: {'content-type': 'application/json; charset=utf-8'},
@@ -183,9 +183,7 @@ class _FlexTrackInspectorServer {
 
   void _handleWebSocket(WebSocketChannel channel) {
     _channels.add(channel);
-    try {
-      channel.sink.add(jsonEncode(_statusMessageMap()));
-    } catch (_) {}
+    _sendInitialStatus(channel);
 
     channel.stream.listen(
       (_) {},
@@ -195,7 +193,13 @@ class _FlexTrackInspectorServer {
     );
   }
 
-  Map<String, Object?> _buildStatusPayload() {
+  Future<void> _sendInitialStatus(WebSocketChannel channel) async {
+    try {
+      channel.sink.add(jsonEncode(await _statusMessageMap()));
+    } catch (_) {}
+  }
+
+  Future<Map<String, Object?>> _buildStatusPayload() async {
     if (!FlexTrack.isSetUp) {
       return {
         'isSetUp': false,
@@ -203,6 +207,7 @@ class _FlexTrackInspectorServer {
         'trackers': <Object>[],
         'consent': <String, bool>{},
         'validation': <String>['FlexTrack is not set up'],
+        'queueSize': 0,
       };
     }
 
@@ -221,16 +226,17 @@ class _FlexTrackInspectorServer {
       'trackers': trackers,
       'consent': FlexTrack.getConsentStatus(),
       'validation': FlexTrack.validate(),
+      'queueSize': await FlexTrack.queuedEventCount,
     };
   }
 
-  Map<String, Object?> _statusMessageMap() => {
+  Future<Map<String, Object?>> _statusMessageMap() async => {
         'type': 'status',
-        'data': _buildStatusPayload(),
+        'data': await _buildStatusPayload(),
       };
 
-  void _broadcastStatus() {
-    _broadcastWs(jsonEncode(_statusMessageMap()));
+  Future<void> _broadcastStatus() async {
+    _broadcastWs(jsonEncode(await _statusMessageMap()));
   }
 
   void _broadcastWs(String message) {

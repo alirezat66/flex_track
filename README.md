@@ -66,6 +66,7 @@ One call site, multiple tracker destinations, centralized policy.
   - [FlexTrackClient and dependency injection](#flextrackclient-and-dependency-injection)
     - [Riverpod](#riverpod)
     - [Bloc / Cubit](#bloc--cubit)
+  - [Offline delivery and selective retry](#offline-delivery-and-selective-retry)
   - [Design philosophy](#design-philosophy)
   - [Creating events](#creating-events)
     - [Event flags](#event-flags)
@@ -113,7 +114,7 @@ One call site, multiple tracker destinations, centralized policy.
 ```yaml
 # pubspec.yaml
 dependencies:
-  flex_track: ^2.1.0
+  flex_track: ^2.2.0
 ```
 
 **Step 2 — implement your tracker** (the package ships no vendor SDKs; you write a thin adapter):
@@ -304,6 +305,37 @@ class CheckoutCubit extends Cubit<CheckoutState> {
 ```
 
 For **strict** clean architecture, wrap `FlexTrackClient` behind your own `Analytics` interface in the domain module and implement the adapter in infrastructure.
+
+## Offline delivery and selective retry
+
+Provide an application-owned queue file and connectivity signal when creating
+the client. The file queue uses atomic replacement and restores the processed
+event with its original ID and UTC timestamp after an app restart.
+
+```dart
+var online = true;
+final client = await FlexTrackClient.create(
+  [FirebaseTracker(), InternalApiTracker()],
+  queue: FileEventQueue(File('/app-private/flextrack-queue.json')),
+  onlineProvider: () => online,
+);
+
+final result = await client.track(PurchaseEvent());
+print(result.queuedTrackerIds); // only destinations still awaiting delivery
+
+final flush = await client.flush(limit: 100);
+print(flush.remainingEvents);
+```
+
+When offline, no tracker is called and every routed destination is queued. When
+one tracker fails, successful trackers are never retried. Flush operations are
+FIFO, bounded, and serialized; retries use the stored processed event without
+rerunning transformers, routing, consent, or sampling. `FileEventQueue` is
+available on `dart:io` platforms. Web clients should inject a platform-specific
+`EventQueue` or use `InMemoryEventQueue`.
+
+The normative cross-SDK behavior is documented in
+[Runtime Delivery Specification 1.0.0](doc/runtime-delivery-specification.md).
 
 More detail: [doc/flex-track-client.md](doc/flex-track-client.md).
 
