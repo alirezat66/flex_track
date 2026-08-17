@@ -1,33 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flex_track/flex_track.dart';
-
-/// Mock SharedPreferences since we don't want to add dependencies
-class MockSharedPreferences {
-  static final Map<String, String> _storage = {};
-
-  String? getString(String key) => _storage[key];
-
-  Future<bool> setString(String key, String value) async {
-    _storage[key] = value;
-    return true;
-  }
-
-  static Future<MockSharedPreferences> getInstance() async {
-    return MockSharedPreferences();
-  }
-}
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GDPRManager {
   static const String _consentKey = 'gdpr_consent';
   static const String _consentVersionKey = 'gdpr_consent_version';
   static const String _currentConsentVersion = '2.0';
 
-  static late MockSharedPreferences _prefs;
+  static late SharedPreferences _prefs;
   static ConsentStatus? _currentConsent;
 
   static Future<void> initialize() async {
-    _prefs = await MockSharedPreferences.getInstance();
+    _prefs = await SharedPreferences.getInstance();
     await _loadConsent();
     _applyConsentToFlexTrack();
   }

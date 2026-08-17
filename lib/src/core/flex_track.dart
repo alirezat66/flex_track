@@ -6,6 +6,7 @@ import '../models/routing/routing_config.dart';
 import '../routing/routing_builder.dart';
 import '../routing/routing_engine.dart' show RoutingDebugInfo;
 import '../strategies/tracker_strategy.dart';
+import '../runtime/event_queue.dart';
 import '../exceptions/configuration_exception.dart';
 import 'event_dispatch_record.dart';
 import 'flex_track_client.dart';
@@ -81,6 +82,8 @@ class FlexTrack {
     List<TrackerStrategy> trackers, {
     RoutingConfiguration? routing,
     bool autoInitialize = true,
+    EventQueue? queue,
+    bool Function()? onlineProvider,
   }) async {
     if (_instance != null) {
       throw ConfigurationException(
@@ -93,6 +96,8 @@ class FlexTrack {
       trackers,
       routing: routing,
       autoInitialize: autoInitialize,
+      queue: queue,
+      onlineProvider: onlineProvider,
     );
     _instance = FlexTrack._(client);
     return _instance!;
@@ -103,11 +108,15 @@ class FlexTrack {
     List<TrackerStrategy> trackers,
     RoutingBuilder Function(RoutingBuilder) configureRouting, {
     bool autoInitialize = true,
+    EventQueue? queue,
+    bool Function()? onlineProvider,
   }) async {
     return setup(
       trackers,
       routing: _routingFromBuilder(configureRouting),
       autoInitialize: autoInitialize,
+      queue: queue,
+      onlineProvider: onlineProvider,
     );
   }
 
@@ -231,9 +240,10 @@ class FlexTrack {
   }
 
   /// Flush all pending events
-  static Future<void> flush() async {
-    await instance._client.flush();
-  }
+  static Future<QueueFlushResult> flush({int limit = 100}) =>
+      instance._client.flush(limit: limit);
+
+  static Future<int> get queuedEventCount => instance._client.queuedEventCount;
 
   // ========== TRANSFORMERS ==========
 

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flex_track/src/models/event/base_event.dart';
 import 'package:flex_track/src/models/event/event_transformer.dart';
 import 'package:flutter/foundation.dart';
 
 import '../routing/routing_engine.dart';
 import '../exceptions/tracker_exception.dart';
+import '../runtime/event_queue.dart';
 import 'tracker_registry.dart';
 
 /// Processes events through the routing system and sends them to appropriate trackers
@@ -11,6 +14,9 @@ class EventProcessor {
   final TrackerRegistry _trackerRegistry;
   final RoutingEngine _routingEngine;
   final List<EventTransformer> _transformers = [];
+  final EventQueue _queue;
+  final bool Function() _onlineProvider;
+  Future<void> _flushTail = Future.value();
 
   bool _hasGeneralConsent = false;
   bool _hasPIIConsent = false;
@@ -19,14 +25,23 @@ class EventProcessor {
   EventProcessor({
     required TrackerRegistry trackerRegistry,
     required RoutingEngine routingEngine,
+    EventQueue? queue,
+    bool Function()? onlineProvider,
   })  : _trackerRegistry = trackerRegistry,
-        _routingEngine = routingEngine;
+        _routingEngine = routingEngine,
+        _queue = queue ?? InMemoryEventQueue(),
+        _onlineProvider = onlineProvider ?? _alwaysOnline;
+
+  EventQueue get queue => _queue;
 
   /// Get the routing engine (for debugging)
   RoutingEngine get routingEngine => _routingEngine;
 
   /// Whether the processor is enabled
   bool get isEnabled => _isEnabled;
+
+  /// Current connectivity decision supplied by the host application.
+  bool get isOnline => _onlineProvider();
 
   /// Current general consent status
   bool get hasGeneralConsent => _hasGeneralConsent;
@@ -130,70 +145,134 @@ class EventProcessor {
       );
     }
 
-    // Send event to target trackers
-    final trackingResults = <TrackingResult>[];
-    bool anySuccessful = false;
+    if (!_onlineProvider()) {
+      await _queue.enqueue(QueuedEvent(
+        event: processedEvent,
+        trackerIds: routingResult.targetTrackers,
+      ));
+      return EventProcessingResult(
+        event: processedEvent,
+        routingResult: routingResult,
+        trackingResults: const [],
+        successful: false,
+        queuedTrackerIds: routingResult.targetTrackers,
+      );
+    }
 
-    for (final trackerId in routingResult.targetTrackers) {
-      final tracker = _trackerRegistry.get(trackerId);
-
-      if (tracker == null) {
-        trackingResults.add(TrackingResult(
-          trackerId: trackerId,
-          successful: false,
-          error: TrackerException(
-            'Tracker not found: $trackerId',
-            trackerId: trackerId,
-            eventName: processedEvent.name,
-            code: 'NOT_FOUND',
-          ),
-        ));
-        continue;
-      }
-
-      if (!tracker.isEnabled) {
-        trackingResults.add(TrackingResult(
-          trackerId: trackerId,
-          successful: false,
-          error: TrackerException(
-            'Tracker is disabled: $trackerId',
-            trackerId: trackerId,
-            eventName: processedEvent.name,
-            code: 'DISABLED',
-          ),
-        ));
-        continue;
-      }
-
-      try {
-        await tracker.track(processedEvent);
-        trackingResults.add(TrackingResult(
-          trackerId: trackerId,
-          successful: true,
-        ));
-        anySuccessful = true;
-      } catch (e) {
-        trackingResults.add(TrackingResult(
-          trackerId: trackerId,
-          successful: false,
-          error: e is TrackerException
-              ? e
-              : TrackerException(
-                  'Failed to track event: $e',
-                  trackerId: trackerId,
-                  eventName: processedEvent.name,
-                  originalError: e,
-                ),
-        ));
-      }
+    final trackingResults = await Future.wait(
+      routingResult.targetTrackers.map(
+        (trackerId) => _deliver(processedEvent, trackerId),
+      ),
+    );
+    final failedTrackerIds = [
+      for (final result in trackingResults)
+        if (!result.successful) result.trackerId,
+    ];
+    if (failedTrackerIds.isNotEmpty) {
+      await _queue.enqueue(QueuedEvent(
+        event: processedEvent,
+        trackerIds: failedTrackerIds,
+      ));
     }
 
     return EventProcessingResult(
       event: processedEvent,
       routingResult: routingResult,
       trackingResults: trackingResults,
-      successful: anySuccessful,
+      successful: trackingResults.any((result) => result.successful),
+      queuedTrackerIds: failedTrackerIds,
     );
+  }
+
+  Future<TrackingResult> _deliver(BaseEvent event, String trackerId) async {
+    final tracker = _trackerRegistry.get(trackerId);
+
+    if (tracker == null) {
+      return TrackingResult(
+        trackerId: trackerId,
+        successful: false,
+        error: TrackerException(
+          'Tracker not found: $trackerId',
+          trackerId: trackerId,
+          eventName: event.name,
+          code: 'NOT_FOUND',
+        ),
+      );
+    }
+
+    if (!tracker.isEnabled) {
+      return TrackingResult(
+        trackerId: trackerId,
+        successful: false,
+        error: TrackerException(
+          'Tracker is disabled: $trackerId',
+          trackerId: trackerId,
+          eventName: event.name,
+          code: 'DISABLED',
+        ),
+      );
+    }
+
+    try {
+      await tracker.track(event);
+      return TrackingResult(
+        trackerId: trackerId,
+        successful: true,
+      );
+    } catch (e) {
+      return TrackingResult(
+        trackerId: trackerId,
+        successful: false,
+        error: e is TrackerException
+            ? e
+            : TrackerException(
+                'Failed to track event: $e',
+                trackerId: trackerId,
+                eventName: event.name,
+                originalError: e,
+              ),
+      );
+    }
+  }
+
+  Future<QueueFlushResult> flushQueue({int limit = 100}) async {
+    if (limit <= 0) throw ArgumentError.value(limit, 'limit');
+    final completer = Completer<QueueFlushResult>();
+    _flushTail = _flushTail.then((_) async {
+      try {
+        completer.complete(await _flushQueuePass(limit));
+      } catch (error, stack) {
+        completer.completeError(error, stack);
+      }
+    });
+    return completer.future;
+  }
+
+  Future<QueueFlushResult> _flushQueuePass(int limit) async {
+    if (!_onlineProvider()) {
+      return QueueFlushResult(0, 0, await _queue.size());
+    }
+    final items = await _queue.read(limit: limit);
+    var delivered = 0;
+    for (final item in items) {
+      final results = await Future.wait(
+        item.trackerIds.map((id) => _deliver(item.event, id)),
+      );
+      final failures = [
+        for (final result in results)
+          if (!result.successful) result.trackerId,
+      ];
+      if (failures.isEmpty) {
+        await _queue.remove(item.id);
+        delivered++;
+      } else {
+        await _queue.replace(item.copyWith(
+          trackerIds: failures,
+          attempts: item.attempts + 1,
+        ));
+      }
+    }
+    return QueueFlushResult(items.length, delivered, await _queue.size());
   }
 
   /// Process multiple events as a batch
@@ -250,12 +329,14 @@ class EventProcessingResult {
   final RoutingResult routingResult;
   final List<TrackingResult> trackingResults;
   final bool successful;
+  final List<String> queuedTrackerIds;
 
   const EventProcessingResult({
     required this.event,
     required this.routingResult,
     required this.trackingResults,
     required this.successful,
+    this.queuedTrackerIds = const [],
   });
 
   /// Returns true if the event was routed to at least one tracker
@@ -291,6 +372,7 @@ class EventProcessingResult {
       'successfulTrackingCount': successfulTrackingCount,
       'failedTrackingCount': failedTrackingCount,
       'hasErrors': trackingErrors.isNotEmpty,
+      'queuedTrackerIds': queuedTrackerIds,
     };
   }
 
@@ -304,6 +386,20 @@ class EventProcessingResult {
         ')';
   }
 }
+
+class QueueFlushResult {
+  const QueueFlushResult(
+    this.attemptedEvents,
+    this.deliveredEvents,
+    this.remainingEvents,
+  );
+
+  final int attemptedEvents;
+  final int deliveredEvents;
+  final int remainingEvents;
+}
+
+bool _alwaysOnline() => true;
 
 /// Result of tracking an event with a specific tracker
 class TrackingResult {

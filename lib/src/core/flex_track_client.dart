@@ -9,6 +9,7 @@ import '../models/routing/routing_config.dart';
 import '../routing/routing_builder.dart';
 import '../routing/routing_engine.dart';
 import '../strategies/tracker_strategy.dart';
+import '../runtime/event_queue.dart';
 import 'event_dispatch_record.dart';
 import 'event_processor.dart';
 import 'tracker_registry.dart';
@@ -27,6 +28,7 @@ class FlexTrackClient {
   final TrackerRegistry _trackerRegistry;
   final EventProcessor _eventProcessor;
   bool _isInitialized = false;
+  bool _isDisposed = false;
 
   final StreamController<EventDispatchRecord> _dispatchStreamController =
       StreamController<EventDispatchRecord>.broadcast(sync: true);
@@ -63,6 +65,8 @@ class FlexTrackClient {
     List<TrackerStrategy> trackers, {
     RoutingConfiguration? routing,
     bool autoInitialize = true,
+    EventQueue? queue,
+    bool Function()? onlineProvider,
   }) async {
     if (trackers.isEmpty) {
       throw ConfigurationException(
@@ -77,6 +81,8 @@ class FlexTrackClient {
     final eventProcessor = EventProcessor(
       trackerRegistry: trackerRegistry,
       routingEngine: routingEngine,
+      queue: queue,
+      onlineProvider: onlineProvider,
     );
 
     final client = FlexTrackClient._(
@@ -95,6 +101,8 @@ class FlexTrackClient {
     List<TrackerStrategy> trackers,
     RoutingBuilder Function(RoutingBuilder) configureRouting, {
     bool autoInitialize = true,
+    EventQueue? queue,
+    bool Function()? onlineProvider,
   }) async {
     final routingBuilder = RoutingBuilder();
     final configuredBuilder = configureRouting(routingBuilder);
@@ -104,6 +112,8 @@ class FlexTrackClient {
       trackers,
       routing: routingConfig,
       autoInitialize: autoInitialize,
+      queue: queue,
+      onlineProvider: onlineProvider,
     );
   }
 
@@ -127,7 +137,8 @@ class FlexTrackClient {
 
   Future<EventProcessingResult> track(BaseEvent event) async {
     final result = await _eventProcessor.processEvent(event);
-    _emitDispatchIfDebug(_recordFromResult(result));
+    _emitDispatchIfDebug(await _recordFromResult(result));
+    _notifyDebugStateIfDebug();
     return result;
   }
 
@@ -135,9 +146,10 @@ class FlexTrackClient {
     final results = await _eventProcessor.processEvents(events);
     if (kDebugMode) {
       for (final result in results) {
-        _emitDispatchIfDebug(_recordFromResult(result));
+        _emitDispatchIfDebug(await _recordFromResult(result));
       }
     }
+    _notifyDebugStateIfDebug();
     return results;
   }
 
@@ -146,9 +158,10 @@ class FlexTrackClient {
     final results = await _eventProcessor.processEventsParallel(events);
     if (kDebugMode) {
       for (final result in results) {
-        _emitDispatchIfDebug(_recordFromResult(result));
+        _emitDispatchIfDebug(await _recordFromResult(result));
       }
     }
+    _notifyDebugStateIfDebug();
     return results;
   }
 
@@ -206,7 +219,24 @@ class FlexTrackClient {
 
   Future<void> resetTrackers() => _trackerRegistry.reset();
 
-  Future<void> flush() => _trackerRegistry.flush();
+  Future<QueueFlushResult> flush({int limit = 100}) async {
+    final result = await _eventProcessor.flushQueue(limit: limit);
+    // Tracker SDK flush methods may perform network I/O of their own. Keep a
+    // host-declared offline flush a complete no-op across both queue layers.
+    if (_eventProcessor.isOnline) {
+      await _trackerRegistry.flush();
+    }
+    _notifyDebugStateIfDebug();
+    return result;
+  }
+
+  Future<QueueFlushResult> flushQueue({int limit = 100}) async {
+    final result = await _eventProcessor.flushQueue(limit: limit);
+    _notifyDebugStateIfDebug();
+    return result;
+  }
+
+  Future<int> get queuedEventCount => _eventProcessor.queue.size();
 
   void addTransformer(EventTransformer transformer) =>
       _eventProcessor.addTransformer(transformer);
@@ -259,7 +289,8 @@ class FlexTrackClient {
     }
   }
 
-  static EventDispatchRecord _recordFromResult(EventProcessingResult result) {
+  Future<EventDispatchRecord> _recordFromResult(
+      EventProcessingResult result) async {
     final targets = List<String>.from(result.routingResult.targetTrackers);
     final ok = <String>[
       for (final t in result.trackingResults)
@@ -269,6 +300,8 @@ class FlexTrackClient {
       event: result.event,
       targetTrackers: targets,
       successfulTrackerIds: ok,
+      queuedTrackerIds: List<String>.from(result.queuedTrackerIds),
+      queueSize: await _eventProcessor.queue.size(),
     );
   }
 
@@ -285,9 +318,10 @@ class FlexTrackClient {
   }
 
   Future<void> dispose() async {
-    if (_isInitialized) {
-      await _trackerRegistry.flush();
-    }
+    if (_isDisposed) return;
+    _isDisposed = true;
+    if (_isInitialized) await _trackerRegistry.dispose();
+    _isInitialized = false;
     await _dispatchStreamController.close();
     await _debugStateController.close();
   }

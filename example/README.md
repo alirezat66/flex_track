@@ -1,6 +1,6 @@
 # flex_track flagship example
 
-This app demonstrates **routing**, **consent**, **multiple trackers** (implemented as **mocks** in this repo—no real Firebase/Mixpanel/Amplitude keys required), and **widget wrappers** (`FlexClickTrack`, `FlexMountTrack`, `FlexTrackRouteObserver` + `FlexTrackRouteViewMixin` on the home shell).
+This app demonstrates **routing**, **consent**, **multiple trackers** (implemented as **mocks** in this repo—no real Firebase/Mixpanel/Amplitude keys required), **offline delivery with selective retry**, and **widget wrappers** (`FlexClickTrack`, `FlexMountTrack`, `FlexTrackRouteObserver` + `FlexTrackRouteViewMixin` on the home shell).
 
 ## Run locally
 
@@ -15,6 +15,15 @@ flutter run
 On first launch you will see a **privacy / consent** dialog (backed by an in-memory mock store, not real `SharedPreferences` persistence across restarts in tests).
 
 In **debug** mode on mobile or desktop, the app starts the **FlexTrack Inspector** (local HTTP dashboard). Watch the console for `FlexTrack Inspector (open in browser): http://127.0.0.1:7788` and open that URL to see live events and tracker state. (Not available on Flutter Web.)
+
+Open the **Delivery** tab to force the demo offline, queue events, simulate one
+failing destination, and flush again. The screen and Inspector both show which
+destinations succeeded, which were retained for retry, and the pending count.
+The queue is stored under the platform application-support directory. Pending
+events survive a full process restart and are replayed automatically on the
+next online launch. The Lab's simulated network state is also persisted: an
+app closed while Offline starts Offline and retains its queue until you switch
+it Online and flush. Consent choices use the platform SharedPreferences store.
 
 ## Integration test
 
