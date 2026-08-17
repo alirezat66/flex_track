@@ -1,4 +1,4 @@
-![FlexTrack Banner](docs/assets/banner.png)
+![FlexTrack Banner](doc/assets/banner.png)
 
 # FlexTrack
 
@@ -37,7 +37,7 @@ Instead of spreading analytics policy throughout the app, define it once and app
 
 ## Visual Demo
 
-![Inspector Demo](docs/assets/inspector.gif)
+![Inspector Demo](doc/assets/inspector.gif)
 
 ## Quick Example
 
@@ -113,7 +113,7 @@ One call site, multiple tracker destinations, centralized policy.
 ```yaml
 # pubspec.yaml
 dependencies:
-  flex_track: ^2.0.0
+  flex_track: ^2.1.0
 ```
 
 **Step 2 — implement your tracker** (the package ships no vendor SDKs; you write a thin adapter):
@@ -208,8 +208,8 @@ FlexTrack exists to make that architecture explicit, maintainable, and debuggabl
 - Widget wrappers for click, impression, mount, and route-view tracking
 
 The normative behavior shared by the Flutter and Kotlin SDKs is defined in the
-[FlexTrack Core MVP specification](docs/core-mvp-specification.md) and verified
-with [shared conformance fixtures](docs/conformance.md).
+[FlexTrack Core MVP specification](doc/core-mvp-specification.md) and verified
+with [shared conformance fixtures](doc/conformance.md).
 
 ---
 
@@ -305,7 +305,7 @@ class CheckoutCubit extends Cubit<CheckoutState> {
 
 For **strict** clean architecture, wrap `FlexTrackClient` behind your own `Analytics` interface in the domain module and implement the adapter in infrastructure.
 
-More detail: [docs/flex-track-client.md](docs/flex-track-client.md).
+More detail: [doc/flex-track-client.md](doc/flex-track-client.md).
 
 ---
 
@@ -1008,7 +1008,7 @@ FlexTrack Inspector (open in browser): http://127.0.0.1:7788
 
 Open that address in a browser to inspect the live event list, tracker status, consent snapshot, and per-event JSON.
 
-![FlexTrack Inspector dashboard with the flagship example app](docs/assets/inspector.gif)
+![FlexTrack Inspector dashboard with the flagship example app](doc/assets/inspector.gif)
 
 ```dart
 import 'package:flex_track/flex_track_inspector.dart';
@@ -1078,7 +1078,7 @@ await FlexTrack.setup([
 
 **Global singleton** (existing pattern): use `setupFlexTrackForTesting()` and `FlexTrack.reset()` in `tearDown`.
 
-**Injectable client** (no global): create a `FlexTrackClient` with a `MockTracker`, pass it into your class under test, and call `await client.dispose()` in `tearDown`. See [docs/flex-track-client.md](docs/flex-track-client.md).
+**Injectable client** (no global): create a `FlexTrackClient` with a `MockTracker`, pass it into your class under test, and call `await client.dispose()` in `tearDown`. See [doc/flex-track-client.md](doc/flex-track-client.md).
 
 ```dart
 import 'package:flutter_test/flutter_test.dart';

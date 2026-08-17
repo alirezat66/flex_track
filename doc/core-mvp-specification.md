@@ -156,7 +156,7 @@ MUST accept. Otherwise choose the first non-empty `userId`, `sessionId`, then
 `name`; hash its UTF-8 bytes with unsigned 32-bit FNV-1a; calculate
 `bucket = hash / 4294967296`; accept exactly when `bucket < sampleRate`.
 Implementations MUST pass
-[`sampling_vectors.json`](../test/fixtures/sampling_vectors.json). Locale
+[`sampling_vectors.json`](https://github.com/alirezat66/flex_track/blob/main/test/fixtures/sampling_vectors.json). Locale
 normalization and platform string hashes MUST NOT be used.
 
 Example: `hello` hashes to `1335831723`, bucket about `0.3110`; it is rejected

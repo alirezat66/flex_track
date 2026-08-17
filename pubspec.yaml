@@ -1,6 +1,6 @@
 name: flex_track
 description: A flexible analytics tracking system for Flutter with intelligent routing, GDPR compliance, and multi-platform support
-version: 2.0.0
+version: 2.1.0
 homepage: https://flextrack.taghizadeh.dev/
 repository: https://github.com/alirezat66/flex_track
 issue_tracker: https://github.com/alirezat66/flex_track/issues
@@ -15,9 +15,9 @@ topics:
 
 screenshots:
   - description: FlexTrack brand logo
-    path: docs/assets/ft_logo.png
+    path: doc/assets/ft_logo.png
   - description: FlexTrack banner
-    path: docs/assets/banner.png
+    path: doc/assets/banner.png
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

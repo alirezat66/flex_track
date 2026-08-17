@@ -1,0 +1,16 @@
+.dart_tool/
+.github/
+.idea/
+.vscode/
+*.iml
+coverage/
+build/
+test/
+examples/
+plan
+website/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.dart_tool/
+**/build/
+**/coverage/

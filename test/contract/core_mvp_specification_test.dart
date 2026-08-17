@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('core MVP specification keeps required contract sections', () {
     final specification =
-        File('docs/core-mvp-specification.md').readAsStringSync();
+        File('doc/core-mvp-specification.md').readAsStringSync();
 
     expect(specification, contains('Specification version: 1.0.0'));
     expect(specification, contains('## 2. MVP boundary'));
