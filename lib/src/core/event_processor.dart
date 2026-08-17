@@ -40,6 +40,9 @@ class EventProcessor {
   /// Whether the processor is enabled
   bool get isEnabled => _isEnabled;
 
+  /// Current connectivity decision supplied by the host application.
+  bool get isOnline => _onlineProvider();
+
   /// Current general consent status
   bool get hasGeneralConsent => _hasGeneralConsent;
 

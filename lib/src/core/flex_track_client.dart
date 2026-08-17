@@ -221,7 +221,11 @@ class FlexTrackClient {
 
   Future<QueueFlushResult> flush({int limit = 100}) async {
     final result = await _eventProcessor.flushQueue(limit: limit);
-    await _trackerRegistry.flush();
+    // Tracker SDK flush methods may perform network I/O of their own. Keep a
+    // host-declared offline flush a complete no-op across both queue layers.
+    if (_eventProcessor.isOnline) {
+      await _trackerRegistry.flush();
+    }
     _notifyDebugStateIfDebug();
     return result;
   }

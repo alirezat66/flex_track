@@ -48,6 +48,29 @@ void main() {
     expect(tracker.events, hasLength(1));
   });
 
+  test('offline flush does not deliver queue or flush tracker SDKs', () async {
+    final tracker = _Tracker('analytics');
+    final queue = InMemoryEventQueue();
+    await queue.enqueue(QueuedEvent(
+      event: _Event('event-1'),
+      trackerIds: const ['analytics'],
+    ));
+    final client = await _client(
+      [tracker],
+      queue: queue,
+      onlineProvider: () => false,
+    );
+
+    final result = await client.flush();
+
+    expect(result.attemptedEvents, 0);
+    expect(result.deliveredEvents, 0);
+    expect(result.remainingEvents, 1);
+    expect(tracker.events, isEmpty);
+    expect(tracker.flushCount, 0);
+    expect(await client.queuedEventCount, 1);
+  });
+
   test('queue read result cannot mutate in-memory queue state', () async {
     final queue = InMemoryEventQueue();
     await queue.enqueue(QueuedEvent(
@@ -85,10 +108,15 @@ void main() {
   });
 }
 
-Future<FlexTrackClient> _client(List<_Tracker> trackers, {EventQueue? queue}) =>
+Future<FlexTrackClient> _client(
+  List<_Tracker> trackers, {
+  EventQueue? queue,
+  bool Function()? onlineProvider,
+}) =>
     FlexTrackClient.create(
       trackers,
       queue: queue,
+      onlineProvider: onlineProvider,
       routing: RoutingConfiguration(
         rules: [
           RoutingRule(
@@ -125,6 +153,7 @@ class _Tracker extends TrackerStrategy {
   int failCount;
   final Future<void>? gate;
   final List<BaseEvent> events = [];
+  int flushCount = 0;
   bool _enabled = true;
   @override
   String get name => id;
@@ -140,6 +169,11 @@ class _Tracker extends TrackerStrategy {
       failCount--;
       throw StateError('failure');
     }
+  }
+
+  @override
+  Future<void> flush() async {
+    flushCount++;
   }
 
   @override
