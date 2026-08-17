@@ -18,6 +18,8 @@ jobs:
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed lib test example/lib example/integration_test examples/static_app/lib examples/riverpod_app/lib examples/bloc_getit_app/lib
       - run: flutter analyze
+      - name: Validate Core contract and conformance fixtures
+        run: flutter test test/contract
       - run: flutter test
       - run: cd example && flutter pub get && flutter analyze
       # Integration tests need a single device (-d). On ubuntu-latest both linux

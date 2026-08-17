@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flextrack.taghizadeh.dev/schemas/core-mvp-1.0.0.json",
+  "title": "FlexTrack Core MVP conformance fixtures",
+  "type": "object",
+  "required": ["specVersion", "fixtureVersion", "cases"],
+  "properties": {
+    "specVersion": {"const": "1.0.0"},
+    "fixtureVersion": {"type": "string", "pattern": "^1\\.[0-9]+\\.[0-9]+$"},
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "behavior", "input", "expected"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "behavior": {
+            "enum": ["routing", "consent", "sampling", "enrichment", "debug"]
+          },
+          "input": {"type": "object"},
+          "expected": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

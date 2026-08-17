@@ -1,0 +1,99 @@
+{
+  "$schema": "core_mvp.schema.json",
+  "specVersion": "1.0.0",
+  "fixtureVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "routing.priority-overlap",
+      "behavior": "routing",
+      "input": {
+        "event": {"name": "purchase", "category": "business"},
+        "availableTrackers": ["analytics", "archive"],
+        "rules": [
+          {"category": "business", "priority": 10, "targets": ["analytics"]},
+          {"default": true, "priority": 0, "targets": ["archive"]}
+        ]
+      },
+      "expected": {"targets": ["analytics"], "appliedPriorities": [10]}
+    },
+    {
+      "id": "routing.same-tier-merge",
+      "behavior": "routing",
+      "input": {
+        "event": {"name": "purchase"},
+        "availableTrackers": ["analytics", "archive"],
+        "rules": [
+          {"nameContains": "purchase", "priority": 5, "targets": ["analytics"]},
+          {"nameContains": "purchase", "priority": 5, "targets": ["archive", "analytics"]}
+        ]
+      },
+      "expected": {"targets": ["analytics", "archive"], "appliedPriorities": [5, 5]}
+    },
+    {
+      "id": "routing.default-group-fallback",
+      "behavior": "routing",
+      "input": {
+        "event": {"name": "unmatched"},
+        "availableTrackers": ["archive"],
+        "defaultGroup": ["archive"],
+        "rules": [{"nameContains": "purchase", "priority": 5, "targets": ["archive"]}]
+      },
+      "expected": {"targets": ["archive"], "appliedPriorities": [0]}
+    },
+    {
+      "id": "consent.general-missing",
+      "behavior": "consent",
+      "input": {
+        "event": {"name": "view", "requiresConsent": true},
+        "generalConsent": false,
+        "piiConsent": false,
+        "rule": {"requireConsent": true, "targets": ["analytics"]}
+      },
+      "expected": {"targets": [], "skipReasons": ["Consent requirements not met"]}
+    },
+    {
+      "id": "consent.pii-missing",
+      "behavior": "consent",
+      "input": {
+        "event": {"name": "profile", "containsPII": true, "requiresConsent": true},
+        "generalConsent": true,
+        "piiConsent": false,
+        "rule": {"requireConsent": true, "requirePIIConsent": true, "targets": ["analytics"]}
+      },
+      "expected": {"targets": [], "skipReasons": ["Consent requirements not met"]}
+    },
+    {
+      "id": "sampling.unicode-utf8",
+      "behavior": "sampling",
+      "input": {"identity": "नमस्ते", "sampleRate": 0.25},
+      "expected": {"hash": 538106393, "accepted": true}
+    },
+    {
+      "id": "enrichment.identity-and-properties",
+      "behavior": "enrichment",
+      "input": {
+        "eventId": "fixture-event-1",
+        "timestamp": "2026-08-17T12:30:00.000Z",
+        "name": "purchase",
+        "properties": {"plan": "free"},
+        "extraProperties": {"plan": "pro", "route": "/pay"}
+      },
+      "expected": {
+        "eventId": "fixture-event-1",
+        "timestamp": "2026-08-17T12:30:00.000Z",
+        "name": "purchase",
+        "properties": {"plan": "pro", "route": "/pay"}
+      }
+    },
+    {
+      "id": "debug.routing-decision",
+      "behavior": "debug",
+      "input": {
+        "event": {"name": "purchase"},
+        "availableTrackers": ["analytics"],
+        "rules": [{"nameContains": "purchase", "priority": 7, "targets": ["analytics"]}]
+      },
+      "expected": {"targetTrackers": ["analytics"], "successfulTrackerIds": ["analytics"]}
+    }
+  ]
+}

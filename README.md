@@ -208,7 +208,8 @@ FlexTrack exists to make that architecture explicit, maintainable, and debuggabl
 - Widget wrappers for click, impression, mount, and route-view tracking
 
 The normative behavior shared by the Flutter and Kotlin SDKs is defined in the
-[FlexTrack Core MVP specification](docs/core-mvp-specification.md).
+[FlexTrack Core MVP specification](docs/core-mvp-specification.md) and verified
+with [shared conformance fixtures](docs/conformance.md).
 
 ---
 
