@@ -1,3 +1,11 @@
+# Unreleased
+
+## Fixed
+
+- Type-based routing now matches event subclasses and preserves the original
+  routing identity through `EnrichedEvent` transformers. Other routing
+  conditions still evaluate the transformed event.
+
 ## 2.0.0
 
 ### Breaking changes

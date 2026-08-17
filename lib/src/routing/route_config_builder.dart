@@ -98,5 +98,6 @@ class RouteConfigBuilder<T extends BaseEvent> {
   // ========== GETTERS FOR RULE BUILDER ==========
 
   Type? get eventType => _eventType;
+  bool matchesEventType(BaseEvent event) => event is T;
   RoutingBuilder get parent => _parent;
 }
