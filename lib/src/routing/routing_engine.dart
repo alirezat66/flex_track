@@ -64,7 +64,8 @@ class RoutingEngine {
         }
 
         // Check sampling
-        if (_configuration.enableSampling && !rule.shouldSample()) {
+        if (_configuration.enableSampling &&
+            !rule.shouldSample(event, sampler: _configuration.sampler)) {
           skippedRules.add(SkippedRule(
             rule: rule,
             reason:
